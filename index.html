@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0"
+		/>
+		<title>My Washington License Plate Collection</title>
+		<style>
+			:root {
+				--card-background: #ffffff;
+				--page-background: #f4f7f6;
+				--header-color: #2c3e50;
+				--text-color: #34495e;
+				--border-color: #e0e0e0;
+				--shadow-color: rgba(0, 0, 0, 0.1);
+			}
+			body {
+				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+					Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+					"Helvetica Neue", sans-serif;
+				margin: 0;
+				padding: 0;
+				background-color: var(--page-background);
+				color: var(--text-color);
+			}
+			header {
+				background-color: var(--header-color);
+				color: white;
+				padding: 1.5rem 2rem;
+				text-align: center;
+			}
+			header h1 {
+				margin: 0;
+				font-size: 2rem;
+			}
+			main {
+				padding: 1rem;
+				max-width: 1200px;
+				margin: 0 auto;
+			}
+			.category-section {
+				margin-bottom: 3rem;
+			}
+			.category-section h2 {
+				font-size: 1.75rem;
+				color: var(--header-color);
+				border-bottom: 2px solid var(--border-color);
+				padding-bottom: 0.5rem;
+				margin-bottom: 1.5rem;
+			}
+			.plate-grid {
+				display: grid;
+				grid-template-columns: repeat(
+					auto-fill,
+					minmax(280px, 1fr)
+				);
+				gap: 1.5rem;
+			}
+			.plate-card {
+				background-color: var(--card-background);
+				border-radius: 8px;
+				border: 1px solid var(--border-color);
+				box-shadow: 0 4px 6px var(--shadow-color);
+				overflow: hidden;
+				transition: transform 0.2s ease-in-out,
+					box-shadow 0.2s ease-in-out;
+			}
+			.plate-card:hover {
+				transform: translateY(-5px);
+				box-shadow: 0 8px 12px var(--shadow-color);
+			}
+			.plate-card h3 {
+				font-size: 1.1rem;
+				margin: 0;
+				padding: 1rem;
+			}
+			.plate-card .img-placeholder {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				background-color: #e9ecef;
+				width: 100%;
+				height: 150px;
+				color: #6c757d;
+				font-size: 1rem;
+			}
+			.plate-card img {
+				width: 100%;
+				height: auto;
+				display: block;
+				background-color: #e9ecef;
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<h1>Washington Special License Plate Collection</h1>
+		</header>
+
+		<main>
+			<!-- Instructions -->
+			<div
+				style="
+					background-color: #fffbe6;
+					border: 1px solid #ffe58f;
+					padding: 1rem;
+					margin-bottom: 2rem;
+					border-radius: 8px;
+				"
+			>
+				<strong>How to use:</strong> To add a photo, find the plate
+				below and replace <code>placeholder.jpg</code> with your image
+				file name (e.g., <code>"my-photo.jpg"</code>). Place the image
+				file in the same folder as this HTML file.
+			</div>
+
+			<!-- Category: Colleges and universities -->
+			<section class="category-section">
+				<h2>Colleges and universities</h2>
+				<div class="plate-grid">
+					<div class="plate-card">
+						<h3>Central Washington University</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Central Washington University plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Seattle University</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Seattle University plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Eastern Washington University</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Eastern Washington University plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Evergreen State College</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Evergreen State College plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Gonzaga University</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Gonzaga University plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>University of Washington</h3>
+						<img
+							src="placeholder.jpg"
+							alt="University of Washington plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Washington State University</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Washington State University plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Western Washington University</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Western Washington University plate"
+						/>
+					</div>
+				</div>
+			</section>
+
+			<!-- Category: Military and veterans -->
+			<section class="category-section">
+				<h2>Military and veterans</h2>
+				<div class="plate-grid">
+					<div class="plate-card">
+						<h3>Military Affiliate Radio System (MARS)</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Military Affiliate Radio System (MARS) plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Navy</h3>
+						<img src="placeholder.jpg" alt="Navy plate" />
+					</div>
+					<div class="plate-card">
+						<h3>Veteran/Military Service Award emblems</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Veteran/Military Service Award emblems plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Gold Star</h3>
+						<img src="placeholder.jpg" alt="Gold Star plate" />
+					</div>
+					<div class="plate-card">
+						<h3>Air Force</h3>
+						<img src="placeholder.jpg" alt="Air Force plate" />
+					</div>
+					<div class="plate-card">
+						<h3>988 - Prevent veteran suicide emblem</h3>
+						<img
+							src="placeholder.jpg"
+							alt="988 - Prevent veteran suicide emblem plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Disabled American Veteran</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Disabled American Veteran plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Army</h3>
+						<img src="placeholder.jpg" alt="Army plate" />
+					</div>
+					<div class="plate-card">
+						<h3>Purple Heart</h3>
+						<img src="placeholder.jpg" alt="Purple Heart plate" />
+					</div>
+					<div class="plate-card">
+						<h3>Coast Guard</h3>
+						<img src="placeholder.jpg" alt="Coast Guard plate" />
+					</div>
+					<div class="plate-card">
+						<h3>Former Prisoner of War</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Former Prisoner of War plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Marine Corps</h3>
+						<img src="placeholder.jpg" alt="Marine Corps plate" />
+					</div>
+					<div class="plate-card">
+						<h3>Medal of Honor</h3>
+						<img src="placeholder.jpg" alt="Medal of Honor plate" />
+					</div>
+					<div class="plate-card">
+						<h3>National Guard</h3>
+						<img src="placeholder.jpg" alt="National Guard plate" />
+					</div>
+				</div>
+			</section>
+
+			<!-- Category: Organizations -->
+			<section class="category-section">
+				<h2>Organizations</h2>
+				<div class="plate-grid">
+					<div class="plate-card">
+						<h3>Volunteer Firefighter</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Volunteer Firefighter plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>J.P. Patches Pal</h3>
+						<img
+							src="placeholder.jpg"
+							alt="J.P. Patches Pal plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Keep Kids Safe</h3>
+						<img src="placeholder.jpg" alt="Keep Kids Safe plate" />
+					</div>
+					<div class="plate-card">
+						<h3>Law Enforcement Memorial</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Law Enforcement Memorial plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>4-H</h3>
+						<img src="placeholder.jpg" alt="4-H plate" />
+					</div>
+					<div class="plate-card">
+						<h3>Lighthouse</h3>
+						<img src="placeholder.jpg" alt="Lighthouse plate" />
+					</div>
+					<div class="plate-card">
+						<h3>FFA Foundation</h3>
+						<img src="placeholder.jpg" alt="FFA Foundation plate" />
+					</div>
+					<div class="plate-card">
+						<h3>We Love Our Pets</h3>
+						<img
+							src="placeholder.jpg"
+							alt="We Love Our Pets plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Fred Hutchinson Cancer Center</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Fred Hutchinson Cancer Center plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Professional Firefighter</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Professional Firefighter plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Helping Kids Speak</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Helping Kids Speak plate"
+						/>
+					</div>
+				</div>
+			</section>
+
+			<!-- Category: Parks and environment -->
+			<section class="category-section">
+				<h2>Parks and environment</h2>
+				<div class="plate-grid">
+					<div class="plate-card">
+						<h3>Washington National Parks</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Washington National Parks plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Endangered Wildlife: Orca</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Endangered Wildlife: Orca plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Washington State Parks</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Washington State Parks plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Washington's Wildlife: Bear</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Washington's Wildlife: Bear plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Washington's Wildlife: Deer</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Washington's Wildlife: Deer plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Washington's Wildlife: Elk</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Washington's Wildlife: Elk plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Washington's Wildlife: Steelhead</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Washington's Wildlife: Steelhead plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Wild on Washington: Eagle</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Wild on Washington: Eagle plate"
+						/>
+					</div>
+				</div>
+			</section>
+
+			<!-- Category: Sports -->
+			<section class="category-section">
+				<h2>Sports</h2>
+				<div class="plate-grid">
+					<div class="plate-card">
+						<h3>Share the Road</h3>
+						<img src="placeholder.jpg" alt="Share the Road plate" />
+					</div>
+					<div class="plate-card">
+						<h3>San Juan Islands</h3>
+						<img
+							src="placeholder.jpg"
+							alt="San Juan Islands plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Wrestling</h3>
+						<img src="placeholder.jpg" alt="Wrestling plate" />
+					</div>
+					<div class="plate-card">
+						<h3>Ski and Ride</h3>
+						<img src="placeholder.jpg" alt="Ski and Ride plate" />
+					</div>
+					<div class="plate-card">
+						<h3>State Flower</h3>
+						<img src="placeholder.jpg" alt="State Flower plate" />
+					</div>
+					<div class="plate-card">
+						<h3>Amateur Radio Operator (HAM)</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Amateur Radio Operator (HAM) plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Square Dancer</h3>
+						<img src="placeholder.jpg" alt="Square Dancer plate" />
+					</div>
+					<div class="plate-card">
+						<h3>Fly Washington aviation</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Fly Washington aviation plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Tennis</h3>
+						<img src="placeholder.jpg" alt="Tennis plate" />
+					</div>
+					<div class="plate-card">
+						<h3>Breast Cancer</h3>
+						<img src="placeholder.jpg" alt="Breast Cancer plate" />
+					</div>
+					<div class="plate-card">
+						<h3>Washington Apple Commission</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Washington Apple Commission plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Music Matters</h3>
+						<img src="placeholder.jpg" alt="Music Matters plate" />
+					</div>
+					<div class="plate-card">
+						<h3>Washington Wine Commission</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Washington Wine Commission plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Seattle Kraken</h3>
+						<img src="placeholder.jpg" alt="Seattle Kraken plate" />
+					</div>
+					<div class="plate-card">
+						<h3>Seattle Mariners</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Seattle Mariners plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Seattle Seahawks</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Seattle Seahawks plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Seattle Sounders FC</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Seattle Sounders FC plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Seattle Storm</h3>
+						<img src="placeholder.jpg" alt="Seattle Storm plate" />
+					</div>
+				</div>
+			</section>
+
+			<!-- Category: Tribal -->
+			<section class="category-section">
+				<h2>Tribal</h2>
+				<div class="plate-grid">
+					<div class="plate-card">
+						<h3>Chehalis Tribe</h3>
+						<img src="placeholder.jpg" alt="Chehalis Tribe plate" />
+					</div>
+					<div class="plate-card">
+						<h3>Muckleshoot Tribe</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Muckleshoot Tribe plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Puyallup Tribe</h3>
+						<img src="placeholder.jpg" alt="Puyallup Tribe plate" />
+					</div>
+				</div>
+			</section>
+
+			<!-- Category: Miscellaneous -->
+			<section class="category-section">
+				<h2>Miscellaneous</h2>
+				<div class="plate-grid">
+					<div class="plate-card">
+						<h3>Restored</h3>
+						<img src="placeholder.jpg" alt="Restored plate" />
+					</div>
+					<div class="plate-card">
+						<h3>Disabled Parking</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Disabled Parking plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Personalized</h3>
+						<img src="placeholder.jpg" alt="Personalized plate" />
+					</div>
+					<div class="plate-card">
+						<h3>Rideshare</h3>
+						<img src="placeholder.jpg" alt="Rideshare plate" />
+					</div>
+					<div class="plate-card">
+						<h3>Collector Vehicle</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Collector Vehicle plate"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Horseless Carriage</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Horseless Carriage plate"
+						/>
+					</div>
+				</div>
+			</section>
+		</main>
+	</body>
+</html>
