@@ -2,10 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<meta
-			name="viewport"
-			content="width=device-width, initial-scale=1.0"
-		/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>My Washington License Plate Collection</title>
 		<style>
 			:root {
@@ -52,10 +49,7 @@
 			}
 			.plate-grid {
 				display: grid;
-				grid-template-columns: repeat(
-					auto-fill,
-					minmax(280px, 1fr)
-				);
+				grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 				gap: 1.5rem;
 			}
 			.plate-card {
@@ -64,8 +58,7 @@
 				border: 1px solid var(--border-color);
 				box-shadow: 0 4px 6px var(--shadow-color);
 				overflow: hidden;
-				transition: transform 0.2s ease-in-out,
-					box-shadow 0.2s ease-in-out;
+				transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 			}
 			.plate-card:hover {
 				transform: translateY(-5px);
@@ -91,6 +84,32 @@
 				height: auto;
 				display: block;
 				background-color: #e9ecef;
+				cursor: pointer; /* Change cursor to pointer */
+			}
+			/* Modal styles */
+			.modal {
+				display: none; /* Hidden by default */
+				position: fixed; /* Stay in place */
+				z-index: 1000; /* Sit on top */
+				left: 0;
+				top: 0;
+				width: 100%; /* Full width */
+				height: 100%; /* Full height */
+				background-color: rgba(0, 0, 0, 0.8); /* Black background with opacity */
+				justify-content: center; /* Center the modal */
+				align-items: center; /* Center the modal */
+			}
+			.modal img {
+				max-width: 90%; /* Responsive image */
+				max-height: 90%; /* Responsive image */
+			}
+			.close {
+				position: absolute;
+				top: 20px;
+				right: 30px;
+				color: white;
+				font-size: 30px;
+				cursor: pointer;
 			}
 		</style>
 	</head>
@@ -100,7 +119,7 @@
 		</header>
 
 		<main>
-			<!-- Instructions -->
+			<!-- Introduction -->
 			<div
 				style="
 					background-color: #fffbe6;
@@ -110,10 +129,9 @@
 					border-radius: 8px;
 				"
 			>
-				<strong>How to use:</strong> To add a photo, find the plate
-				below and replace <code>placeholder.jpg</code> with your image
-				file name (e.g., <code>"my-photo.jpg"</code>). Place the image
-				file in the same folder as this HTML file.
+				<strong>Welcome to my dumb hobby site!</strong><br />
+				I have some sort of brain worm that causes me to think it's fun to take photographs of the different Washington license plate backgrounds. Sometimes my similarly-afflicted friends send me their own photos and I put those up here too.
+				When I get duplicate photos, I generally try to use the highest-quality one with the lowest assigned number or an otherwise interesting one. There are no real hard and fast rules, it's whatever I like the best.
 			</div>
 
 			<!-- Category: Colleges and universities -->
@@ -125,6 +143,7 @@
 						<img
 							src="pics/colleges/cwu.jpg"
 							alt="Central Washington University plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -132,6 +151,7 @@
 						<img
 							src="pics/colleges/ewu.jpg"
 							alt="Eastern Washington University plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -139,6 +159,7 @@
 						<img
 							src="pics/colleges/esc_2.jpg"
 							alt="Evergreen State College plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -146,6 +167,7 @@
 						<img
 							src="pics/colleges/gonzaga.jpg"
 							alt="Gonzaga University plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -153,6 +175,7 @@
 						<img
 							src="placeholder.jpg"
 							alt="Seattle University plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -160,6 +183,7 @@
 						<img
 							src="pics/colleges/uw.jpg"
 							alt="University of Washington plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -167,6 +191,7 @@
 						<img
 							src="pics/colleges/wsu.jpg"
 							alt="Washington State University plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -174,6 +199,7 @@
 						<img
 							src="placeholder.jpg"
 							alt="Western Washington University plate"
+							class="plate-image"
 						/>
 					</div>
 				</div>
@@ -184,29 +210,43 @@
 				<h2>Military and Veterans</h2>
 				<div class="plate-grid">
 					<div class="plate-card">
-						<h3>988 - Prevent veteran suicide emblem</h3>
+						<h3>988 - Prevent Veteran Suicide</h3>
 						<img
 							src="pics/mil/988.jpg"
-							alt="988 - Prevent veteran suicide emblem plate"
+							alt="988 - Prevent Veteran Suicide emblem"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
 						<h3>Air Force</h3>
-						<img src="pics/mil/air_force.jpg" alt="Air Force plate" />
+						<img
+							src="pics/mil/air_force.jpg"
+							alt="Air Force plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Army</h3>
-						<img src="placeholder.jpg" alt="Army plate" />
+						<img
+							src="placeholder.jpg"
+							alt="Army plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Coast Guard</h3>
-						<img src="placeholder.jpg" alt="Coast Guard plate" />
+						<img
+							src="placeholder.jpg"
+							alt="Coast Guard plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Disabled American Veteran</h3>
 						<img
 							src="placeholder.jpg"
 							alt="Disabled American Veteran plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -214,46 +254,71 @@
 						<img
 							src="placeholder.jpg"
 							alt="Former Prisoner of War plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
 						<h3>Gold Star</h3>
-						<img src="pics/mil/gold_star.jpg" alt="Gold Star plate" />
+						<img
+							src="pics/mil/gold_star.jpg"
+							alt="Gold Star plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Marine Corps</h3>
-						<img src="pics/mil/marine_corps.jpg" alt="Marine Corps plate" />
+						<img
+							src="pics/mil/marine_corps.jpg"
+							alt="Marine Corps plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Medal of Honor</h3>
-						<img src="placeholder.jpg" alt="Medal of Honor plate" />
+						<img
+							src="placeholder.jpg"
+							alt="Medal of Honor plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Military Affiliate Radio System (MARS)</h3>
 						<img
 							src="placeholder.jpg"
 							alt="Military Affiliate Radio System (MARS) plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
 						<h3>National Guard</h3>
 						<img
 							src="pics/mil/nat_guard_ribbon.jpg"
-							alt="National Guard plate" />
+							alt="National Guard plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Navy</h3>
-						<img src="placeholder.jpg" alt="Navy plate" />
+						<img
+							src="placeholder.jpg"
+							alt="Navy plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Purple Heart</h3>
-						<img src="pics/mil/purple_heart.jpg" alt="Purple Heart plate" />
+						<img
+							src="pics/mil/purple_heart.jpg"
+							alt="Purple Heart plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Veteran/Military Service Award emblems</h3>
 						<img
 							src="pics/mil/nat_guard_ribbon.jpg"
-							alt="Veteran/Military Service Award emblems plate"
+							alt="Veteran/Military Service Award emblems"
+							class="plate-image"
 						/>
 					</div>
 				</div>
@@ -265,17 +330,26 @@
 				<div class="plate-grid">
 					<div class="plate-card">
 						<h3>4-H</h3>
-						<img src="placeholder.jpg" alt="4-H plate" />
+						<img
+							src="placeholder.jpg"
+							alt="4-H plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>FFA Foundation</h3>
-						<img src="placeholder.jpg" alt="FFA Foundation plate" />
+						<img
+							src="placeholder.jpg"
+							alt="FFA Foundation plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Fred Hutchinson Cancer Center</h3>
 						<img
 							src="placeholder.jpg"
 							alt="Fred Hutchinson Cancer Center plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -283,6 +357,7 @@
 						<img
 							src="pics/orgs/freemason.jpg"
 							alt="Helping Kids Speak plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -290,28 +365,39 @@
 						<img
 							src="pics/orgs/jp_patches.jpg"
 							alt="J.P. Patches Pal plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
 						<h3>Keep Kids Safe</h3>
-						<img src="pics/orgs/kids_safe.jpg" alt="Keep Kids Safe plate" />
+						<img
+							src="pics/orgs/kids_safe.jpg"
+							alt="Keep Kids Safe plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Law Enforcement Memorial</h3>
 						<img
 							src="pics/orgs/lem.jpg"
 							alt="Law Enforcement Memorial plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
 						<h3>Lighthouse</h3>
-						<img src="placeholder.jpg" alt="Lighthouse plate" />
+						<img
+							src="placeholder.jpg"
+							alt="Lighthouse plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Professional Firefighter</h3>
 						<img
 							src="pics/orgs/pro_ff.jpg"
 							alt="Professional Firefighter plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -319,6 +405,7 @@
 						<img
 							src="placeholder.jpg"
 							alt="Volunteer Firefighter plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -326,6 +413,7 @@
 						<img
 							src="pics/orgs/pets.jpg"
 							alt="We Love Our Pets plate"
+							class="plate-image"
 						/>
 					</div>
 				</div>
@@ -340,6 +428,7 @@
 						<img
 							src="pics/parks/endangered_wildlife_orca.jpg"
 							alt="Endangered Wildlife: Orca plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -347,6 +436,7 @@
 						<img
 							src="pics/parks/natl_parks.jpg"
 							alt="Washington National Parks plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -354,6 +444,7 @@
 						<img
 							src="placeholder.jpg"
 							alt="Washington State Parks plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -361,6 +452,7 @@
 						<img
 							src="pics/parks/wa_wildlife_bear.jpg"
 							alt="Washington's Wildlife: Bear plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -368,6 +460,7 @@
 						<img
 							src="placeholder.jpg"
 							alt="Washington's Wildlife: Deer plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -375,6 +468,7 @@
 						<img
 							src="pics/parks/wa_wildlife_elk.jpg"
 							alt="Washington's Wildlife: Elk plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -382,6 +476,7 @@
 						<img
 							src="pics/parks/wa_wildlife_steelhead.jpg"
 							alt="Washington's Wildlife: Steelhead plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -389,6 +484,7 @@
 						<img
 							src="pics/parks/wild_wa_eagle.jpg"
 							alt="Wild on Washington: Eagle plate"
+							class="plate-image"
 						/>
 					</div>
 				</div>
@@ -403,55 +499,87 @@
 						<img
 							src="placeholder.jpg"
 							alt="Amateur Radio Operator (HAM) plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
 						<h3>Breast Cancer</h3>
-						<img src="placeholder.jpg" alt="Breast Cancer plate" />
-					</div>
-					<div class="plate-card">
-						<h3>Fly Washington aviation</h3>
 						<img
 							src="placeholder.jpg"
-							alt="Fly Washington aviation plate"
+							alt="Breast Cancer plate"
+							class="plate-image"
+						/>
+					</div>
+					<div class="plate-card">
+						<h3>Fly Washington Aviation</h3>
+						<img
+							src="placeholder.jpg"
+							alt="Fly Washington Aviation plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
 						<h3>Music Matters</h3>
-						<img src="placeholder.jpg" alt="Music Matters plate" />
+						<img
+							src="placeholder.jpg"
+							alt="Music Matters plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>San Juan Islands</h3>
 						<img
 							src="pics/special_interests/san_juan.jpg"
 							alt="San Juan Islands plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
 						<h3>Share the Road</h3>
-						<img src="placeholder.jpg" alt="Share the Road plate" />
+						<img
+							src="placeholder.jpg"
+							alt="Share the Road plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Ski and Ride</h3>
-						<img src="pics/special_interests/ski_and_snowboard.jpg" alt="Ski and Ride plate" />
+						<img
+							src="pics/special_interests/ski_and_snowboard.jpg"
+							alt="Ski and Ride plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Square Dancer</h3>
-						<img src="placeholder.jpg" alt="Square Dancer plate" />
+						<img
+							src="placeholder.jpg"
+							alt="Square Dancer plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>State Flower</h3>
-						<img src="pics/special_interests/rhodie.jpg" alt="State Flower plate" />
+						<img
+							src="pics/special_interests/rhodie.jpg"
+							alt="State Flower plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Tennis</h3>
-						<img src="pics/special_interests/tennis.jpg" alt="Tennis plate" />
+						<img
+							src="pics/special_interests/tennis.jpg"
+							alt="Tennis plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Washington Apple Commission</h3>
 						<img
 							src="pics/special_interests/wac_apples.jpg"
 							alt="Washington Apple Commission plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -459,11 +587,16 @@
 						<img
 							src="placeholder.jpg"
 							alt="Washington Wine Commission plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
 						<h3>Wrestling</h3>
-						<img src="pics/special_interests/wrestling.jpg" alt="Wrestling plate" />
+						<img
+							src="pics/special_interests/wrestling.jpg"
+							alt="Wrestling plate"
+							class="plate-image"
+						/>
 					</div>
 				</div>
 			</section>
@@ -474,13 +607,18 @@
 				<div class="plate-grid">
 					<div class="plate-card">
 						<h3>Seattle Kraken</h3>
-						<img src="placeholder.jpg" alt="Seattle Kraken plate" />
+						<img
+							src="placeholder.jpg"
+							alt="Seattle Kraken plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Seattle Mariners</h3>
 						<img
 							src="placeholder.jpg"
 							alt="Seattle Mariners plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -488,6 +626,7 @@
 						<img
 							src="pics/sports/seahawks.jpg"
 							alt="Seattle Seahawks plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -495,11 +634,16 @@
 						<img
 							src="placeholder.jpg"
 							alt="Seattle Sounders FC plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
 						<h3>Seattle Storm</h3>
-						<img src="placeholder.jpg" alt="Seattle Storm plate" />
+						<img
+							src="placeholder.jpg"
+							alt="Seattle Storm plate"
+							class="plate-image"
+						/>
 					</div>
 				</div>
 			</section>
@@ -510,18 +654,27 @@
 				<div class="plate-grid">
 					<div class="plate-card">
 						<h3>Chehalis Tribe</h3>
-						<img src="placeholder.jpg" alt="Chehalis Tribe plate" />
+						<img
+							src="placeholder.jpg"
+							alt="Chehalis Tribe plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Muckleshoot Tribe</h3>
 						<img
 							src="placeholder.jpg"
 							alt="Muckleshoot Tribe plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
 						<h3>Puyallup Tribe</h3>
-						<img src="placeholder.jpg" alt="Puyallup Tribe plate" />
+						<img
+							src="placeholder.jpg"
+							alt="Puyallup Tribe plate"
+							class="plate-image"
+						/>
 					</div>
 				</div>
 			</section>
@@ -532,33 +685,51 @@
 				<div class="plate-grid">
 					<div class="plate-card">
 						<h3>Colville Tribe</h3>
-						<img src="placeholder.jpg" alt="Colville Tribe plate" />
+						<img
+							src="placeholder.jpg"
+							alt="Colville Tribe plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Lummi Tribe</h3>
 						<img
 							src="placeholder.jpg"
 							alt="Lummi Tribe plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
 						<h3>Quinault Tribe</h3>
-						<img src="placeholder.jpg" alt="Quinault Tribe plate" />
+						<img
+							src="placeholder.jpg"
+							alt="Quinault Tribe plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Spokane Tribe</h3>
-						<img src="placeholder.jpg" alt="Spokane Tribe plate" />
+						<img
+							src="placeholder.jpg"
+							alt="Spokane Tribe plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Tulalip Tribes</h3>
 						<img
 							src="pics/tribal/tulalip_tribes.jpg"
 							alt="Tulalip Tribes plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
 						<h3>Yakima Nation</h3>
-						<img src="pics/tribal/yakima_nation.jpg" alt="Yakima Nation plate" />
+						<img
+							src="pics/tribal/yakima_nation.jpg"
+							alt="Yakima Nation plate"
+							class="plate-image"
+						/>
 					</div>
 				</div>
 			</section>
@@ -572,6 +743,7 @@
 						<img
 							src="pics/misc/collector_vehicle.jpg"
 							alt="Collector Vehicle plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -579,6 +751,7 @@
 						<img
 							src="pics/misc/disabled.jpg"
 							alt="Disabled Parking plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -586,6 +759,7 @@
 						<img
 							src="pics/misc/xmt.jpg"
 							alt="Exempt plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
@@ -593,29 +767,78 @@
 						<img
 							src="pics/misc/horseless_carriage.jpg"
 							alt="Horseless Carriage plate"
+							class="plate-image"
 						/>
 					</div>
 					<div class="plate-card">
 						<h3>Personalized</h3>
-						<img src="pics/misc/personalized.jpg" alt="Personalized plate" />
+						<img
+							src="pics/misc/personalized.jpg"
+							alt="Personalized plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Restored</h3>
-						<img src="pics/misc/restored_82_delorean.jpg" alt="Restored plate" />
+						<img
+							src="pics/misc/restored_82_delorean.jpg"
+							alt="Restored plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Rideshare</h3>
-						<img src="pics/misc/ride_share.jpg" alt="Rideshare plate" />
+						<img
+							src="pics/misc/ride_share.jpg"
+							alt="Rideshare plate"
+							class="plate-image"
+						/>
 					</div>
 					<div class="plate-card">
 						<h3>Transporter</h3>
 						<img
 							src="pics/misc/transporter.jpg"
 							alt="Transporter plate"
+							class="plate-image"
 						/>
 					</div>
 				</div>
 			</section>
 		</main>
+
+		<!-- Modal for displaying larger images -->
+		<div id="myModal" class="modal">
+			<span class="close">&times;</span>
+			<img class="modal-content" id="img01" />
+		</div>
+
+		<script>
+			// Get the modal
+			var modal = document.getElementById("myModal");
+
+			// Get the image and insert it inside the modal
+			var images = document.getElementsByClassName("plate-image");
+			var modalImg = document.getElementById("img01");
+			var span = document.getElementsByClassName("close")[0];
+
+			for (let i = 0; i < images.length; i++) {
+				images[i].onclick = function () {
+					modal.style.display = "flex"; // Show the modal
+					modalImg.src = this.src; // Set the source of the modal image
+				};
+			}
+
+			// When the user clicks on <span> (x), close the modal
+			span.onclick = function () {
+				modal.style.display = "none";
+			};
+
+			// When the user clicks anywhere outside of the modal, close it
+			window.onclick = function (event) {
+				if (event.target == modal) {
+					modal.style.display = "none";
+				}
+			};
+		</script>
 	</body>
 </html>
