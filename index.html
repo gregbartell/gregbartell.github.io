@@ -1,852 +1,1162 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>My Washington License Plate Collection</title>
-		<style>
-			:root {
-				--card-background: #ffffff;
-				--page-background: #f4f7f6;
-				--header-color: #2c3e50;
-				--text-color: #34495e;
-				--border-color: #e0e0e0;
-				--shadow-color: rgba(0, 0, 0, 0.1);
-			}
-			body {
-				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-					Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
-					"Helvetica Neue", sans-serif;
-				margin: 0;
-				padding: 0;
-				background-color: var(--page-background);
-				color: var(--text-color);
-			}
-			header {
-				background-color: var(--header-color);
-				color: white;
-				padding: 1.5rem 2rem;
-				text-align: center;
-			}
-			header h1 {
-				margin: 0;
-				font-size: 2rem;
-			}
-			main {
-				padding: 1rem;
-				max-width: 1200px;
-				margin: 0 auto;
-			}
-			.category-section {
-				margin-bottom: 3rem;
-			}
-			.category-section h2 {
-				font-size: 1.75rem;
-				color: var(--header-color);
-				border-bottom: 2px solid var(--border-color);
-				padding-bottom: 0.5rem;
-				margin-bottom: 1.5rem;
-			}
-			.plate-grid {
-				display: grid;
-				grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-				gap: 1.5rem;
-			}
-			.plate-card {
-				background-color: var(--card-background);
-				border-radius: 8px;
-				border: 1px solid var(--border-color);
-				box-shadow: 0 4px 6px var(--shadow-color);
-				overflow: hidden;
-				transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-			}
-			.plate-card:hover {
-				transform: translateY(-5px);
-				box-shadow: 0 8px 12px var(--shadow-color);
-			}
-			.plate-card h3 {
-				font-size: 1.1rem;
-				margin: 0;
-				padding: 1rem;
-			}
-			.plate-card .img-placeholder {
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				background-color: #e9ecef;
-				width: 100%;
-				height: 150px;
-				color: #6c757d;
-				font-size: 1rem;
-			}
-			.plate-card img {
-				width: 100%;
-				height: auto;
-				display: block;
-				background-color: #e9ecef;
-				cursor: pointer; /* Change cursor to pointer */
-			}
-			/* Modal styles */
-			.modal {
-				display: none; /* Hidden by default */
-				position: fixed; /* Stay in place */
-				z-index: 1000; /* Sit on top */
-				left: 0;
-				top: 0;
-				width: 100%; /* Full width */
-				height: 100%; /* Full height */
-				background-color: rgba(0, 0, 0, 0.8); /* Black background with opacity */
-				justify-content: center; /* Center the modal */
-				align-items: center; /* Center the modal */
-			}
-			.modal img {
-				max-width: 90%; /* Responsive image */
-				max-height: 90%; /* Responsive image */
-			}
-			.close {
-				position: absolute;
-				top: 20px;
-				right: 30px;
-				color: white;
-				font-size: 30px;
-				cursor: pointer;
-			}
-		</style>
-	</head>
-	<body>
-		<header>
-			<h1>Washington Special License Plate Collection</h1>
-		</header>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>My Washington License Plate Collection</title>
+        <style>
+            :root {
+                --card-background: #ffffff;
+                --page-background: #f4f7f6;
+                --header-color: #2c3e50;
+                --text-color: #34495e;
+                --border-color: #e0e0e0;
+                --shadow-color: rgba(0, 0, 0, 0.1);
+                --accent-color: #3498db;
+                --danger-color: #e74c3c;
+                --warning-color: #f39c12;
+            }
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                    Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+                    "Helvetica Neue", sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: var(--page-background);
+                color: var(--text-color);
+            }
+            header {
+                background-color: var(--header-color);
+                color: white;
+                padding: 1.5rem 2rem;
+                text-align: center;
+                position: relative;
+            }
+            header h1 {
+                margin: 0;
+                font-size: 2rem;
+            }
+            main {
+                padding: 1rem;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
 
-		<main>
-			<!-- Introduction -->
-			<div
-				style="
-					background-color: #fffbe6;
-					border: 1px solid #ffe58f;
-					padding: 1rem;
-					margin-bottom: 2rem;
-					border-radius: 8px;
-				"
-			>
-				<strong>Welcome to my dumb hobby site!</strong><br />
-				I have some sort of brain worm that causes me to think it's fun to take photographs of the different Washington license plate backgrounds. Sometimes my similarly-afflicted friends send me their own photos and I put those up here too.
-				When I get duplicate photos, I generally try to use the highest-quality one with the lowest assigned number or an otherwise interesting one. There are no real hard and fast rules, it's whatever I like the best.
-			</div>
+            /* --- New Utility Button for Status --- */
+            .status-toolbar {
+                display: flex;
+                justify-content: center;
+                margin: 1rem 0 2rem 0;
+            }
+            .btn-status {
+                background-color: var(--header-color);
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                font-size: 1rem;
+                border-radius: 50px;
+                cursor: pointer;
+                box-shadow: 0 4px 6px var(--shadow-color);
+                transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-weight: bold;
+            }
+            .btn-status:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+                background-color: #34495e;
+            }
 
-			<!-- Category: Colleges and universities -->
-			<section class="category-section">
-				<h2>Colleges and Universities</h2>
-				<div class="plate-grid">
-					<div class="plate-card">
-						<h3>Central Washington University</h3>
-						<img
-							src="pics/colleges/cwu.jpg"
-							alt="Central Washington University plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Eastern Washington University</h3>
-						<img
-							src="pics/colleges/ewu.jpg"
-							alt="Eastern Washington University plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Evergreen State College</h3>
-						<img
-							src="pics/colleges/esc_2.jpg"
-							alt="Evergreen State College plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Gonzaga University</h3>
-						<img
-							src="pics/colleges/gonzaga.jpg"
-							alt="Gonzaga University plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Seattle University</h3>
-						<img
-							src="placeholder.jpg"
-							alt="Seattle University plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>University of Washington</h3>
-						<img
-							src="pics/colleges/uw.jpg"
-							alt="University of Washington plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Washington State University</h3>
-						<img
-							src="pics/colleges/wsu.jpg"
-							alt="Washington State University plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Western Washington University</h3>
-						<img
-							src="placeholder.jpg"
-							alt="Western Washington University plate"
-							class="plate-image"
-						/>
-					</div>
-				</div>
-			</section>
+            .category-section {
+                margin-bottom: 3rem;
+            }
+            .category-section h2 {
+                font-size: 1.75rem;
+                color: var(--header-color);
+                border-bottom: 2px solid var(--border-color);
+                padding-bottom: 0.5rem;
+                margin-bottom: 1.5rem;
+            }
+            .plate-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 1.5rem;
+            }
+            .plate-card {
+                background-color: var(--card-background);
+                border-radius: 8px;
+                border: 1px solid var(--border-color);
+                box-shadow: 0 4px 6px var(--shadow-color);
+                overflow: hidden;
+                transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+                position: relative;
+            }
+            .plate-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 12px var(--shadow-color);
+            }
+            .plate-card h3 {
+                font-size: 1.1rem;
+                margin: 0;
+                padding: 1rem;
+                background: #fff;
+                position: relative;
+                z-index: 2;
+            }
+            .plate-card img {
+                width: 100%;
+                height: auto;
+                display: block;
+                background-color: #e9ecef;
+                cursor: pointer;
+                min-height: 150px;
+                object-fit: cover;
+            }
 
-			<!-- Category: Military and veterans -->
-			<section class="category-section">
-				<h2>Military and Veterans</h2>
-				<div class="plate-grid">
-					<div class="plate-card">
-						<h3>988 - Prevent Veteran Suicide</h3>
-						<img
-							src="pics/mil/988.jpg"
-							alt="988 - Prevent Veteran Suicide emblem"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Air Force</h3>
-						<img
-							src="pics/mil/air_force.jpg"
-							alt="Air Force plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Army</h3>
-						<img
-							src="pics/mil/army.jpg"
-							alt="Army plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Coast Guard</h3>
-						<img
-							src="pics/mil/coast_guard.jpg"
-							alt="Coast Guard plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Disabled American Veteran</h3>
-						<img
-							src="placeholder.jpg"
-							alt="Disabled American Veteran plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Former Prisoner of War</h3>
-						<img
-							src="placeholder.jpg"
-							alt="Former Prisoner of War plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Gold Star</h3>
-						<img
-							src="pics/mil/gold_star.jpg"
-							alt="Gold Star plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Marine Corps</h3>
-						<img
-							src="pics/mil/marine_corps.jpg"
-							alt="Marine Corps plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Medal of Honor</h3>
-						<img
-							src="placeholder.jpg"
-							alt="Medal of Honor plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Military Affiliate Radio System (MARS)</h3>
-						<img
-							src="placeholder.jpg"
-							alt="Military Affiliate Radio System (MARS) plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>National Guard</h3>
-						<img
-							src="pics/mil/nat_guard_ribbon.jpg"
-							alt="National Guard plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Navy</h3>
-						<img
-							src="placeholder.jpg"
-							alt="Navy plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Purple Heart</h3>
-						<img
-							src="pics/mil/purple_heart.jpg"
-							alt="Purple Heart plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Veteran/Military Service Award emblems</h3>
-						<img
-							src="pics/mil/nat_guard_ribbon.jpg"
-							alt="Veteran/Military Service Award emblems"
-							class="plate-image"
-						/>
-					</div>
-				</div>
-			</section>
+            /* Indicator for cards needing better photos */
+            .plate-card[data-needs-photo="true"]::after {
+                content: "⚠️ Low Quality";
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background-color: var(--warning-color);
+                color: white;
+                font-size: 0.75rem;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-weight: bold;
+                z-index: 5;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                pointer-events: none;
+            }
 
-			<!-- Category: Organizations -->
-			<section class="category-section">
-				<h2>Organizations</h2>
-				<div class="plate-grid">
-					<div class="plate-card">
-						<h3>4-H</h3>
-						<img
-							src="placeholder.jpg"
-							alt="4-H plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>FFA Foundation</h3>
-						<img
-							src="placeholder.jpg"
-							alt="FFA Foundation plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Fred Hutchinson Cancer Center</h3>
-						<img
-							src="pics/orgs/fred_hutch.jpg"
-							alt="Fred Hutchinson Cancer Center plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Helping Kids Speak (Freemason)</h3>
-						<img
-							src="pics/orgs/freemason.jpg"
-							alt="Helping Kids Speak plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>J.P. Patches Pal</h3>
-						<img
-							src="pics/orgs/jp_patches.jpg"
-							alt="J.P. Patches Pal plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Keep Kids Safe</h3>
-						<img
-							src="pics/orgs/kids_safe.jpg"
-							alt="Keep Kids Safe plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Law Enforcement Memorial</h3>
-						<img
-							src="pics/orgs/lem.jpg"
-							alt="Law Enforcement Memorial plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Lighthouse</h3>
-						<img
-							src="placeholder.jpg"
-							alt="Lighthouse plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Professional Firefighter</h3>
-						<img
-							src="pics/orgs/pro_ff.jpg"
-							alt="Professional Firefighter plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Volunteer Firefighter</h3>
-						<img
-							src="placeholder.jpg"
-							alt="Volunteer Firefighter plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>We Love Our Pets</h3>
-						<img
-							src="pics/orgs/pets.jpg"
-							alt="We Love Our Pets plate"
-							class="plate-image"
-						/>
-					</div>
-				</div>
-			</section>
+            /* --- Modal Styles (Image Viewer) --- */
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.8);
+                justify-content: center;
+                align-items: center;
+            }
+            .modal img {
+                max-width: 90%;
+                max-height: 90%;
+            }
+            .close {
+                position: absolute;
+                top: 20px;
+                right: 30px;
+                color: white;
+                font-size: 30px;
+                cursor: pointer;
+            }
 
-			<!-- Category: Parks and environment -->
-			<section class="category-section">
-				<h2>Parks and Environment</h2>
-				<div class="plate-grid">
-					<div class="plate-card">
-						<h3>Endangered Wildlife: Orca</h3>
-						<img
-							src="pics/parks/endangered_wildlife_orca.jpg"
-							alt="Endangered Wildlife: Orca plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Washington National Parks</h3>
-						<img
-							src="pics/parks/natl_parks.jpg"
-							alt="Washington National Parks plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Washington State Parks</h3>
-						<img
-							src="pics/parks/state_parks.jpg"
-							alt="Washington State Parks plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Washington's Wildlife: Bear</h3>
-						<img
-							src="pics/parks/wa_wildlife_bear.jpg"
-							alt="Washington's Wildlife: Bear plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Washington's Wildlife: Deer</h3>
-						<img
-							src="pics/parks/wa_wildlife_deer.jpg"
-							alt="Washington's Wildlife: Deer plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Washington's Wildlife: Elk</h3>
-						<img
-							src="pics/parks/wa_wildlife_elk.jpg"
-							alt="Washington's Wildlife: Elk plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Washington's Wildlife: Steelhead</h3>
-						<img
-							src="pics/parks/wa_wildlife_steelhead.jpg"
-							alt="Washington's Wildlife: Steelhead plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Wild on Washington: Eagle</h3>
-						<img
-							src="pics/parks/wild_wa_eagle.jpg"
-							alt="Wild on Washington: Eagle plate"
-							class="plate-image"
-						/>
-					</div>
-				</div>
-			</section>
+            /* --- Status Modal Styles --- */
+            .status-modal-content {
+                background-color: white;
+                margin: auto;
+                padding: 2rem;
+                border-radius: 8px;
+                width: 90%;
+                max-width: 800px;
+                position: relative;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                display: flex;
+                flex-direction: column;
+                max-height: 90vh;
+            }
+            .status-modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 2px solid var(--border-color);
+                padding-bottom: 1rem;
+                margin-bottom: 1rem;
+            }
+            .status-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem;
+                overflow-y: auto;
+                /* Scrollbar styling for status modal */
+                scrollbar-width: thin;
+            }
+            .status-grid::-webkit-scrollbar {
+                width: 6px;
+            }
+            .status-grid::-webkit-scrollbar-thumb {
+                background-color: #ccc;
+                border-radius: 3px;
+            }
 
-			<!-- Category: Special Interests -->
-			<section class="category-section">
-				<h2>Special Interests</h2>
-				<div class="plate-grid">
-					<div class="plate-card">
-						<h3>Amateur Radio Operator (HAM)</h3>
-						<img
-							src="placeholder.jpg"
-							alt="Amateur Radio Operator (HAM) plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Breast Cancer</h3>
-						<img
-							src="pics/special_interests/breast_cancer.jpg"
-							alt="Breast Cancer plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Fly Washington Aviation</h3>
-						<img
-							src="pics/special_interests/fly_wa_aviation.jpg"
-							alt="Fly Washington Aviation plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Music Matters</h3>
-						<img
-							src="pics/special_interests/music_matters.jpg"
-							alt="Music Matters plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>San Juan Islands</h3>
-						<img
-							src="pics/special_interests/san_juan.jpg"
-							alt="San Juan Islands plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Share the Road</h3>
-						<img
-							src="pics/special_interests/share_the_road.jpg"
-							alt="Share the Road plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Ski and Ride</h3>
-						<img
-							src="pics/special_interests/ski_and_snowboard.jpg"
-							alt="Ski and Ride plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Square Dancer</h3>
-						<img
-							src="placeholder.jpg"
-							alt="Square Dancer plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>State Flower</h3>
-						<img
-							src="pics/special_interests/rhodie.jpg"
-							alt="State Flower plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Tennis</h3>
-						<img
-							src="pics/special_interests/tennis.jpg"
-							alt="Tennis plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Washington Apple Commission</h3>
-						<img
-							src="pics/special_interests/wac_apples_2.jpg"
-							alt="Washington Apple Commission plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Washington Wine Commission</h3>
-						<img
-							src="pics/special_interests/wine_country.jpg"
-							alt="Washington Wine Commission plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Wrestling</h3>
-						<img
-							src="pics/special_interests/wrestling.jpg"
-							alt="Wrestling plate"
-							class="plate-image"
-						/>
-					</div>
-				</div>
-			</section>
+            .status-column h3 {
+                color: var(--header-color);
+                border-left: 4px solid var(--accent-color);
+                padding-left: 10px;
+                margin-top: 0;
+                /* Sticky header for categories */
+                position: sticky;
+                top: 0;
+                background: white;
+                z-index: 10;
+                padding-bottom: 5px;
+                border-bottom: 1px solid #eee;
+            }
+            .status-column.missing h3 {
+                border-color: var(--danger-color);
+            }
+            .status-column.upgrade h3 {
+                border-color: var(--warning-color);
+            }
 
-			<!-- Category: Sports -->
-			<section class="category-section">
-				<h2>Sports</h2>
-				<div class="plate-grid">
-					<div class="plate-card">
-						<h3>Seattle Kraken</h3>
-						<img
-							src="pics/sports/kraken.jpg"
-							alt="Seattle Kraken plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Seattle Mariners</h3>
-						<img
-							src="placeholder.jpg"
-							alt="Seattle Mariners plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Seattle Seahawks</h3>
-						<img
-							src="pics/sports/seahawks_2.jpg"
-							alt="Seattle Seahawks plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Seattle Sounders FC</h3>
-						<img
-							src="pics/sports/sounders.jpg"
-							alt="Seattle Sounders FC plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Seattle Storm</h3>
-						<img
-							src="placeholder.jpg"
-							alt="Seattle Storm plate"
-							class="plate-image"
-						/>
-					</div>
-				</div>
-			</section>
+            /* Styles for the grouped lists */
+            .category-group {
+                margin-bottom: 0.5rem;
+            }
+            .category-header {
+                font-size: 0.9rem;
+                font-weight: bold;
+                color: #7f8c8d;
+                margin: 1.5rem 0 0.5rem 0;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            .category-header:first-child {
+                margin-top: 1rem; /* Less margin for the very first one */
+            }
 
-			<!-- Category: Tribal, WA -->
-			<section class="category-section">
-				<h2>Tribal, WA</h2>
-				<div class="plate-grid">
-					<div class="plate-card">
-						<h3>Chehalis Tribe</h3>
-						<img
-							src="placeholder.jpg"
-							alt="Chehalis Tribe plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Muckleshoot Tribe</h3>
-						<img
-							src="placeholder.jpg"
-							alt="Muckleshoot Tribe plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Puyallup Tribe</h3>
-						<img
-							src="placeholder.jpg"
-							alt="Puyallup Tribe plate"
-							class="plate-image"
-						/>
-					</div>
-				</div>
-			</section>
+            .plate-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+            .plate-list li {
+                padding: 6px 0;
+                border-bottom: 1px solid #f0f0f0;
+                font-size: 0.95rem;
+                color: #34495e;
+            }
+            .plate-list li:last-child {
+                border-bottom: none;
+            }
 
-			<!-- Category: Tribal, Self-Issued -->
-			<section class="category-section">
-				<h2>Tribal, Self-Issued</h2>
-				<div class="plate-grid">
-					<div class="plate-card">
-						<h3>Colville Tribe</h3>
-						<img
-							src="placeholder.jpg"
-							alt="Colville Tribe plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Lummi Tribe</h3>
-						<img
-							src="placeholder.jpg"
-							alt="Lummi Tribe plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Quinault Tribe</h3>
-						<img
-							src="placeholder.jpg"
-							alt="Quinault Tribe plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Spokane Tribe</h3>
-						<img
-							src="placeholder.jpg"
-							alt="Spokane Tribe plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Tulalip Tribes</h3>
-						<img
-							src="pics/tribal/tulalip_tribes.jpg"
-							alt="Tulalip Tribes plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Yakima Nation</h3>
-						<img
-							src="pics/tribal/yakima_nation.jpg"
-							alt="Yakima Nation plate"
-							class="plate-image"
-						/>
-					</div>
-				</div>
-			</section>
+            .empty-message {
+                color: #7f8c8d;
+                font-style: italic;
+                text-align: center;
+                margin-top: 2rem;
+                padding: 1rem;
+                background: #f8f9fa;
+                border-radius: 4px;
+            }
+            .status-badge {
+                font-size: 0.8rem;
+                padding: 2px 6px;
+                border-radius: 4px;
+                background: #eee;
+                margin-left: 8px;
+                vertical-align: middle;
+            }
 
-			<!-- Category: Miscellaneous -->
-			<section class="category-section">
-				<h2>Miscellaneous</h2>
-				<div class="plate-grid">
-					<div class="plate-card">
-						<h3>Collector Vehicle</h3>
-						<img
-							src="pics/misc/collector_vehicle.jpg"
-							alt="Collector Vehicle plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Dealer Plate</h3>
-						<img
-							src="pics/misc/dealer.jpg"
-							alt="Dealer plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Disabled Parking</h3>
-						<img
-							src="pics/misc/disabled.jpg"
-							alt="Disabled Parking plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Exempt</h3>
-						<img
-							src="pics/misc/xmt.jpg"
-							alt="Exempt plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Horseless Carriage</h3>
-						<img
-							src="pics/misc/horseless_carriage.jpg"
-							alt="Horseless Carriage plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Personalized</h3>
-						<img
-							src="pics/misc/personalized.jpg"
-							alt="Personalized plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Restored</h3>
-						<img
-							src="pics/misc/restored_82_delorean.jpg"
-							alt="Restored plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Rideshare</h3>
-						<img
-							src="pics/misc/ride_share.jpg"
-							alt="Rideshare plate"
-							class="plate-image"
-						/>
-					</div>
-					<div class="plate-card">
-						<h3>Transporter</h3>
-						<img
-							src="pics/misc/transporter.jpg"
-							alt="Transporter plate"
-							class="plate-image"
-						/>
-					</div>
-				</div>
-			</section>
-		</main>
+            @media (max-width: 600px) {
+                .status-grid {
+                    grid-template-columns: 1fr;
+                }
+                header h1 {
+                    font-size: 1.5rem;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>Washington Special License Plate Collection</h1>
+        </header>
 
-		<!-- Modal for displaying larger images -->
-		<div id="myModal" class="modal">
-			<span class="close">&times;</span>
-			<img class="modal-content" id="img01" />
-		</div>
+        <main>
+            <!-- Status Button -->
+            <div class="status-toolbar">
+                <button class="btn-status" id="check-status-btn">
+                    <span>📋</span> Needed Photo Checklist
+                </button>
+            </div>
 
-		<script>
-			// Get the modal
-			var modal = document.getElementById("myModal");
+            <!-- Introduction -->
+            <div
+                style="
+                    background-color: #fffbe6;
+                    border: 1px solid #ffe58f;
+                    padding: 1rem;
+                    margin-bottom: 2rem;
+                    border-radius: 8px;
+                "
+            >
+                <strong>Welcome to my dumb hobby site!</strong><br />
+                I have some sort of brain worm that causes me to think it's fun to take photographs of the different Washington license plate backgrounds. Sometimes my similarly-afflicted friends send me their own photos and I put those up here too.
+                When I get duplicate photos, I generally try to use the highest-quality one with the lowest assigned number or an otherwise interesting one. There are no real hard and fast rules, it's whatever I like the best.
+            </div>
 
-			// Get the image and insert it inside the modal
-			var images = document.getElementsByClassName("plate-image");
-			var modalImg = document.getElementById("img01");
-			var span = document.getElementsByClassName("close")[0];
+            <!-- Category: Colleges and universities -->
+            <section class="category-section">
+                <h2>Colleges and Universities</h2>
+                <div class="plate-grid">
+                    <div class="plate-card" data-needs-photo="true">
+                        <h3>Central Washington University</h3>
+                        <img
+                            src="pics/colleges/cwu.jpg"
+                            alt="Central Washington University plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Eastern Washington University</h3>
+                        <img
+                            src="pics/colleges/ewu.jpg"
+                            alt="Eastern Washington University plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Evergreen State College</h3>
+                        <img
+                            src="pics/colleges/esc_2.jpg"
+                            alt="Evergreen State College plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Gonzaga University</h3>
+                        <img
+                            src="pics/colleges/gonzaga.jpg"
+                            alt="Gonzaga University plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Seattle University</h3>
+                        <img
+                            src="placeholder.jpg"
+                            alt="Seattle University plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>University of Washington</h3>
+                        <img
+                            src="pics/colleges/uw.jpg"
+                            alt="University of Washington plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Washington State University</h3>
+                        <img
+                            src="pics/colleges/wsu.jpg"
+                            alt="Washington State University plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Western Washington University</h3>
+                        <img
+                            src="placeholder.jpg"
+                            alt="Western Washington University plate"
+                            class="plate-image"
+                        />
+                    </div>
+                </div>
+            </section>
 
-			for (let i = 0; i < images.length; i++) {
-				images[i].onclick = function () {
-					modal.style.display = "flex"; // Show the modal
-					modalImg.src = this.src; // Set the source of the modal image
-				};
-			}
+            <!-- Category: Military and veterans -->
+            <section class="category-section">
+                <h2>Military and Veterans</h2>
+                <div class="plate-grid">
+                    <div class="plate-card">
+                        <h3>988 - Prevent Veteran Suicide</h3>
+                        <img
+                            src="pics/mil/988.jpg"
+                            alt="988 - Prevent Veteran Suicide emblem"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Air Force</h3>
+                        <img
+                            src="pics/mil/air_force.jpg"
+                            alt="Air Force plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Army</h3>
+                        <img
+                            src="pics/mil/army.jpg"
+                            alt="Army plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Coast Guard</h3>
+                        <img
+                            src="pics/mil/coast_guard.jpg"
+                            alt="Coast Guard plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Disabled American Veteran</h3>
+                        <img
+                            src="placeholder.jpg"
+                            alt="Disabled American Veteran plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Former Prisoner of War</h3>
+                        <img
+                            src="placeholder.jpg"
+                            alt="Former Prisoner of War plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Gold Star</h3>
+                        <img
+                            src="pics/mil/gold_star.jpg"
+                            alt="Gold Star plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Marine Corps</h3>
+                        <img
+                            src="pics/mil/marine_corps.jpg"
+                            alt="Marine Corps plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Medal of Honor</h3>
+                        <img
+                            src="placeholder.jpg"
+                            alt="Medal of Honor plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Military Affiliate Radio System (MARS)</h3>
+                        <img
+                            src="placeholder.jpg"
+                            alt="Military Affiliate Radio System (MARS) plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>National Guard</h3>
+                        <img
+                            src="pics/mil/nat_guard_ribbon.jpg"
+                            alt="National Guard plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Navy</h3>
+                        <img
+                            src="placeholder.jpg"
+                            alt="Navy plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card" data-needs-photo="true">
+                        <h3>Purple Heart</h3>
+                        <img
+                            src="pics/mil/purple_heart.jpg"
+                            alt="Purple Heart plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card" data-needs-photo="true">
+                        <h3>Veteran/Military Service Award emblems</h3>
+                        <img
+                            src="pics/mil/nat_guard_ribbon.jpg"
+                            alt="Veteran/Military Service Award emblems"
+                            class="plate-image"
+                        />
+                    </div>
+                </div>
+            </section>
 
-			// When the user clicks on <span> (x), close the modal
-			span.onclick = function () {
-				modal.style.display = "none";
-			};
+            <!-- Category: Organizations -->
+            <section class="category-section">
+                <h2>Organizations</h2>
+                <div class="plate-grid">
+                    <div class="plate-card">
+                        <h3>4-H</h3>
+                        <img
+                            src="placeholder.jpg"
+                            alt="4-H plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>FFA Foundation</h3>
+                        <img
+                            src="placeholder.jpg"
+                            alt="FFA Foundation plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card" data-needs-photo="true">
+                        <h3>Fred Hutchinson Cancer Center</h3>
+                        <img
+                            src="pics/orgs/fred_hutch.jpg"
+                            alt="Fred Hutchinson Cancer Center plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card" data-needs-photo="true">
+                        <h3>Helping Kids Speak (Freemason)</h3>
+                        <img
+                            src="pics/orgs/freemason.jpg"
+                            alt="Helping Kids Speak plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>J.P. Patches Pal</h3>
+                        <img
+                            src="pics/orgs/jp_patches.jpg"
+                            alt="J.P. Patches Pal plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Keep Kids Safe</h3>
+                        <img
+                            src="pics/orgs/kids_safe.jpg"
+                            alt="Keep Kids Safe plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Law Enforcement Memorial</h3>
+                        <img
+                            src="pics/orgs/lem.jpg"
+                            alt="Law Enforcement Memorial plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Lighthouse</h3>
+                        <img
+                            src="placeholder.jpg"
+                            alt="Lighthouse plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Professional Firefighter</h3>
+                        <img
+                            src="pics/orgs/pro_ff.jpg"
+                            alt="Professional Firefighter plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Volunteer Firefighter</h3>
+                        <img
+                            src="placeholder.jpg"
+                            alt="Volunteer Firefighter plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>We Love Our Pets</h3>
+                        <img
+                            src="pics/orgs/pets.jpg"
+                            alt="We Love Our Pets plate"
+                            class="plate-image"
+                        />
+                    </div>
+                </div>
+            </section>
 
-			// When the user clicks anywhere outside of the modal, close it
-			window.onclick = function (event) {
-				if (event.target == modal) {
-					modal.style.display = "none";
-				}
-			};
-		</script>
-	</body>
+            <!-- Category: Parks and environment -->
+            <section class="category-section">
+                <h2>Parks and Environment</h2>
+                <div class="plate-grid">
+                    <div class="plate-card">
+                        <h3>Endangered Wildlife: Orca</h3>
+                        <img
+                            src="pics/parks/endangered_wildlife_orca.jpg"
+                            alt="Endangered Wildlife: Orca plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Washington National Parks</h3>
+                        <img
+                            src="pics/parks/natl_parks.jpg"
+                            alt="Washington National Parks plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card" data-needs-photo="true">
+                        <h3>Washington State Parks</h3>
+                        <img
+                            src="pics/parks/state_parks.jpg"
+                            alt="Washington State Parks plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Washington's Wildlife: Bear</h3>
+                        <img
+                            src="pics/parks/wa_wildlife_bear.jpg"
+                            alt="Washington's Wildlife: Bear plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Washington's Wildlife: Deer</h3>
+                        <img
+                            src="pics/parks/wa_wildlife_deer.jpg"
+                            alt="Washington's Wildlife: Deer plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Washington's Wildlife: Elk</h3>
+                        <img
+                            src="pics/parks/wa_wildlife_elk.jpg"
+                            alt="Washington's Wildlife: Elk plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Washington's Wildlife: Steelhead</h3>
+                        <img
+                            src="pics/parks/wa_wildlife_steelhead.jpg"
+                            alt="Washington's Wildlife: Steelhead plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Wild on Washington: Eagle</h3>
+                        <img
+                            src="pics/parks/wild_wa_eagle.jpg"
+                            alt="Wild on Washington: Eagle plate"
+                            class="plate-image"
+                        />
+                    </div>
+                </div>
+            </section>
+
+            <!-- Category: Special Interests -->
+            <section class="category-section">
+                <h2>Special Interests</h2>
+                <div class="plate-grid">
+                    <div class="plate-card">
+                        <h3>Amateur Radio Operator (HAM)</h3>
+                        <img
+                            src="placeholder.jpg"
+                            alt="Amateur Radio Operator (HAM) plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Breast Cancer</h3>
+                        <img
+                            src="pics/special_interests/breast_cancer.jpg"
+                            alt="Breast Cancer plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Fly Washington Aviation</h3>
+                        <img
+                            src="pics/special_interests/fly_wa_aviation.jpg"
+                            alt="Fly Washington Aviation plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card" data-needs-photo="true">
+                        <h3>Music Matters</h3>
+                        <img
+                            src="pics/special_interests/music_matters.jpg"
+                            alt="Music Matters plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>San Juan Islands</h3>
+                        <img
+                            src="pics/special_interests/san_juan.jpg"
+                            alt="San Juan Islands plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Share the Road</h3>
+                        <img
+                            src="pics/special_interests/share_the_road.jpg"
+                            alt="Share the Road plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Ski and Ride</h3>
+                        <img
+                            src="pics/special_interests/ski_and_snowboard.jpg"
+                            alt="Ski and Ride plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Square Dancer</h3>
+                        <img
+                            src="placeholder.jpg"
+                            alt="Square Dancer plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>State Flower</h3>
+                        <img
+                            src="pics/special_interests/rhodie.jpg"
+                            alt="State Flower plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Tennis</h3>
+                        <img
+                            src="pics/special_interests/tennis.jpg"
+                            alt="Tennis plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Washington Apple Commission</h3>
+                        <img
+                            src="pics/special_interests/wac_apples_2.jpg"
+                            alt="Washington Apple Commission plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Washington Wine Commission</h3>
+                        <img
+                            src="pics/special_interests/wine_country.jpg"
+                            alt="Washington Wine Commission plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Wrestling</h3>
+                        <img
+                            src="pics/special_interests/wrestling.jpg"
+                            alt="Wrestling plate"
+                            class="plate-image"
+                        />
+                    </div>
+                </div>
+            </section>
+
+            <!-- Category: Sports -->
+            <section class="category-section">
+                <h2>Sports</h2>
+                <div class="plate-grid">
+                    <div class="plate-card">
+                        <h3>Seattle Kraken</h3>
+                        <img
+                            src="pics/sports/kraken.jpg"
+                            alt="Seattle Kraken plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Seattle Mariners</h3>
+                        <img
+                            src="placeholder.jpg"
+                            alt="Seattle Mariners plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Seattle Seahawks</h3>
+                        <img
+                            src="pics/sports/seahawks_2.jpg"
+                            alt="Seattle Seahawks plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Seattle Sounders FC</h3>
+                        <img
+                            src="pics/sports/sounders.jpg"
+                            alt="Seattle Sounders FC plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Seattle Storm</h3>
+                        <img
+                            src="placeholder.jpg"
+                            alt="Seattle Storm plate"
+                            class="plate-image"
+                        />
+                    </div>
+                </div>
+            </section>
+
+            <!-- Category: Tribal, WA -->
+            <section class="category-section">
+                <h2>Tribal, WA</h2>
+                <div class="plate-grid">
+                    <div class="plate-card">
+                        <h3>Chehalis Tribe</h3>
+                        <img
+                            src="placeholder.jpg"
+                            alt="Chehalis Tribe plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Muckleshoot Tribe</h3>
+                        <img
+                            src="placeholder.jpg"
+                            alt="Muckleshoot Tribe plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Puyallup Tribe</h3>
+                        <img
+                            src="placeholder.jpg"
+                            alt="Puyallup Tribe plate"
+                            class="plate-image"
+                        />
+                    </div>
+                </div>
+            </section>
+
+            <!-- Category: Tribal, Self-Issued -->
+            <section class="category-section">
+                <h2>Tribal, Self-Issued</h2>
+                <div class="plate-grid">
+                    <div class="plate-card">
+                        <h3>Colville Tribe</h3>
+                        <img
+                            src="placeholder.jpg"
+                            alt="Colville Tribe plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Lummi Tribe</h3>
+                        <img
+                            src="placeholder.jpg"
+                            alt="Lummi Tribe plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Quinault Tribe</h3>
+                        <img
+                            src="placeholder.jpg"
+                            alt="Quinault Tribe plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Spokane Tribe</h3>
+                        <img
+                            src="placeholder.jpg"
+                            alt="Spokane Tribe plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Tulalip Tribes</h3>
+                        <img
+                            src="pics/tribal/tulalip_tribes.jpg"
+                            alt="Tulalip Tribes plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card" data-needs-photo="true">
+                        <h3>Yakima Nation</h3>
+                        <img
+                            src="pics/tribal/yakima_nation.jpg"
+                            alt="Yakima Nation plate"
+                            class="plate-image"
+                        />
+                    </div>
+                </div>
+            </section>
+
+            <!-- Category: Miscellaneous -->
+            <section class="category-section">
+                <h2>Miscellaneous</h2>
+                <div class="plate-grid">
+                    <div class="plate-card">
+                        <h3>Collector Vehicle</h3>
+                        <img
+                            src="pics/misc/collector_vehicle.jpg"
+                            alt="Collector Vehicle plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Dealer Plate</h3>
+                        <img
+                            src="pics/misc/dealer.jpg"
+                            alt="Dealer plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Disabled Parking</h3>
+                        <img
+                            src="pics/misc/disabled.jpg"
+                            alt="Disabled Parking plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Exempt</h3>
+                        <img
+                            src="pics/misc/xmt.jpg"
+                            alt="Exempt plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Horseless Carriage</h3>
+                        <img
+                            src="pics/misc/horseless_carriage.jpg"
+                            alt="Horseless Carriage plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Personalized</h3>
+                        <img
+                            src="pics/misc/personalized.jpg"
+                            alt="Personalized plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Restored</h3>
+                        <img
+                            src="pics/misc/restored_82_delorean.jpg"
+                            alt="Restored plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Rideshare</h3>
+                        <img
+                            src="pics/misc/ride_share.jpg"
+                            alt="Rideshare plate"
+                            class="plate-image"
+                        />
+                    </div>
+                    <div class="plate-card">
+                        <h3>Transporter</h3>
+                        <img
+                            src="pics/misc/transporter.jpg"
+                            alt="Transporter plate"
+                            class="plate-image"
+                        />
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Modal for displaying larger images -->
+        <div id="imageModal" class="modal">
+            <span class="close" id="imageClose">×</span>
+            <img class="modal-content" id="enlargedImg" />
+        </div>
+
+        <!-- Status Check Modal -->
+        <div id="statusModal" class="modal" style="display: none">
+            <div class="status-modal-content">
+                <div class="status-modal-header">
+                    <h2>Plate Checklist</h2>
+                    <span class="close" id="statusClose">×</span>
+                </div>
+                <div class="status-grid">
+                    <div class="status-column missing">
+                        <h3>Left to Find <span id="missingCount" class="status-badge">0</span></h3>
+                        <!-- Changed from <ul> to <div> to allow nested content -->
+                        <div id="missingList" class="plate-list-container"></div>
+                    </div>
+                    <div class="status-column upgrade">
+                        <h3>Needs Better Photo <span id="upgradeCount" class="status-badge">0</span></h3>
+                        <!-- Changed from <ul> to <div> to allow nested content -->
+                        <div id="upgradeList" class="plate-list-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // --- Image Modal Logic ---
+            const imageModal = document.getElementById("imageModal");
+            const enlargedImg = document.getElementById("enlargedImg");
+            const imageCloseBtn = document.getElementById("imageClose");
+
+            const images = document.getElementsByClassName("plate-image");
+            for (let i = 0; i < images.length; i++) {
+                images[i].onclick = function () {
+                    if (this.src.includes('placeholder.jpg')) return;
+                    imageModal.style.display = "flex";
+                    enlargedImg.src = this.src;
+                };
+            }
+
+            imageCloseBtn.onclick = function () {
+                imageModal.style.display = "none";
+            };
+
+            // --- Status Modal Logic ---
+            const statusModal = document.getElementById("statusModal");
+            const statusBtn = document.getElementById("check-status-btn");
+            const statusCloseBtn = document.getElementById("statusClose");
+
+            const missingListEl = document.getElementById("missingList");
+            const upgradeListEl = document.getElementById("upgradeList");
+            const missingCountEl = document.getElementById("missingCount");
+            const upgradeCountEl = document.getElementById("upgradeCount");
+
+            statusBtn.onclick = function() {
+                populateLists();
+                statusModal.style.display = "flex";
+            }
+
+            statusCloseBtn.onclick = function() {
+                statusModal.style.display = "none";
+            }
+
+            // Close modals on outside click
+            window.onclick = function(event) {
+                if (event.target == imageModal) {
+                    imageModal.style.display = "none";
+                }
+                if (event.target == statusModal) {
+                    statusModal.style.display = "none";
+                }
+            }
+
+            function populateLists() {
+                // Clear existing content
+                missingListEl.innerHTML = "";
+                upgradeListEl.innerHTML = "";
+
+                let totalMissing = 0;
+                let totalUpgrade = 0;
+
+                // Get all category sections
+                const sections = document.querySelectorAll('.category-section');
+
+                sections.forEach(section => {
+                    // Get the category title
+                    const titleEl = section.querySelector('h2');
+                    const categoryName = titleEl ? titleEl.innerText : "Unknown Category";
+
+                    // Variables to build HTML for this category
+                    let missingItems = [];
+                    let upgradeItems = [];
+
+                    // Check cards in this section
+                    const cards = section.querySelectorAll('.plate-card');
+                    cards.forEach(card => {
+                        const plateTitleEl = card.querySelector('h3');
+                        const imgEl = card.querySelector('img');
+
+                        if(!plateTitleEl || !imgEl) return;
+
+                        const plateTitle = plateTitleEl.innerText;
+
+                        // Check 1: Is it a placeholder?
+                        if (imgEl.src.includes('placeholder.jpg')) {
+                            missingItems.push(plateTitle);
+                            totalMissing++;
+                        }
+
+                        // Check 2: Does it need better photo?
+                        if (card.dataset.needsPhoto === "true") {
+                            upgradeItems.push(plateTitle);
+                            totalUpgrade++;
+                        }
+                    });
+
+                    // If this category has missing items, add the header and items to the DOM
+                    if (missingItems.length > 0) {
+                        // Create Header
+                        const header = document.createElement('h4');
+                        header.className = 'category-header';
+                        header.textContent = categoryName;
+                        missingListEl.appendChild(header);
+
+                        // Create List
+                        const ul = document.createElement('ul');
+                        ul.className = 'plate-list';
+
+                        missingItems.forEach(item => {
+                            const li = document.createElement('li');
+                            li.textContent = item;
+                            ul.appendChild(li);
+                        });
+
+                        missingListEl.appendChild(ul);
+                    }
+
+                    // If this category has upgrades needed, add the header and items to the DOM
+                    if (upgradeItems.length > 0) {
+                        // Create Header
+                        const header = document.createElement('h4');
+                        header.className = 'category-header';
+                        header.textContent = categoryName;
+                        upgradeListEl.appendChild(header);
+
+                        // Create List
+                        const ul = document.createElement('ul');
+                        ul.className = 'plate-list';
+
+                        upgradeItems.forEach(item => {
+                            const li = document.createElement('li');
+                            li.textContent = item;
+                            ul.appendChild(li);
+                        });
+
+                        upgradeListEl.appendChild(ul);
+                    }
+                });
+
+                // Update counts
+                missingCountEl.textContent = totalMissing;
+                upgradeCountEl.textContent = totalUpgrade;
+
+                // Handle empty states
+                if (totalMissing === 0) {
+                    missingListEl.innerHTML = '<div class="empty-message">Collection is complete! 🎉</div>';
+                }
+                if (totalUpgrade === 0) {
+                    upgradeListEl.innerHTML = '<div class="empty-message">No upgrades needed. 👍</div>';
+                }
+            }
+        </script>
+    </body>
 </html>
