@@ -59,6 +59,12 @@ typography:
     fontWeight: 700
     lineHeight: 1
     letterSpacing: 0.18em
+  button-md:
+    fontFamily: Big Shoulders Display
+    fontSize: 1rem
+    fontWeight: 800
+    lineHeight: 1
+    letterSpacing: 0.14em
   label-sm:
     fontFamily: Big Shoulders Display
     fontSize: 0.78rem
@@ -84,9 +90,9 @@ components:
   button-primary:
     backgroundColor: "{colors.tab-blue}"
     textColor: "{colors.neutral}"
-    typography: "{typography.label-md}"
+    typography: "{typography.button-md}"
     rounded: "{rounded.sm}"
-    padding: 0.65rem 1.4rem 0.55rem
+    padding: 0.8rem 1.7rem 0.7rem
   button-primary-hover:
     backgroundColor: "#163d70"
 
@@ -135,8 +141,8 @@ The **registration-sticker palette** — `tab-black`, `tab-green`, `tab-red`, `t
 
 Four typefaces, each with a clear role:
 
-- **Recursive** — body copy. A variable sans that also handles tabular figures in status badges.
-- **Big Shoulders Display** — section headlines, button labels, and registration-sticker text. Always uppercase, 900 weight for headlines and 700 for labels, with generous letter-spacing (0.06–0.22em depending on size). It does the "stamped, official-looking" work.
+- **Recursive** — body copy, tabular figures in status badges, and small uppercase eyebrow labels grouping list content inside modals (where Big Shoulders' condensed forms break down at small sizes).
+- **Big Shoulders Display** — section headlines, the primary action button, and registration-sticker text. Always uppercase. Weight scales with role: **900** for page section headlines and modal column titles, **800** for the primary button label, **700** for micro-labels nested inside composite stickers and the photo-pending placeholder card. Letter-spacing 0.06–0.22em depending on size — tighter as weight and size go up. It does the "stamped, official-looking" work.
 - **Spectral** — plate-card titles. A serif that gives each entry a small museum-card feel.
 - **Bevan** — cherry-colored flourishes: the subtitle, the welcome line in the intro card, and the footer line. A heavy slab reserved for moments of personality.
 
@@ -173,7 +179,7 @@ Don't mix the sticker scale and the card scale within a single element.
 
 ### Buttons
 
-The primary button is modeled on a registration sticker: deep blue ground (`tab-blue`), white uppercase Big Shoulders Display label with 0.18em tracking, a small cherry indicator dot, 2px corners, and a layered inset-plus-cast shadow. Hover lifts the button 2px and deepens both shadow and saturation.
+The primary button is modeled on a registration sticker: deep blue ground (`tab-blue`), white uppercase Big Shoulders Display 800 label with 0.14em tracking, a small cherry indicator dot, 2px corners, and a layered inset-plus-cast shadow. It's sized to anchor the page as a primary action — generous padding so the stamped label has room to breathe. Hover lifts the button 2px and deepens both shadow and saturation.
 
 ### Cards
 
