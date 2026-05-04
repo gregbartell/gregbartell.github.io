@@ -7,758 +7,10 @@
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-            href="https://fonts.googleapis.com/css2?family=Bevan&family=Big+Shoulders+Display:wght@500;700;800;900&family=Recursive:wght@400;500;600;700&family=Spectral:wght@500;600;700&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Bevan&family=Big+Shoulders+Display:wght@700;800;900&family=Recursive:wght@400;700&family=Spectral:wght@700&display=swap"
             rel="stylesheet"
         />
-        <style>
-            :root {
-                --ink: #14213d;
-                --ink-2: #1f2c52;
-                --ink-soft: rgba(20, 33, 61, 0.1);
-                --ink-line: rgba(20, 33, 61, 0.18);
-                --cherry: #c8252c;
-                --cherry-deep: #8e161c;
-                /* sky palette — pulled from the Centennial plate gradient */
-                --paper-top: #fbfcfd;     /* near-white top of plate */
-                --sky-haze: #e7f0f6;       /* page atmosphere */
-                --sky-pale: #d2e2ec;       /* mid-plate */
-                --sky: #b9d6e8;            /* deeper sky / image surround */
-                --sky-deep: #a8c6d6;       /* base of plate gradient */
-                --silhouette-back: #c5dbe7;
-                --silhouette-front: #a4c1d4;
-                /* registration-sticker tab colors */
-                --tab-black: #0e1726;
-                --tab-green: #1d6d3a;
-                --tab-red: #b21e23;
-                --tab-blue: #1c4d8c;
-                /* legacy aliases retained so existing rules keep working */
-                --cream: var(--sky-haze);
-                --cream-deep: var(--sky-pale);
-                --paper: var(--paper-top);
-                --paper-line: #d4dde4;
-                --warning: #c47c0e;
-            }
-
-            * {
-                box-sizing: border-box;
-            }
-
-            html {
-                scroll-behavior: smooth;
-            }
-
-            body {
-                margin: 0;
-                font-family: "Recursive", -apple-system, BlinkMacSystemFont,
-                    sans-serif;
-                font-weight: 400;
-                line-height: 1.55;
-                color: var(--ink);
-                background: linear-gradient(
-                    180deg,
-                    var(--sky-haze) 0%,
-                    var(--sky-pale) 100%
-                );
-                background-attachment: fixed;
-                min-height: 100vh;
-                /* faint paper grain */
-                position: relative;
-            }
-            body::before {
-                content: "";
-                position: fixed;
-                inset: 0;
-                pointer-events: none;
-                z-index: 0;
-                background-image: radial-gradient(
-                    rgba(20, 33, 61, 0.05) 1px,
-                    transparent 1px
-                );
-                background-size: 3px 3px;
-                opacity: 0.5;
-            }
-            body > * {
-                position: relative;
-                z-index: 1;
-            }
-
-            /* ========== Masthead ========== */
-            .masthead {
-                position: relative;
-                background: linear-gradient(
-                    180deg,
-                    var(--paper-top) 0%,
-                    var(--paper-top) 28%,
-                    var(--sky-haze) 58%,
-                    var(--sky-pale) 88%,
-                    var(--sky) 100%
-                );
-                color: var(--ink);
-                padding: 4.5rem 2rem 4rem;
-                overflow: hidden;
-                border-bottom: 1px solid var(--paper-line);
-                isolation: isolate;
-            }
-            .masthead::after {
-                /* faint paper grain to match body */
-                content: "";
-                position: absolute;
-                inset: 0;
-                background-image: radial-gradient(
-                    rgba(20, 33, 61, 0.04) 1px,
-                    transparent 1px
-                );
-                background-size: 3px 3px;
-                opacity: 0.6;
-                pointer-events: none;
-                z-index: 1;
-            }
-            .masthead-silhouette {
-                position: absolute;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                width: 100%;
-                height: 62%;
-                pointer-events: none;
-                z-index: 0;
-                display: block;
-            }
-            .masthead-silhouette .silhouette-back {
-                fill: var(--silhouette-back);
-                opacity: 0.7;
-            }
-            .masthead-silhouette .silhouette-front {
-                fill: var(--silhouette-front);
-                opacity: 0.75;
-            }
-            .masthead-inner {
-                position: relative;
-                z-index: 2;
-                max-width: 1200px;
-                margin: 0 auto;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-                gap: 0.25rem;
-            }
-            .wordmark {
-                margin: 0;
-                line-height: 1;
-                width: min(100%, 720px);
-            }
-            .wordmark img {
-                width: 100%;
-                height: auto;
-                display: block;
-                /* subtle lift on the cream ground */
-                filter: drop-shadow(0 1px 0 rgba(142, 22, 28, 0.5))
-                    drop-shadow(0 6px 10px rgba(200, 37, 44, 0.18));
-            }
-            .wordmark span.sr-only {
-                position: absolute;
-                width: 1px;
-                height: 1px;
-                padding: 0;
-                margin: -1px;
-                overflow: hidden;
-                clip: rect(0, 0, 0, 0);
-                white-space: nowrap;
-                border: 0;
-            }
-            .subtitle {
-                font-family: "Bevan", Georgia, serif;
-                font-weight: 400;
-                font-size: clamp(1.25rem, 2.8vw, 1.95rem);
-                color: var(--cherry);
-                margin: 1.5rem 0 0;
-                line-height: 1;
-                letter-spacing: 0.005em;
-            }
-
-            /* ========== Main ========== */
-            main {
-                max-width: 1200px;
-                margin: 0 auto;
-                padding: 2.5rem 1.5rem 4rem;
-            }
-
-            /* Intro card */
-            .intro {
-                background: var(--paper);
-                border: 1px solid var(--paper-line);
-                border-left: 4px solid var(--cherry);
-                padding: 1.4rem 1.6rem;
-                margin: 0 0 2.5rem;
-                box-shadow:
-                    0 1px 0 rgba(20, 33, 61, 0.08),
-                    0 14px 28px -18px rgba(20, 33, 61, 0.35);
-                font-size: 1rem;
-                color: var(--ink);
-            }
-            .intro__welcome {
-                font-family: "Bevan", Georgia, serif;
-                font-weight: 400;
-                font-size: 1.75rem;
-                line-height: 1.05;
-                letter-spacing: 0.005em;
-                color: var(--cherry);
-                display: block;
-                margin-bottom: 0.85rem;
-            }
-
-            /* ========== Status button ========== */
-            .status-toolbar {
-                display: flex;
-                justify-content: center;
-                margin: 0 0 3rem;
-            }
-            /* year-tab styled — echoes the MAY/K-88 registration stickers on the plate */
-            .btn-status {
-                background: var(--tab-blue);
-                color: #fff;
-                border: none;
-                padding: 0.8rem 1.7rem 0.7rem;
-                font-family: "Big Shoulders Display", sans-serif;
-                font-weight: 800;
-                font-size: 1rem;
-                letter-spacing: 0.14em;
-                text-transform: uppercase;
-                cursor: pointer;
-                border-radius: 2px;
-                box-shadow:
-                    inset 0 1px 0 rgba(255, 255, 255, 0.22),
-                    inset 0 -1px 0 rgba(0, 0, 0, 0.25),
-                    0 1px 0 rgba(20, 33, 61, 0.4),
-                    0 6px 14px rgba(28, 77, 140, 0.3);
-                transition: transform 140ms ease, box-shadow 140ms ease,
-                    background 140ms ease;
-                display: inline-flex;
-                align-items: center;
-                gap: 0.7rem;
-            }
-            .btn-status::before {
-                content: "";
-                width: 8px;
-                height: 8px;
-                background: var(--cherry);
-                border-radius: 50%;
-                box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
-                flex-shrink: 0;
-            }
-            .btn-status:hover {
-                transform: translateY(-2px);
-                background: #163d70;
-                box-shadow:
-                    inset 0 1px 0 rgba(255, 255, 255, 0.28),
-                    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
-                    0 3px 0 rgba(20, 33, 61, 0.45),
-                    0 12px 22px rgba(28, 77, 140, 0.4);
-            }
-            .btn-status:active {
-                transform: translateY(0);
-                box-shadow:
-                    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-                    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
-                    0 1px 0 rgba(20, 33, 61, 0.4),
-                    0 3px 8px rgba(28, 77, 140, 0.3);
-            }
-
-            /* ========== Category sections ========== */
-            .category-section {
-                margin-bottom: 3.5rem;
-            }
-            .category-section h2 {
-                font-family: "Big Shoulders Display", sans-serif;
-                font-weight: 900;
-                font-size: clamp(1.7rem, 3vw, 2.2rem);
-                color: var(--ink);
-                text-transform: uppercase;
-                letter-spacing: 0.07em;
-                margin: 0 0 1.5rem;
-                padding: 1.1rem 0 0.6rem;
-                line-height: 1;
-                display: flex;
-                align-items: center;
-                gap: 0.85rem;
-                flex-wrap: wrap;
-                position: relative;
-            }
-            /* thick-thin double rule above each section header */
-            .category-section h2::before {
-                content: "";
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                height: 7px;
-                background: linear-gradient(
-                    to bottom,
-                    var(--cherry) 0,
-                    var(--cherry) 3px,
-                    transparent 3px,
-                    transparent 6px,
-                    var(--cherry) 6px,
-                    var(--cherry) 7px
-                );
-                pointer-events: none;
-            }
-
-            /* ========== Category sticker (MAY-tag callback) ========== */
-            .cat-sticker {
-                --tab-color: var(--tab-black);
-                display: inline-flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                background: var(--tab-color);
-                color: #fff;
-                padding: 5px 10px 4px;
-                border-radius: 2px;
-                line-height: 1;
-                font-family: "Big Shoulders Display", sans-serif;
-                letter-spacing: 0;
-                box-shadow:
-                    inset 0 1px 0 rgba(255, 255, 255, 0.22),
-                    inset 0 -1px 0 rgba(0, 0, 0, 0.25),
-                    0 1px 0 rgba(20, 33, 61, 0.25);
-                flex-shrink: 0;
-            }
-            .cat-sticker--black { --tab-color: var(--tab-black); }
-            .cat-sticker--green { --tab-color: var(--tab-green); }
-            .cat-sticker--red   { --tab-color: var(--tab-red); }
-            .cat-sticker--blue  { --tab-color: var(--tab-blue); }
-            .cat-sticker__mark {
-                font-size: 0.55em;
-                font-weight: 900;
-                letter-spacing: 0.04em;
-            }
-            .cat-sticker__foot {
-                font-size: 0.3em;
-                font-weight: 700;
-                letter-spacing: 0.2em;
-                margin-top: 3px;
-                line-height: 1;
-            }
-
-            /* ========== Plate grid ========== */
-            .plate-grid {
-                display: grid;
-                grid-template-columns: repeat(
-                    auto-fill,
-                    minmax(280px, 1fr)
-                );
-                gap: 1.5rem;
-            }
-            .plate-card {
-                background: var(--paper);
-                /* navy rim — the stamped-aluminum plate edge */
-                border: 1px solid var(--ink);
-                border-radius: 8px;
-                overflow: hidden;
-                position: relative;
-                transition:
-                    transform 110ms cubic-bezier(0.2, 0.9, 0.3, 1),
-                    box-shadow 110ms ease-out;
-                box-shadow:
-                    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-                    inset 0 -1px 0 rgba(20, 33, 61, 0.15),
-                    0 1px 0 rgba(20, 33, 61, 0.08),
-                    0 12px 22px -16px rgba(20, 33, 61, 0.45);
-            }
-            .plate-card:hover {
-                transform: translateY(-4px);
-                box-shadow:
-                    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-                    inset 0 -1px 0 rgba(20, 33, 61, 0.15),
-                    0 3px 0 rgba(20, 33, 61, 0.1),
-                    0 22px 34px -18px rgba(20, 33, 61, 0.5);
-            }
-
-            /* ===== Stamped plate cards =====
-               Opt-in via <body class="stamped-cards">.
-               To revert: remove the class from the body element (and, if you
-               also want to drop the styles, delete this block).
-            */
-            body.stamped-cards .plate-card {
-                border-width: 2px;
-                border-radius: 6px;
-                box-shadow:
-                    /* embossed top rim — light catches the upper edge */
-                    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-                    /* pressed bottom fold */
-                    inset 0 -1px 0 rgba(20, 33, 61, 0.35),
-                    /* hard ground shadow — die-cut tag on paper */
-                    0 2px 0 rgba(20, 33, 61, 0.22),
-                    0 4px 0 rgba(20, 33, 61, 0.08),
-                    /* soft cast shadow */
-                    0 18px 30px -14px rgba(20, 33, 61, 0.55);
-            }
-            body.stamped-cards .plate-card:hover {
-                transform: translateY(-4px);
-                box-shadow:
-                    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-                    inset 0 -1px 0 rgba(20, 33, 61, 0.35),
-                    0 4px 0 rgba(20, 33, 61, 0.26),
-                    0 8px 0 rgba(20, 33, 61, 0.1),
-                    0 28px 42px -16px rgba(20, 33, 61, 0.6);
-            }
-            .plate-card img {
-                width: 100%;
-                height: auto;
-                display: block;
-                background: var(--sky-pale);
-                cursor: pointer;
-                aspect-ratio: 2 / 1;
-                object-fit: cover;
-            }
-            .plate-card h3 {
-                font-family: "Spectral", Georgia, serif;
-                font-weight: 700;
-                font-size: 1.15rem;
-                margin: 0;
-                padding: 0.85rem 1rem;
-                color: var(--ink);
-                background: var(--paper);
-                border-top: 1px solid var(--paper-line);
-                position: relative;
-                z-index: 2;
-                letter-spacing: 0;
-            }
-
-            /* ===== Empty-plate placeholder =====
-               Swapped in by the script below for any <img src="placeholder.jpg">.
-               A small cataloging slip with the plate's index entry and a
-               "Pending" rubber stamp.
-            */
-            .plate-empty {
-                width: 100%;
-                aspect-ratio: 2 / 1;
-                position: relative;
-                overflow: hidden;
-                border-bottom: 1px solid var(--paper-line);
-                background: var(--paper);
-                background-image: radial-gradient(
-                    rgba(20, 33, 61, 0.05) 1px,
-                    transparent 1px
-                );
-                background-size: 3px 3px;
-                color: var(--ink);
-            }
-            .plate-empty__strip {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                background: var(--tab-blue);
-                color: #fff;
-                font-family: "Big Shoulders Display", sans-serif;
-                font-weight: 900;
-                font-size: 0.58rem;
-                letter-spacing: 0.22em;
-                text-transform: uppercase;
-                padding: 5px 12px 4px;
-                display: flex;
-                justify-content: space-between;
-                z-index: 2;
-                box-shadow:
-                    inset 0 1px 0 rgba(255, 255, 255, 0.22),
-                    inset 0 -1px 0 rgba(0, 0, 0, 0.25);
-            }
-            .plate-empty__body {
-                position: relative;
-                z-index: 1;
-                padding: 28px 18px 14px;
-                width: 100%;
-                height: 100%;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                gap: 6px;
-                font-family: "Recursive", sans-serif;
-                font-variation-settings: "MONO" 1;
-                font-size: 0.74rem;
-                color: var(--ink);
-            }
-            .plate-empty__row {
-                display: grid;
-                grid-template-columns: 72px 1fr;
-                gap: 10px;
-                align-items: baseline;
-            }
-            .plate-empty__row span:first-child {
-                font-family: "Big Shoulders Display", sans-serif;
-                font-variation-settings: normal;
-                font-weight: 700;
-                text-transform: uppercase;
-                letter-spacing: 0.18em;
-                font-size: 0.6rem;
-                color: var(--ink);
-                opacity: 0.65;
-            }
-            .plate-empty__row span:last-child {
-                border-bottom: 1px dashed rgba(20, 33, 61, 0.4);
-                min-height: 14px;
-                padding-bottom: 1px;
-                color: var(--ink);
-                letter-spacing: 0.04em;
-            }
-            .plate-empty__rubber {
-                position: absolute;
-                bottom: 10px;
-                right: 10px;
-                transform: rotate(-7deg);
-                border: 2px solid var(--cherry);
-                color: var(--cherry);
-                background: rgba(251, 252, 253, 0.35);
-                font-family: "Big Shoulders Display", sans-serif;
-                font-weight: 900;
-                font-size: 0.78rem;
-                letter-spacing: 0.22em;
-                padding: 4px 9px 3px;
-                text-transform: uppercase;
-                line-height: 1;
-                z-index: 3;
-                box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
-                text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
-                opacity: 0.92;
-            }
-
-            /* low-quality registration-sticker badge */
-            .plate-card[data-needs-photo="true"]::after {
-                content: "LOW QUALITY";
-                position: absolute;
-                top: 10px;
-                right: 10px;
-                background: var(--tab-red);
-                color: #fff;
-                font-family: "Big Shoulders Display", sans-serif;
-                font-weight: 900;
-                font-size: 0.62rem;
-                letter-spacing: 0.16em;
-                line-height: 1;
-                padding: 4px 8px 3px;
-                border-radius: 2px;
-                box-shadow:
-                    inset 0 1px 0 rgba(255, 255, 255, 0.22),
-                    inset 0 -1px 0 rgba(0, 0, 0, 0.25),
-                    0 1px 0 rgba(20, 33, 61, 0.25);
-                z-index: 5;
-                pointer-events: none;
-            }
-
-            /* ========== Image modal ========== */
-            .modal {
-                display: none;
-                position: fixed;
-                z-index: 1000;
-                inset: 0;
-                background: rgba(20, 33, 61, 0.88);
-                justify-content: center;
-                align-items: center;
-                backdrop-filter: blur(4px);
-                -webkit-backdrop-filter: blur(4px);
-            }
-            .modal img {
-                max-width: 90%;
-                max-height: 90%;
-                border-radius: 2px;
-                box-shadow: 0 30px 60px rgba(0, 0, 0, 0.55);
-            }
-            .close {
-                position: absolute;
-                top: 20px;
-                right: 30px;
-                color: var(--paper);
-                font-size: 2.25rem;
-                cursor: pointer;
-                font-family: "Big Shoulders Display", sans-serif;
-                line-height: 1;
-                transition: transform 120ms ease;
-            }
-            .close:hover {
-                transform: scale(1.1);
-            }
-
-            /* ========== Status modal ========== */
-            .status-modal-content {
-                background: var(--paper);
-                margin: auto;
-                padding: 2rem 2.5rem;
-                border-radius: 3px;
-                width: 92%;
-                max-width: 880px;
-                position: relative;
-                box-shadow:
-                    0 4px 0 rgba(0, 0, 0, 0.5),
-                    0 30px 60px rgba(0, 0, 0, 0.4);
-                display: flex;
-                flex-direction: column;
-                max-height: 92vh;
-                border-top: 5px solid var(--cherry);
-            }
-            .status-modal-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: baseline;
-                border-bottom: 1px solid var(--paper-line);
-                padding-bottom: 1rem;
-                margin-bottom: 1.5rem;
-            }
-            .status-modal-header h2 {
-                font-family: "Big Shoulders Display", sans-serif;
-                font-weight: 900;
-                font-size: 1.7rem;
-                text-transform: uppercase;
-                letter-spacing: 0.06em;
-                color: var(--ink);
-                margin: 0;
-            }
-            .status-modal-header .close {
-                position: static;
-                color: var(--ink);
-                font-size: 1.6rem;
-            }
-            .status-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 2.5rem;
-                overflow-y: auto;
-                scrollbar-width: thin;
-            }
-            .status-grid::-webkit-scrollbar {
-                width: 6px;
-            }
-            .status-grid::-webkit-scrollbar-thumb {
-                background-color: var(--ink-line);
-                border-radius: 3px;
-            }
-            .status-column h3 {
-                font-family: "Big Shoulders Display", sans-serif;
-                font-weight: 900;
-                font-size: 1.05rem;
-                text-transform: uppercase;
-                letter-spacing: 0.14em;
-                color: var(--ink);
-                border-left: 3px solid var(--ink);
-                padding-left: 12px;
-                margin-top: 0;
-                position: sticky;
-                top: 0;
-                background: var(--paper);
-                z-index: 10;
-                padding-bottom: 8px;
-                border-bottom: 1px solid var(--paper-line);
-                display: flex;
-                align-items: center;
-                gap: 0.6rem;
-            }
-            .status-column.missing h3 {
-                border-left-color: var(--cherry);
-            }
-            .status-column.upgrade h3 {
-                border-left-color: var(--warning);
-            }
-
-            .category-group {
-                margin-bottom: 0.5rem;
-            }
-            .category-header {
-                font-family: "Recursive", system-ui, sans-serif;
-                font-weight: 700;
-                font-size: 0.8rem;
-                color: var(--ink-2);
-                margin: 1.5rem 0 0.5rem;
-                text-transform: uppercase;
-                letter-spacing: 0.14em;
-            }
-            .category-header:first-child {
-                margin-top: 1rem;
-            }
-            .plate-list {
-                list-style: none;
-                padding: 0;
-                margin: 0;
-            }
-            .plate-list li {
-                padding: 8px 0;
-                border-bottom: 1px solid var(--paper-line);
-                font-size: 0.95rem;
-                color: var(--ink);
-            }
-            .plate-list li:last-child {
-                border-bottom: none;
-            }
-            .empty-message {
-                color: var(--ink);
-                opacity: 0.65;
-                font-style: italic;
-                text-align: center;
-                margin-top: 2rem;
-                padding: 1.25rem;
-                background: var(--cream);
-                border: 1px dashed var(--paper-line);
-                border-radius: 3px;
-            }
-            .status-badge {
-                font-family: "Recursive", sans-serif;
-                font-feature-settings: "tnum";
-                font-size: 0.78rem;
-                font-weight: 700;
-                padding: 2px 8px;
-                border-radius: 2px;
-                background: var(--ink);
-                color: var(--paper);
-                letter-spacing: 0.04em;
-                margin-left: 0;
-            }
-
-            /* ========== Page footer flourish ========== */
-            .page-footer {
-                text-align: center;
-                padding: 2.5rem 1.5rem 3.5rem;
-                position: relative;
-            }
-            .page-footer::before {
-                content: "";
-                display: block;
-                width: 64px;
-                height: 1px;
-                background: var(--ink-line);
-                margin: 0 auto 1.75rem;
-            }
-            .footer-flourish {
-                font-family: "Bevan", Georgia, serif;
-                font-weight: 400;
-                font-size: clamp(1.15rem, 2.5vw, 1.65rem);
-                color: var(--cherry);
-                margin: 0;
-                line-height: 1;
-                letter-spacing: 0.005em;
-            }
-
-            /* ========== Responsive ========== */
-            @media (max-width: 700px) {
-                .status-grid {
-                    grid-template-columns: 1fr;
-                }
-                .masthead {
-                    padding: 3rem 1.25rem 2.5rem;
-                }
-                .status-modal-content {
-                    padding: 1.5rem 1.25rem;
-                }
-                main {
-                    padding: 2rem 1rem 3rem;
-                }
-                .btn-status {
-                    padding: 0.85rem 1.4rem;
-                    font-size: 0.85rem;
-                    letter-spacing: 0.18em;
-                }
-            }
-        </style>
+        <link rel="stylesheet" href="styles.css" />
     </head>
     <body class="stamped-cards">
         <header class="masthead">
@@ -824,7 +76,7 @@
                         <img
                             src="pics/colleges/cwu.jpg"
                             alt="Central Washington University plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -832,7 +84,7 @@
                         <img
                             src="pics/colleges/ewu.jpg"
                             alt="Eastern Washington University plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -840,7 +92,7 @@
                         <img
                             src="pics/colleges/esc_2.jpg"
                             alt="Evergreen State College plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -848,23 +100,18 @@
                         <img
                             src="pics/colleges/gonzaga.jpg"
                             alt="Gonzaga University plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>Seattle University</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="Seattle University plate"
-                            class="plate-image"
-                        />
                     </div>
                     <div class="plate-card">
                         <h3>University of Washington</h3>
                         <img
                             src="pics/colleges/uw.jpg"
                             alt="University of Washington plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -872,16 +119,11 @@
                         <img
                             src="pics/colleges/wsu.jpg"
                             alt="Washington State University plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>Western Washington University</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="Western Washington University plate"
-                            class="plate-image"
-                        />
                     </div>
                 </div>
             </section>
@@ -901,7 +143,7 @@
                         <img
                             src="pics/first_responders/lem.jpg"
                             alt="Law Enforcement Memorial plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -909,16 +151,11 @@
                         <img
                             src="pics/first_responders/pro_ff.jpg"
                             alt="Professional Firefighter plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>Volunteer Firefighter</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="Volunteer Firefighter plate"
-                            class="plate-image"
-                        />
                     </div>
                 </div>
             </section>
@@ -938,7 +175,7 @@
                         <img
                             src="pics/mil/988.jpg"
                             alt="988 - Prevent Veteran Suicide emblem"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -946,7 +183,7 @@
                         <img
                             src="pics/mil/air_force.jpg"
                             alt="Air Force plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -954,7 +191,7 @@
                         <img
                             src="pics/mil/army.jpg"
                             alt="Army plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -962,31 +199,21 @@
                         <img
                             src="pics/mil/coast_guard.jpg"
                             alt="Coast Guard plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>Disabled American Veteran</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="Disabled American Veteran plate"
-                            class="plate-image"
-                        />
                     </div>
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>Former Prisoner of War</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="Former Prisoner of War plate"
-                            class="plate-image"
-                        />
                     </div>
                     <div class="plate-card">
                         <h3>Gold Star</h3>
                         <img
                             src="pics/mil/gold_star.jpg"
                             alt="Gold Star plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -994,47 +221,32 @@
                         <img
                             src="pics/mil/marine_corps.jpg"
                             alt="Marine Corps plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>Medal of Honor</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="Medal of Honor plate"
-                            class="plate-image"
-                        />
                     </div>
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>Military Affiliate Radio System (MARS)</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="Military Affiliate Radio System (MARS) plate"
-                            class="plate-image"
-                        />
                     </div>
                     <div class="plate-card">
                         <h3>National Guard</h3>
                         <img
                             src="pics/mil/nat_guard_ribbon.jpg"
                             alt="National Guard plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>Navy</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="Navy plate"
-                            class="plate-image"
-                        />
                     </div>
                     <div class="plate-card" data-needs-photo="true">
                         <h3>Purple Heart</h3>
                         <img
                             src="pics/mil/purple_heart.jpg"
                             alt="Purple Heart plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card" data-needs-photo="true">
@@ -1042,7 +254,7 @@
                         <img
                             src="pics/mil/nat_guard_ribbon.jpg"
                             alt="Veteran/Military Service Award emblems"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                 </div>
@@ -1058,36 +270,26 @@
                     Organizations
                 </h2>
                 <div class="plate-grid">
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>4-H</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="4-H plate"
-                            class="plate-image"
-                        />
                     </div>
                     <div class="plate-card">
                         <h3>Breast Cancer</h3>
                         <img
                             src="pics/orgs/breast_cancer.jpg"
                             alt="Breast Cancer plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>FFA Foundation</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="FFA Foundation plate"
-                            class="plate-image"
-                        />
                     </div>
                     <div class="plate-card" data-needs-photo="true">
                         <h3>Fred Hutchinson Cancer Center</h3>
                         <img
                             src="pics/orgs/fred_hutch.jpg"
                             alt="Fred Hutchinson Cancer Center plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card" data-needs-photo="true">
@@ -1095,7 +297,7 @@
                         <img
                             src="pics/orgs/freemason.jpg"
                             alt="Helping Kids Speak plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1103,7 +305,7 @@
                         <img
                             src="pics/orgs/jp_patches.jpg"
                             alt="J.P. Patches Pal plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1111,7 +313,7 @@
                         <img
                             src="pics/orgs/kids_safe.jpg"
                             alt="Keep Kids Safe plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1119,7 +321,7 @@
                         <img
                             src="pics/orgs/wac_apples_2.jpg"
                             alt="Washington Apple Commission plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1127,7 +329,7 @@
                         <img
                             src="pics/orgs/wine_country.jpg"
                             alt="Washington Wine Commission plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1135,7 +337,7 @@
                         <img
                             src="pics/orgs/pets.jpg"
                             alt="We Love Our Pets plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                 </div>
@@ -1156,31 +358,21 @@
                         <img
                             src="pics/parks/endangered_wildlife_orca.jpg"
                             alt="Endangered Wildlife: Orca plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>Honeybees and Pollinators</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="Honeybees and Pollinators plate"
-                            class="plate-image"
-                        />
                     </div>
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>Lighthouse</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="Lighthouse plate"
-                            class="plate-image"
-                        />
                     </div>
                     <div class="plate-card">
                         <h3>San Juan Islands</h3>
                         <img
                             src="pics/parks/san_juan.jpg"
                             alt="San Juan Islands plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1188,7 +380,7 @@
                         <img
                             src="pics/parks/rhodie.jpg"
                             alt="State Flower plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1196,7 +388,7 @@
                         <img
                             src="pics/parks/natl_parks.jpg"
                             alt="Washington National Parks plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card" data-needs-photo="true">
@@ -1204,7 +396,7 @@
                         <img
                             src="pics/parks/state_parks.jpg"
                             alt="Washington State Parks plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1212,7 +404,7 @@
                         <img
                             src="pics/parks/wa_wildlife_bear.jpg"
                             alt="Washington's Wildlife: Bear plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1220,7 +412,7 @@
                         <img
                             src="pics/parks/wa_wildlife_deer.jpg"
                             alt="Washington's Wildlife: Deer plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1228,7 +420,7 @@
                         <img
                             src="pics/parks/wa_wildlife_elk.jpg"
                             alt="Washington's Wildlife: Elk plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1236,7 +428,7 @@
                         <img
                             src="pics/parks/wa_wildlife_steelhead.jpg"
                             alt="Washington's Wildlife: Steelhead plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1244,7 +436,7 @@
                         <img
                             src="pics/parks/wild_wa_eagle.jpg"
                             alt="Wild on Washington: Eagle plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                 </div>
@@ -1260,44 +452,29 @@
                     Special Interests
                 </h2>
                 <div class="plate-grid">
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>Amateur Radio Operator (HAM)</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="Amateur Radio Operator (HAM) plate"
-                            class="plate-image"
-                        />
                     </div>
                     <div class="plate-card">
                         <h3>Fly Washington Aviation</h3>
                         <img
                             src="pics/special_interests/fly_wa_aviation.jpg"
                             alt="Fly Washington Aviation plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>Keep Washington Evergreen</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="Keep Washington Evergreen plate"
-                            class="plate-image"
-                        />
                     </div>
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>LeMay - America's Car Museum</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="LeMay - America's Car Museum plate"
-                            class="plate-image"
-                        />
                     </div>
                     <div class="plate-card">
                         <h3>Music Matters</h3>
                         <img
                             src="pics/special_interests/music_matters_2.jpg"
                             alt="Music Matters plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1305,23 +482,18 @@
                         <img
                             src="pics/special_interests/share_the_road.jpg"
                             alt="Share the Road plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>Square Dancer</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="Square Dancer plate"
-                            class="plate-image"
-                        />
                     </div>
                     <div class="plate-card" data-needs-photo="true">
                         <h3>Throwback</h3>
                         <img
                             src="pics/special_interests/throwback.jpg"
                             alt="Throwback plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                 </div>
@@ -1342,23 +514,18 @@
                         <img
                             src="pics/sports/kraken.jpg"
                             alt="Seattle Kraken plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>Seattle Mariners</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="Seattle Mariners plate"
-                            class="plate-image"
-                        />
                     </div>
                     <div class="plate-card">
                         <h3>Seattle Seahawks</h3>
                         <img
                             src="pics/sports/seahawks_2.jpg"
                             alt="Seattle Seahawks plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1366,23 +533,18 @@
                         <img
                             src="pics/sports/sounders.jpg"
                             alt="Seattle Sounders FC plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>Seattle Storm</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="Seattle Storm plate"
-                            class="plate-image"
-                        />
                     </div>
                     <div class="plate-card">
                         <h3>Ski and Ride</h3>
                         <img
                             src="pics/sports/ski_and_snowboard.jpg"
                             alt="Ski and Ride plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1390,7 +552,7 @@
                         <img
                             src="pics/sports/pickleball.jpg"
                             alt="State Sport: Pickleball plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1398,7 +560,7 @@
                         <img
                             src="pics/sports/tennis.jpg"
                             alt="Tennis plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1406,7 +568,7 @@
                         <img
                             src="pics/sports/wrestling.jpg"
                             alt="Wrestling plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                 </div>
@@ -1422,29 +584,14 @@
                     Tribal, WA
                 </h2>
                 <div class="plate-grid">
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>Chehalis Tribe</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="Chehalis Tribe plate"
-                            class="plate-image"
-                        />
                     </div>
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>Muckleshoot Tribe</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="Muckleshoot Tribe plate"
-                            class="plate-image"
-                        />
                     </div>
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>Puyallup Tribe</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="Puyallup Tribe plate"
-                            class="plate-image"
-                        />
                     </div>
                 </div>
             </section>
@@ -1459,44 +606,24 @@
                     Tribal, Self-Issued
                 </h2>
                 <div class="plate-grid">
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>Colville Tribe</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="Colville Tribe plate"
-                            class="plate-image"
-                        />
                     </div>
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>Lummi Tribe</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="Lummi Tribe plate"
-                            class="plate-image"
-                        />
                     </div>
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>Quinault Tribe</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="Quinault Tribe plate"
-                            class="plate-image"
-                        />
                     </div>
-                    <div class="plate-card">
+                    <div class="plate-card" data-photo-status="missing">
                         <h3>Spokane Tribe</h3>
-                        <img
-                            src="placeholder.jpg"
-                            alt="Spokane Tribe plate"
-                            class="plate-image"
-                        />
                     </div>
                     <div class="plate-card">
                         <h3>Tulalip Tribes</h3>
                         <img
                             src="pics/tribal/tulalip_tribes.jpg"
                             alt="Tulalip Tribes plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card" data-needs-photo="true">
@@ -1504,7 +631,7 @@
                         <img
                             src="pics/tribal/yakima_nation.jpg"
                             alt="Yakima Nation plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                 </div>
@@ -1525,7 +652,7 @@
                         <img
                             src="pics/collector_vehicles/collector_vehicle.jpg"
                             alt="Collector Vehicle plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1533,7 +660,7 @@
                         <img
                             src="pics/collector_vehicles/horseless_carriage.jpg"
                             alt="Horseless Carriage plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1541,7 +668,7 @@
                         <img
                             src="pics/collector_vehicles/restored_82_delorean.jpg"
                             alt="Restored plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                 </div>
@@ -1562,7 +689,7 @@
                         <img
                             src="pics/misc/dealer.jpg"
                             alt="Dealer plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1570,7 +697,7 @@
                         <img
                             src="pics/misc/disabled.jpg"
                             alt="Disabled Parking plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1578,7 +705,7 @@
                         <img
                             src="pics/misc/xmt.jpg"
                             alt="Exempt plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1586,7 +713,7 @@
                         <img
                             src="pics/misc/personalized.jpg"
                             alt="Personalized plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1594,7 +721,7 @@
                         <img
                             src="pics/misc/ride_share.jpg"
                             alt="Rideshare plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                     <div class="plate-card">
@@ -1602,7 +729,7 @@
                         <img
                             src="pics/misc/transporter.jpg"
                             alt="Transporter plate"
-                            class="plate-image"
+                            class="plate-image" loading="lazy" decoding="async"
                         />
                     </div>
                 </div>
@@ -1614,17 +741,17 @@
         </footer>
 
         <!-- Modal for displaying larger images -->
-        <div id="imageModal" class="modal">
-            <span class="close" id="imageClose">×</span>
-            <img class="modal-content" id="enlargedImg" />
+        <div id="imageModal" class="modal" role="dialog" aria-modal="true" aria-label="Plate image preview">
+            <button type="button" class="close" id="imageClose" aria-label="Close">×</button>
+            <img class="modal-content" id="enlargedImg" alt="" />
         </div>
 
         <!-- Status Check Modal -->
-        <div id="statusModal" class="modal" style="display: none">
+        <div id="statusModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="statusModalTitle">
             <div class="status-modal-content">
                 <div class="status-modal-header">
-                    <h2>Plate Checklist</h2>
-                    <span class="close" id="statusClose">×</span>
+                    <h2 id="statusModalTitle">Plate Checklist</h2>
+                    <button type="button" class="close" id="statusClose" aria-label="Close">×</button>
                 </div>
                 <div class="status-grid">
                     <div class="status-column missing">
@@ -1642,28 +769,19 @@
         </div>
 
         <script>
-            // --- Replace missing-photo placeholders with an "index slip" tag ---
-            // Keep the original <img> in the DOM (hidden) so the checklist modal
-            // can still detect placeholder.jpg sources.
-            document.querySelectorAll('img[src$="placeholder.jpg"]').forEach((img) => {
-                const card = img.closest('.plate-card');
-                const section = img.closest('.category-section');
+            // --- Add an "index slip" tag for missing photos ---
+            document.querySelectorAll('.plate-card[data-photo-status="missing"]').forEach((card) => {
+                const section = card.closest('.category-section');
                 const plateName = card?.querySelector('h3')?.textContent.trim() || '';
 
-                let categoryName = '';
-                const h2 = section?.querySelector('h2');
-                if (h2) {
-                    const h2Clone = h2.cloneNode(true);
-                    h2Clone.querySelectorAll('.cat-sticker').forEach(s => s.remove());
-                    categoryName = h2Clone.textContent.trim();
-                }
+                const categoryName = section ? getSectionTitle(section) : "";
 
                 const placeholder = document.createElement("div");
                 placeholder.className = "plate-empty";
                 placeholder.setAttribute("role", "img");
                 placeholder.setAttribute(
                     "aria-label",
-                    (img.alt || "plate") + " — photo pending"
+                    (plateName ? `${plateName} plate` : "Plate") + " — photo pending"
                 );
                 placeholder.innerHTML =
                     '<div class="plate-empty__strip">' +
@@ -1680,29 +798,13 @@
                 placeholder.querySelector('.plate-empty__name').textContent = plateName;
                 placeholder.querySelector('.plate-empty__category').textContent = categoryName;
 
-                img.style.display = "none";
-                img.parentElement.insertBefore(placeholder, img);
+                card.appendChild(placeholder);
             });
 
-            // --- Image Modal Logic ---
             const imageModal = document.getElementById("imageModal");
             const enlargedImg = document.getElementById("enlargedImg");
             const imageCloseBtn = document.getElementById("imageClose");
 
-            const images = document.getElementsByClassName("plate-image");
-            for (let i = 0; i < images.length; i++) {
-                images[i].onclick = function () {
-                    if (this.src.includes('placeholder.jpg')) return;
-                    imageModal.style.display = "flex";
-                    enlargedImg.src = this.src;
-                };
-            }
-
-            imageCloseBtn.onclick = function () {
-                imageModal.style.display = "none";
-            };
-
-            // --- Status Modal Logic ---
             const statusModal = document.getElementById("statusModal");
             const statusBtn = document.getElementById("check-status-btn");
             const statusCloseBtn = document.getElementById("statusClose");
@@ -1712,24 +814,73 @@
             const missingCountEl = document.getElementById("missingCount");
             const upgradeCountEl = document.getElementById("upgradeCount");
 
-            statusBtn.onclick = function() {
+            let lastFocused = null;
+            function getSectionTitle(section) {
+                const titleEl = section.querySelector('h2');
+                if (!titleEl) return "Unknown Category";
+
+                const titleClone = titleEl.cloneNode(true);
+                titleClone.querySelectorAll('.cat-sticker').forEach((sticker) => {
+                    sticker.remove();
+                });
+                return titleClone.textContent.trim();
+            }
+
+            function openModal(modal) {
+                lastFocused = document.activeElement;
+                modal.style.display = "flex";
+                modal.querySelector(".close")?.focus();
+            }
+            function closeModal(modal) {
+                modal.style.display = "none";
+                lastFocused?.focus();
+            }
+
+            document.querySelectorAll(".plate-image").forEach((img) => {
+                img.setAttribute("role", "button");
+                img.setAttribute("tabindex", "0");
+                const open = () => {
+                    enlargedImg.src = img.src;
+                    enlargedImg.alt = img.alt;
+                    openModal(imageModal);
+                };
+                img.addEventListener("click", open);
+                img.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        open();
+                    }
+                });
+            });
+
+            // Screen-reader text for the visual "LOW QUALITY" badge
+            document.querySelectorAll('.plate-card[data-needs-photo="true"]').forEach((card) => {
+                const sr = document.createElement("span");
+                sr.className = "sr-only";
+                sr.textContent = "Low quality photo";
+                card.appendChild(sr);
+            });
+
+            imageCloseBtn.addEventListener("click", () => closeModal(imageModal));
+            statusCloseBtn.addEventListener("click", () => closeModal(statusModal));
+
+            statusBtn.addEventListener("click", () => {
                 populateLists();
-                statusModal.style.display = "flex";
-            }
+                openModal(statusModal);
+            });
 
-            statusCloseBtn.onclick = function() {
-                statusModal.style.display = "none";
-            }
+            imageModal.addEventListener("click", (e) => {
+                if (e.target === imageModal) closeModal(imageModal);
+            });
+            statusModal.addEventListener("click", (e) => {
+                if (e.target === statusModal) closeModal(statusModal);
+            });
 
-            // Close modals on outside click
-            window.onclick = function(event) {
-                if (event.target == imageModal) {
-                    imageModal.style.display = "none";
-                }
-                if (event.target == statusModal) {
-                    statusModal.style.display = "none";
-                }
-            }
+            document.addEventListener("keydown", (e) => {
+                if (e.key !== "Escape") return;
+                if (imageModal.style.display === "flex") closeModal(imageModal);
+                else if (statusModal.style.display === "flex") closeModal(statusModal);
+            });
 
             function populateLists() {
                 // Clear existing content
@@ -1744,8 +895,7 @@
 
                 sections.forEach(section => {
                     // Get the category title
-                    const titleEl = section.querySelector('h2');
-                    const categoryName = titleEl ? titleEl.innerText : "Unknown Category";
+                    const categoryName = getSectionTitle(section);
 
                     // Variables to build HTML for this category
                     let missingItems = [];
@@ -1755,14 +905,13 @@
                     const cards = section.querySelectorAll('.plate-card');
                     cards.forEach(card => {
                         const plateTitleEl = card.querySelector('h3');
-                        const imgEl = card.querySelector('img');
 
-                        if(!plateTitleEl || !imgEl) return;
+                        if(!plateTitleEl) return;
 
                         const plateTitle = plateTitleEl.innerText;
 
-                        // Check 1: Is it a placeholder?
-                        if (imgEl.src.includes('placeholder.jpg')) {
+                        // Check 1: Is it a known missing photo?
+                        if (card.dataset.photoStatus === "missing") {
                             missingItems.push(plateTitle);
                             totalMissing++;
                         }
