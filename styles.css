@@ -1,5 +1,6 @@
 :root {
     --ink: #14213d;
+    --ink-2: #1f2c52;
     --ink-rgb: 20, 33, 61;
     --ink-line: rgba(var(--ink-rgb), 0.18);
     --cherry: #c8252c;
@@ -8,6 +9,7 @@
     --sky-haze: #e7f0f6;       /* page atmosphere */
     --sky-pale: #d2e2ec;       /* mid-plate */
     --sky: #b9d6e8;            /* deeper sky / image surround */
+    --sky-deep: #a8c6d6;       /* lower sky depth */
     --silhouette-back: #c5dbe7;
     --silhouette-front: #a4c1d4;
     /* registration-sticker tab colors */
@@ -44,7 +46,8 @@ body {
     background: linear-gradient(
         180deg,
         var(--sky-haze) 0%,
-        var(--sky-pale) 100%
+        var(--sky-pale) 62%,
+        var(--sky-deep) 100%
     );
     background-attachment: fixed;
     min-height: 100vh;
@@ -77,8 +80,9 @@ body > * {
         var(--paper-top) 0%,
         var(--paper-top) 28%,
         var(--sky-haze) 58%,
-        var(--sky-pale) 88%,
-        var(--sky) 100%
+        var(--sky-pale) 82%,
+        var(--sky) 94%,
+        var(--sky-deep) 100%
     );
     color: var(--ink);
     padding: 4.5rem 2rem 4rem;
