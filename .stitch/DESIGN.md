@@ -205,7 +205,7 @@ mountain tints used only in the masthead SVG.
 
 **Cherry Registration Red (#c8252c)** is the main personality accent. It appears
 on the subtitle, intro panel rule, section header double rules, focus outlines,
-footer flourish, action-button dot, and pending-photo stamp. **Deep Cherry
+footer flourish, action-button dot, and missing-photo status stamp. **Deep Cherry
 (#8e161c)** appears in the live CSS as a literal wordmark drop-shadow tint
 rather than as a named custom property.
 
@@ -217,7 +217,7 @@ and empty-plate strip. Its hover state deepens to **Pressed Tab Blue
 (#1c4d8c)** are the small registration-sticker palette. They should stay on
 labels, badges, and category markers rather than becoming large content fields.
 
-**Warning Amber (#c47c0e)** is reserved for the status modal's photo-upgrade
+**Warning Amber (#c47c0e)** is reserved for the status modal's needs-upgrade
 column marker.
 
 ### Typography & Text Hierarchy
@@ -231,8 +231,8 @@ copy color.
 
 Focus is a 2px Cherry outline with 3px offset. Hover states use shallow physical
 movement: the status button lifts 2px, plate cards lift 4px, and close buttons
-scale to 1.1. Missing photos render as paper index slips; low-quality photos get
-a Tab Red "LOW QUALITY" sticker.
+scale to 1.1. Missing photos render as paper index slips; needs-upgrade photos
+get a Tab Red status sticker.
 
 ## 3. Typography Rules
 
@@ -307,8 +307,8 @@ and color-coded grounds from the tab palette. They combine a short mark such as
 
 **Empty plate placeholders** render missing photos as archival index slips:
 paper grain, a Registration Blue strip, Recursive body rows with the `"MONO" 1`
-font-variation setting, dashed write-in lines, and a rotated Cherry "Pending"
-rubber stamp.
+font-variation setting, dashed write-in lines, and a rotated Cherry status
+stamp.
 
 **Status modal** is an official-document panel: Paper Top background, 3px radius,
 5px Cherry top border, heavy shadow stack, two-column grid, sticky uppercase
@@ -373,8 +373,7 @@ strips, navy stamped rims, subtle embossed edge highlights, and a layered hard
 plus soft shadow stack.
 
 Create a missing-photo placeholder as a paper index slip with a blue catalog
-strip, dashed metadata lines, and a rotated cherry rubber stamp reading
-"Pending".
+strip, dashed metadata lines, and a rotated cherry status stamp.
 
 Create a checklist modal as an official paper document over a dark navy blurred
 backdrop, with a cherry top rule, uppercase condensed headings, count badges,

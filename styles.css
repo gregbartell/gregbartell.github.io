@@ -416,9 +416,7 @@ body.stamped-cards .plate-card:hover {
 }
 
 /* ===== Empty-plate placeholder =====
-   Swapped in by the script below for any <img src="placeholder.jpg">.
-   A small cataloging slip with the plate's index entry and a
-   "Pending" rubber stamp.
+   A small cataloging slip with the plate's index entry and status stamp.
 */
 .plate-empty {
     width: 100%;
@@ -513,9 +511,7 @@ body.stamped-cards .plate-card:hover {
     opacity: 0.92;
 }
 
-/* low-quality registration-sticker badge */
-.plate-card[data-needs-photo="true"]::after {
-    content: "LOW QUALITY";
+.photo-status-badge {
     position: absolute;
     top: 10px;
     right: 10px;
@@ -649,10 +645,10 @@ body.stamped-cards .plate-card:hover {
     align-items: center;
     gap: 0.6rem;
 }
-.status-column.missing h3 {
+.status-column[data-photo-status="missing"] h3 {
     border-left-color: var(--cherry);
 }
-.status-column.upgrade h3 {
+.status-column[data-photo-status="needs-upgrade"] h3 {
     border-left-color: var(--warning);
 }
 

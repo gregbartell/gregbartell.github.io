@@ -9,7 +9,8 @@ const collator = new Intl.Collator("en", {
     numeric: true,
 });
 
-const validPhotoStatuses = new Set(Object.values(catalog.photoStatuses));
+const photoStatuses = Object.values(catalog.photoStatuses);
+const validPhotoStatuses = new Set(photoStatuses);
 const validImageKinds = new Set(Object.values(catalog.imageKinds));
 const validStickerStyles = new Set(catalog.stickerStyles);
 
@@ -20,6 +21,10 @@ const errors = [];
 
 function fail(message) {
     errors.push(message);
+}
+
+function hasOwn(object, key) {
+    return Object.prototype.hasOwnProperty.call(object, key);
 }
 
 function exists(relativePath) {
@@ -45,6 +50,141 @@ function duplicateIds(items) {
     });
 
     return [...duplicates];
+}
+
+function requireText(value, label) {
+    if (typeof value !== "string" || value.trim() === "") {
+        fail(`${label} must be non-empty text`);
+    }
+}
+
+function auditPhotoStatusDetails() {
+    if (
+        !catalog.photoStatusDetails ||
+        typeof catalog.photoStatusDetails !== "object" ||
+        Array.isArray(catalog.photoStatusDetails)
+    ) {
+        fail("catalog.photoStatusDetails must be an object");
+        return;
+    }
+
+    photoStatuses.forEach((status) => {
+        if (!hasOwn(catalog.photoStatusDetails, status)) {
+            fail(`photoStatusDetails missing status: ${status}`);
+        }
+    });
+
+    Object.entries(catalog.photoStatusDetails).forEach(([status, details]) => {
+        if (!validPhotoStatuses.has(status)) {
+            fail(`photoStatusDetails has unknown status: ${status}`);
+        }
+        if (!details || typeof details !== "object") {
+            fail(`photoStatusDetails.${status} must be an object`);
+            return;
+        }
+        if (details.status !== status) {
+            fail(`photoStatusDetails.${status} must set status to ${status}`);
+        }
+
+        if (details.cardBadge !== null) {
+            if (!details.cardBadge || typeof details.cardBadge !== "object") {
+                fail(`photoStatusDetails.${status}.cardBadge must be null or object`);
+            } else {
+                requireText(
+                    details.cardBadge.text,
+                    `photoStatusDetails.${status}.cardBadge.text`
+                );
+                requireText(
+                    details.cardBadge.ariaLabel,
+                    `photoStatusDetails.${status}.cardBadge.ariaLabel`
+                );
+            }
+        }
+
+        if (details.checklist !== null) {
+            if (!details.checklist || typeof details.checklist !== "object") {
+                fail(`photoStatusDetails.${status}.checklist must be null or object`);
+            } else {
+                requireText(
+                    details.checklist.title,
+                    `photoStatusDetails.${status}.checklist.title`
+                );
+                requireText(
+                    details.checklist.emptyMessage,
+                    `photoStatusDetails.${status}.checklist.emptyMessage`
+                );
+            }
+        }
+
+        if (details.placeholder !== null) {
+            if (!details.placeholder || typeof details.placeholder !== "object") {
+                fail(`photoStatusDetails.${status}.placeholder must be null or object`);
+            } else {
+                [
+                    "ariaSuffix",
+                    "stripDetail",
+                    "statusValue",
+                    "stampText",
+                ].forEach((property) => {
+                    requireText(
+                        details.placeholder[property],
+                        `photoStatusDetails.${status}.placeholder.${property}`
+                    );
+                });
+            }
+        }
+    });
+
+    if (typeof catalog.photoStatusDetailsForStatus !== "function") {
+        fail("catalog.photoStatusDetailsForStatus must be a function");
+    } else {
+        photoStatuses.forEach((status) => {
+            try {
+                const details = catalog.photoStatusDetailsForStatus(status);
+                if (details !== catalog.photoStatusDetails[status]) {
+                    fail(
+                        `photoStatusDetailsForStatus(${status}) must return the status details object`
+                    );
+                }
+            } catch (error) {
+                fail(`photoStatusDetailsForStatus(${status}) threw: ${error.message}`);
+            }
+        });
+    }
+
+    if (typeof catalog.checklistSections !== "function") {
+        fail("catalog.checklistSections must be a function");
+        return;
+    }
+
+    const sections = catalog.checklistSections();
+    if (!Array.isArray(sections)) {
+        fail("catalog.checklistSections() must return an array");
+        return;
+    }
+
+    sections.forEach((section, index) => {
+        const prefix = `checklistSections[${index}]`;
+        if (!validPhotoStatuses.has(section.status)) {
+            fail(`${prefix} has unknown status: ${section.status}`);
+            return;
+        }
+
+        const details = catalog.photoStatusDetails[section.status];
+        if (!details.checklist) {
+            fail(`${prefix} uses non-checklist status: ${section.status}`);
+            return;
+        }
+        if (section.title !== details.checklist.title) {
+            fail(`${prefix}.title must come from photoStatusDetails`);
+        }
+        if (section.emptyMessage !== details.checklist.emptyMessage) {
+            fail(`${prefix}.emptyMessage must come from photoStatusDetails`);
+        }
+        if (!Array.isArray(section.groups)) {
+            fail(`${prefix}.groups must be an array`);
+        }
+    });
 }
 
 function auditCategories() {
@@ -125,7 +265,7 @@ function auditPlates() {
             if (!validImageKinds.has(catalog.imageKindFor(plate))) {
                 fail(`${prefix} has invalid imageKind: ${plate.imageKind}`);
             }
-            if (Object.prototype.hasOwnProperty.call(plate, "alt")) {
+            if (hasOwn(plate, "alt")) {
                 fail(`${prefix} must derive alt text instead of storing it`);
             }
 
@@ -154,6 +294,7 @@ function auditPlates() {
 }
 
 auditCategories();
+auditPhotoStatusDetails();
 auditPlates();
 
 if (errors.length > 0) {

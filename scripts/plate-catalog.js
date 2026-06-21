@@ -9,10 +9,65 @@
     }
 })(typeof window !== "undefined" ? window : globalThis, function () {
     const PHOTO_STATUSES = Object.freeze({
-        CURRENT: "current",
+        SATISFIED: "satisfied",
         MISSING: "missing",
         NEEDS_UPGRADE: "needs-upgrade",
     });
+
+    function statusDetails(details) {
+        return Object.freeze({
+            ...details,
+            cardBadge: details.cardBadge
+                ? Object.freeze(details.cardBadge)
+                : null,
+            checklist: details.checklist
+                ? Object.freeze(details.checklist)
+                : null,
+            placeholder: details.placeholder
+                ? Object.freeze(details.placeholder)
+                : null,
+        });
+    }
+
+    const PHOTO_STATUS_DETAILS = Object.freeze({
+        [PHOTO_STATUSES.SATISFIED]: statusDetails({
+            status: PHOTO_STATUSES.SATISFIED,
+            cardBadge: null,
+            checklist: null,
+            placeholder: null,
+        }),
+        [PHOTO_STATUSES.MISSING]: statusDetails({
+            status: PHOTO_STATUSES.MISSING,
+            cardBadge: null,
+            checklist: {
+                title: "Left to Find",
+                emptyMessage: "Collection is complete! \u{1F389}",
+            },
+            placeholder: {
+                ariaSuffix: "photo pending",
+                stripDetail: "No photo on file",
+                statusValue: "Pending",
+                stampText: "Pending",
+            },
+        }),
+        [PHOTO_STATUSES.NEEDS_UPGRADE]: statusDetails({
+            status: PHOTO_STATUSES.NEEDS_UPGRADE,
+            cardBadge: {
+                text: "LOW QUALITY",
+                ariaLabel: "Low quality photo",
+            },
+            checklist: {
+                title: "Needs Better Photo",
+                emptyMessage: "No upgrades needed. \u{1F44D}",
+            },
+            placeholder: null,
+        }),
+    });
+
+    const CHECKLIST_PHOTO_STATUSES = Object.freeze([
+        PHOTO_STATUSES.MISSING,
+        PHOTO_STATUSES.NEEDS_UPGRADE,
+    ]);
 
     const IMAGE_KINDS = Object.freeze({
         PLATE: "plate",
@@ -31,19 +86,19 @@
                 {
                     id: "collector-vehicle",
                     title: "Collector Vehicle",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "collector_vehicles/collector_vehicle.jpg",
                 },
                 {
                     id: "horseless-carriage",
                     title: "Horseless Carriage",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "collector_vehicles/horseless_carriage.jpg",
                 },
                 {
                     id: "restored",
                     title: "Restored",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "collector_vehicles/restored_82_delorean.jpg",
                 },
             ],
@@ -62,19 +117,19 @@
                 {
                     id: "eastern-washington-university",
                     title: "Eastern Washington University",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "colleges/ewu.jpg",
                 },
                 {
                     id: "evergreen-state-college",
                     title: "Evergreen State College",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "colleges/esc_2.jpg",
                 },
                 {
                     id: "gonzaga-university",
                     title: "Gonzaga University",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "colleges/gonzaga.jpg",
                 },
                 {
@@ -86,13 +141,13 @@
                 {
                     id: "university-of-washington",
                     title: "University of Washington",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "colleges/uw.jpg",
                 },
                 {
                     id: "washington-state-university",
                     title: "Washington State University",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "colleges/wsu.jpg",
                 },
                 {
@@ -111,19 +166,19 @@
                 {
                     id: "law-enforcement-memorial",
                     title: "Law Enforcement Memorial",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "first_responders/lem.jpg",
                 },
                 {
                     id: "professional-firefighter",
                     title: "Professional Firefighter",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "first_responders/pro_ff.jpg",
                 },
                 {
                     id: "volunteer-firefighter",
                     title: "Volunteer Firefighter",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "first_responders/vol_ff.jpg",
                 },
             ],
@@ -136,14 +191,14 @@
                 {
                     id: "988-prevent-veteran-suicide",
                     title: "988 - Prevent Veteran Suicide",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     imageKind: IMAGE_KINDS.EMBLEM,
                     asset: "mil/988.jpg",
                 },
                 {
                     id: "air-force",
                     title: "Air Force",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "mil/air_force.jpg",
                 },
                 {
@@ -155,7 +210,7 @@
                 {
                     id: "coast-guard",
                     title: "Coast Guard",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "mil/coast_guard.jpg",
                 },
                 {
@@ -173,13 +228,13 @@
                 {
                     id: "gold-star",
                     title: "Gold Star",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "mil/gold_star.jpg",
                 },
                 {
                     id: "marine-corps",
                     title: "Marine Corps",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "mil/marine_corps.jpg",
                 },
                 {
@@ -209,7 +264,7 @@
                 {
                     id: "purple-heart",
                     title: "Purple Heart",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "mil/purple_heart_2.jpg",
                 },
                 {
@@ -235,7 +290,7 @@
                 {
                     id: "breast-cancer",
                     title: "Breast Cancer",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "orgs/breast_cancer.jpg",
                 },
                 {
@@ -247,7 +302,7 @@
                 {
                     id: "fred-hutchinson-cancer-center",
                     title: "Fred Hutchinson Cancer Center",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "orgs/fred_hutch.jpg",
                 },
                 {
@@ -259,31 +314,31 @@
                 {
                     id: "jp-patches-pal",
                     title: "J.P. Patches Pal",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "orgs/jp_patches.jpg",
                 },
                 {
                     id: "keep-kids-safe",
                     title: "Keep Kids Safe",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "orgs/kids_safe.jpg",
                 },
                 {
                     id: "washington-apple-commission",
                     title: "Washington Apple Commission",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "orgs/wac_apples_2.jpg",
                 },
                 {
                     id: "washington-wine-commission",
                     title: "Washington Wine Commission",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "orgs/wine_country.jpg",
                 },
                 {
                     id: "we-love-our-pets",
                     title: "We Love Our Pets",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "orgs/pets.jpg",
                 },
             ],
@@ -296,7 +351,7 @@
                 {
                     id: "endangered-wildlife-orca",
                     title: "Endangered Wildlife: Orca",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "parks/endangered_wildlife_orca.jpg",
                 },
                 {
@@ -308,13 +363,13 @@
                 {
                     id: "lighthouse",
                     title: "Lighthouse",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "parks/lighthouse.jpg",
                 },
                 {
                     id: "san-juan-islands",
                     title: "San Juan Islands",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "parks/san_juan.jpg",
                 },
                 {
@@ -326,7 +381,7 @@
                 {
                     id: "washington-national-parks",
                     title: "Washington National Parks",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "parks/natl_parks.jpg",
                 },
                 {
@@ -344,7 +399,7 @@
                 {
                     id: "washingtons-wildlife-deer",
                     title: "Washington's Wildlife: Deer",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "parks/wa_wildlife_deer.jpg",
                 },
                 {
@@ -356,13 +411,13 @@
                 {
                     id: "washingtons-wildlife-steelhead",
                     title: "Washington's Wildlife: Steelhead",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "parks/wa_wildlife_steelhead.jpg",
                 },
                 {
                     id: "wild-on-washington-eagle",
                     title: "Wild on Washington: Eagle",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "parks/wild_wa_eagle.jpg",
                 },
             ],
@@ -381,7 +436,7 @@
                 {
                     id: "fly-washington-aviation",
                     title: "Fly Washington Aviation",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "special_interests/fly_wa_aviation.jpg",
                 },
                 {
@@ -393,19 +448,19 @@
                 {
                     id: "lemay-americas-car-museum",
                     title: "LeMay - America's Car Museum",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "special_interests/lemay.jpg",
                 },
                 {
                     id: "music-matters",
                     title: "Music Matters",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "special_interests/music_matters_2.jpg",
                 },
                 {
                     id: "share-the-road",
                     title: "Share the Road",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "special_interests/share_the_road.jpg",
                 },
                 {
@@ -417,7 +472,7 @@
                 {
                     id: "throwback",
                     title: "Throwback",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "special_interests/throwback_2.jpg",
                 },
             ],
@@ -430,43 +485,43 @@
                 {
                     id: "seattle-kraken",
                     title: "Seattle Kraken",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "sports/kraken.jpg",
                 },
                 {
                     id: "seattle-mariners",
                     title: "Seattle Mariners",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "sports/mariners.jpg",
                 },
                 {
                     id: "seattle-seahawks",
                     title: "Seattle Seahawks",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "sports/seahawks_2.jpg",
                 },
                 {
                     id: "seattle-sounders-fc",
                     title: "Seattle Sounders FC",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "sports/sounders.jpg",
                 },
                 {
                     id: "seattle-storm",
                     title: "Seattle Storm",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "sports/storm.jpg",
                 },
                 {
                     id: "ski-and-ride",
                     title: "Ski and Ride",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "sports/ski_and_snowboard.jpg",
                 },
                 {
                     id: "state-sport-pickleball",
                     title: "State Sport: Pickleball",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "sports/pickleball.jpg",
                 },
                 {
@@ -478,7 +533,7 @@
                 {
                     id: "wrestling",
                     title: "Wrestling",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "sports/wrestling.jpg",
                 },
             ],
@@ -515,7 +570,7 @@
                 {
                     id: "tulalip-tribes",
                     title: "Tulalip Tribes",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "tribal/tulalip_tribes.jpg",
                 },
                 {
@@ -559,37 +614,37 @@
                 {
                     id: "dealer-plate",
                     title: "Dealer Plate",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "misc/dealer.jpg",
                 },
                 {
                     id: "disabled-parking",
                     title: "Disabled Parking",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "misc/disabled.jpg",
                 },
                 {
                     id: "exempt",
                     title: "Exempt",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "misc/xmt.jpg",
                 },
                 {
                     id: "personalized",
                     title: "Personalized",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "misc/personalized.jpg",
                 },
                 {
                     id: "rideshare",
                     title: "Rideshare",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "misc/ride_share.jpg",
                 },
                 {
                     id: "transporter",
                     title: "Transporter",
-                    photoStatus: PHOTO_STATUSES.CURRENT,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "misc/transporter.jpg",
                 },
             ],
@@ -598,6 +653,18 @@
 
     function photoStatusFor(plate) {
         return plate.photoStatus;
+    }
+
+    function photoStatusDetailsFor(plate) {
+        return photoStatusDetailsForStatus(photoStatusFor(plate));
+    }
+
+    function photoStatusDetailsForStatus(status) {
+        const details = PHOTO_STATUS_DETAILS[status];
+        if (!details) {
+            throw new Error(`Unknown photoStatus: ${status}`);
+        }
+        return details;
     }
 
     function imageKindFor(plate) {
@@ -633,29 +700,34 @@
             .filter((group) => group.plates.length > 0);
     }
 
-    function checklistGroups(sourceCategories = categories) {
-        return {
-            missing: categoriesWithStatus(PHOTO_STATUSES.MISSING, sourceCategories),
-            needsUpgrade: categoriesWithStatus(
-                PHOTO_STATUSES.NEEDS_UPGRADE,
-                sourceCategories
-            ),
-        };
+    function checklistSections(sourceCategories = categories) {
+        return CHECKLIST_PHOTO_STATUSES.map((status) => {
+            const details = photoStatusDetailsForStatus(status);
+            return {
+                status,
+                title: details.checklist.title,
+                emptyMessage: details.checklist.emptyMessage,
+                groups: categoriesWithStatus(status, sourceCategories),
+            };
+        });
     }
 
     return {
         categories,
         photoStatuses: PHOTO_STATUSES,
+        photoStatusDetails: PHOTO_STATUS_DETAILS,
         imageKinds: IMAGE_KINDS,
         stickerStyles: STICKER_STYLES,
         defaultStickerFoot: DEFAULT_STICKER_FOOT,
         photoStatusFor,
+        photoStatusDetailsFor,
+        photoStatusDetailsForStatus,
         imageKindFor,
         imageAlt,
         thumbnailPath,
         fullImagePath,
         getPlateEntries,
         categoriesWithStatus,
-        checklistGroups,
+        checklistSections,
     };
 });

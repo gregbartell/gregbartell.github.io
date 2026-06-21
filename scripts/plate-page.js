@@ -68,28 +68,27 @@
         card.className = "plate-card";
 
         const status = catalog.photoStatusFor(plate);
-        if (status === catalog.photoStatuses.MISSING) {
-            card.dataset.photoStatus = "missing";
-        }
-        if (status === catalog.photoStatuses.NEEDS_UPGRADE) {
-            card.dataset.needsPhoto = "true";
-        }
+        const statusDetails = catalog.photoStatusDetailsFor(plate);
+        card.dataset.photoStatus = status;
 
         const title = document.createElement("h3");
         title.textContent = plate.title;
         card.append(title);
 
-        if (status === catalog.photoStatuses.MISSING) {
-            card.append(renderMissingPlaceholder(plate, category));
+        if (statusDetails.placeholder) {
+            card.append(
+                renderMissingPlaceholder(
+                    plate,
+                    category,
+                    statusDetails.placeholder
+                )
+            );
         } else {
             card.append(renderPlateImage(plate));
         }
 
-        if (status === catalog.photoStatuses.NEEDS_UPGRADE) {
-            const sr = document.createElement("span");
-            sr.className = "sr-only";
-            sr.textContent = "Low quality photo";
-            card.append(sr);
+        if (statusDetails.cardBadge) {
+            card.append(renderPhotoStatusBadge(statusDetails.cardBadge));
         }
 
         return card;
@@ -108,18 +107,31 @@
         return img;
     }
 
-    function renderMissingPlaceholder(plate, category) {
+    function renderPhotoStatusBadge(cardBadge) {
+        const badge = document.createElement("span");
+        badge.className = "photo-status-badge";
+        badge.textContent = cardBadge.text;
+        if (cardBadge.ariaLabel) {
+            badge.setAttribute("aria-label", cardBadge.ariaLabel);
+        }
+        return badge;
+    }
+
+    function renderMissingPlaceholder(plate, category, placeholderDetails) {
         const placeholder = document.createElement("div");
         placeholder.className = "plate-empty";
         placeholder.setAttribute("role", "img");
         placeholder.setAttribute(
             "aria-label",
-            `${catalog.imageAlt(plate)} — photo pending`
+            `${catalog.imageAlt(plate)} — ${placeholderDetails.ariaSuffix}`
         );
 
         const strip = document.createElement("div");
         strip.className = "plate-empty__strip";
-        strip.append(textSpan("Plate Index"), textSpan("No photo on file"));
+        strip.append(
+            textSpan("Plate Index"),
+            textSpan(placeholderDetails.stripDetail)
+        );
 
         const body = document.createElement("div");
         body.className = "plate-empty__body";
@@ -130,12 +142,12 @@
                 category.title,
                 "plate-empty__category"
             ),
-            renderPlaceholderRow("Status", "Pending")
+            renderPlaceholderRow("Status", placeholderDetails.statusValue)
         );
 
         const rubber = document.createElement("div");
         rubber.className = "plate-empty__rubber";
-        rubber.textContent = "Pending";
+        rubber.textContent = placeholderDetails.stampText;
 
         placeholder.append(strip, body, rubber);
         return placeholder;
@@ -171,10 +183,7 @@
         const statusBtn = document.getElementById("check-status-btn");
         const statusCloseBtn = document.getElementById("statusClose");
 
-        const missingListEl = document.getElementById("missingList");
-        const upgradeListEl = document.getElementById("upgradeList");
-        const missingCountEl = document.getElementById("missingCount");
-        const upgradeCountEl = document.getElementById("upgradeCount");
+        const statusSectionsEl = document.getElementById("statusSections");
 
         let lastFocused = null;
         let currentImageRequestId = 0;
@@ -224,12 +233,7 @@
         statusCloseBtn.addEventListener("click", () => closeModal(statusModal));
 
         statusBtn.addEventListener("click", () => {
-            populateLists({
-                missingListEl,
-                upgradeListEl,
-                missingCountEl,
-                upgradeCountEl,
-            });
+            populateStatusSections(statusSectionsEl);
             openModal(statusModal);
         });
 
@@ -247,26 +251,40 @@
         });
     }
 
-    function populateLists({
-        missingListEl,
-        upgradeListEl,
-        missingCountEl,
-        upgradeCountEl,
-    }) {
-        const groups = catalog.checklistGroups();
-        const missingCount = renderChecklistGroups(
-            missingListEl,
-            groups.missing,
-            "Collection is complete! 🎉"
+    function populateStatusSections(statusSectionsEl) {
+        statusSectionsEl.replaceChildren(
+            ...catalog.checklistSections().map((statusSection) =>
+                renderChecklistSection(statusSection)
+            )
         );
-        const upgradeCount = renderChecklistGroups(
-            upgradeListEl,
-            groups.needsUpgrade,
-            "No upgrades needed. 👍"
-        );
+    }
 
-        missingCountEl.textContent = missingCount;
-        upgradeCountEl.textContent = upgradeCount;
+    function renderChecklistSection(statusSection) {
+        const column = document.createElement("div");
+        column.className = "status-column";
+        column.dataset.photoStatus = statusSection.status;
+
+        const countBadge = document.createElement("span");
+        countBadge.className = "status-badge";
+
+        const title = document.createElement("span");
+        title.textContent = statusSection.title;
+
+        const heading = document.createElement("h3");
+        heading.append(title, countBadge);
+
+        const listContainer = document.createElement("div");
+        listContainer.className = "plate-list-container";
+
+        const count = renderChecklistGroups(
+            listContainer,
+            statusSection.groups,
+            statusSection.emptyMessage
+        );
+        countBadge.textContent = count;
+
+        column.append(heading, listContainer);
+        return column;
     }
 
     function renderChecklistGroups(container, groups, emptyMessage) {

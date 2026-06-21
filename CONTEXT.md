@@ -20,9 +20,9 @@ Miscellaneous, which appears last; plates are alphabetical within each category.
 _Avoid_: Sort order, display order, list order
 
 **Photo Status**:
-The current catalog state of a plate's selected photo: current, missing, or
+The current catalog state of a plate's selected photo: satisfied, missing, or
 needs-upgrade.
-_Avoid_: Image status, asset state, photo quality
+_Avoid_: Image status, asset state, photo quality, current
 
 **Variant**:
 A distinct plate design that the site intentionally presents as part of the
