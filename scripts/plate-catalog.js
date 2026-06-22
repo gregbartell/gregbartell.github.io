@@ -1,5 +1,9 @@
 (function (root, factory) {
-    const api = factory();
+    const selectedAssetFilesystem =
+        typeof module === "object" && module.exports
+            ? require("./selected-asset-filesystem.js")
+            : root?.SelectedAssetFilesystem;
+    const api = factory(selectedAssetFilesystem);
 
     if (typeof module === "object" && module.exports) {
         module.exports = api.node;
@@ -7,7 +11,15 @@
     if (root) {
         root.PlateCatalog = api.browser;
     }
-})(typeof window !== "undefined" ? window : globalThis, function () {
+})(typeof window !== "undefined" ? window : globalThis, function (
+    selectedAssetFilesystem
+) {
+    if (!selectedAssetFilesystem) {
+        throw new Error(
+            "SelectedAssetFilesystem is required before plate-catalog.js"
+        );
+    }
+
     const PHOTO_STATUSES = Object.freeze({
         SATISFIED: "satisfied",
         MISSING: "missing",
@@ -418,8 +430,6 @@
 
     const STICKER_STYLES = Object.freeze(["black", "blue", "green", "red"]);
     const DEFAULT_STICKER_FOOT = "WASHINGTON";
-    const FULL_SIZE_IMAGE_ROOT = "pics";
-    const THUMBNAIL_IMAGE_ROOT = "pics/thumbs";
 
     const categories = [
         {
@@ -1033,21 +1043,14 @@
         return imageAlt(plate);
     }
 
-    function thumbnailPath(asset) {
-        return asset ? `${THUMBNAIL_IMAGE_ROOT}/${asset}` : null;
-    }
-
-    function fullImagePath(asset) {
-        return asset ? `${FULL_SIZE_IMAGE_ROOT}/${asset}` : null;
-    }
-
     function selectedAssetFor(plate) {
         if (!plate.asset) return null;
+        const paths = selectedAssetFilesystem.selectedAssetPaths(plate.asset);
 
         return Object.freeze({
             asset: plate.asset,
-            fullSizePath: fullImagePath(plate.asset),
-            thumbnailPath: thumbnailPath(plate.asset),
+            fullSizePath: paths.fullSizePath,
+            thumbnailPath: paths.thumbnailPath,
             altText: selectedAssetAltTextFor(plate),
             imageKind: imageKindFor(plate),
         });
@@ -1119,48 +1122,16 @@
         };
     }
 
-    function assetFromFullSizePath(fullSizePath) {
-        const prefix = `${FULL_SIZE_IMAGE_ROOT}/`;
-        if (typeof fullSizePath !== "string") return null;
-        if (!fullSizePath.startsWith(prefix)) return null;
-        if (fullSizePath.startsWith(`${THUMBNAIL_IMAGE_ROOT}/`)) return null;
-        return fullSizePath.slice(prefix.length);
-    }
-
     function localImageProjections({
         sourceCategories = categories,
         fullSizePaths,
         thumbnailPaths = [],
     } = {}) {
-        if (!Array.isArray(fullSizePaths)) {
-            throw new Error("fullSizePaths must be an array");
-        }
-        if (!Array.isArray(thumbnailPaths)) {
-            throw new Error("thumbnailPaths must be an array");
-        }
-
-        const selectedFullSizePaths = new Set(
-            selectedAssetProjections(sourceCategories).map(
-                (selectedAsset) => selectedAsset.fullSizePath
-            )
-        );
-        const localThumbnailPaths = new Set(thumbnailPaths);
-
-        return fullSizePaths
-            .filter((fullSizePath) => !selectedFullSizePaths.has(fullSizePath))
-            .map((fullSizePath) => {
-                const asset = assetFromFullSizePath(fullSizePath);
-                const expectedThumbnailPath = thumbnailPath(asset);
-
-                return Object.freeze({
-                    asset,
-                    fullSizePath,
-                    thumbnailPath: expectedThumbnailPath,
-                    hasMatchingThumbnail:
-                        expectedThumbnailPath !== null &&
-                        localThumbnailPaths.has(expectedThumbnailPath),
-                });
-            });
+        return selectedAssetFilesystem.localImageProjections({
+            selectedAssets: selectedAssetProjections(sourceCategories),
+            fullSizePaths,
+            thumbnailPaths,
+        });
     }
 
     function getPlateEntries(sourceCategories = categories) {

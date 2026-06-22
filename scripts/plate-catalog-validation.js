@@ -1,4 +1,5 @@
 const catalog = require("./plate-catalog.js");
+const selectedAssetFilesystem = require("./selected-asset-filesystem.js");
 
 const CATALOG_ORDER_COLLATOR = new Intl.Collator("en", {
     sensitivity: "base",
@@ -149,22 +150,15 @@ function selectedAssetEntries(sourceCategories = catalog.categories) {
 }
 
 function selectedAssetRequirements(sourceCategories = catalog.categories) {
-    return selectedAssetEntries(sourceCategories).map(
-        (selectedAsset) =>
-            Object.freeze({
-                catalogRef: selectedAsset.catalogRef,
-                fullSizePath: selectedAsset.fullSizePath,
-                thumbnailPath: selectedAsset.thumbnailPath,
-            })
+    return selectedAssetFilesystem.selectedAssetRequirements(
+        selectedAssetEntries(sourceCategories)
     );
 }
 
 function selectedAssetFilePaths(sourceCategories = catalog.categories) {
-    const entries = selectedAssetEntries(sourceCategories);
-    return {
-        fullSizePaths: entries.map((selectedAsset) => selectedAsset.fullSizePath),
-        thumbnailPaths: entries.map((selectedAsset) => selectedAsset.thumbnailPath),
-    };
+    return selectedAssetFilesystem.selectedAssetFilePaths(
+        selectedAssetEntries(sourceCategories)
+    );
 }
 
 function unselectedLocalImages({

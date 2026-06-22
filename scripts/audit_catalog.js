@@ -2,6 +2,7 @@
 const fs = require("fs");
 const path = require("path");
 const { auditCatalog } = require("./plate-catalog-audit.js");
+const selectedAssetFilesystem = require("./selected-asset-filesystem.js");
 
 const repoRoot = path.resolve(__dirname, "..");
 const collator = new Intl.Collator("en", {
@@ -13,9 +14,9 @@ function toRepoRelative(absolutePath) {
     return path.relative(repoRoot, absolutePath).split(path.sep).join("/");
 }
 
-function localJpegPaths(rootRelativePath, shouldInclude = () => true) {
+function localJpegFiles(rootRelativePath, shouldInclude = () => true) {
     const rootPath = path.join(repoRoot, rootRelativePath);
-    const paths = [];
+    const files = [];
 
     function walk(directory) {
         fs.readdirSync(directory, { withFileTypes: true }).forEach((entry) => {
@@ -25,28 +26,47 @@ function localJpegPaths(rootRelativePath, shouldInclude = () => true) {
                 return;
             }
 
-            if (!entry.isFile() || !/\.(?:jpe?g)$/i.test(entry.name)) {
+            const relativePath = toRepoRelative(absolutePath);
+            if (
+                !entry.isFile() ||
+                !selectedAssetFilesystem.isJpegPath(relativePath)
+            ) {
                 return;
             }
 
-            const relativePath = toRepoRelative(absolutePath);
             if (shouldInclude(relativePath)) {
-                paths.push(relativePath);
+                files.push({
+                    path: relativePath,
+                    mtimeMs: fs.statSync(absolutePath).mtimeMs,
+                });
             }
         });
     }
 
     if (fs.existsSync(rootPath)) walk(rootPath);
-    return paths.sort((left, right) => collator.compare(left, right));
+    return files.sort((left, right) => collator.compare(left.path, right.path));
+}
+
+function localJpegPaths(rootRelativePath, shouldInclude = () => true) {
+    return localJpegFiles(rootRelativePath, shouldInclude).map((file) => file.path);
 }
 
 function repositoryImagePaths() {
+    const fullSizeFiles = localJpegFiles(
+        selectedAssetFilesystem.fullSizeImageRoot,
+        selectedAssetFilesystem.isRepositoryFullSizeJpegPath
+    );
+    const thumbnailFiles = localJpegFiles(
+        selectedAssetFilesystem.thumbnailImageRoot,
+        selectedAssetFilesystem.isRepositoryThumbnailJpegPath
+    );
+
     return {
-        fullSizePaths: localJpegPaths(
-            "pics",
-            (relativePath) => !relativePath.startsWith("pics/thumbs/")
+        fullSizePaths: fullSizeFiles.map((file) => file.path),
+        thumbnailPaths: thumbnailFiles.map((file) => file.path),
+        fileMetadataByPath: selectedAssetFilesystem.fileMetadataByPath(
+            fullSizeFiles.concat(thumbnailFiles)
         ),
-        thumbnailPaths: localJpegPaths("pics/thumbs"),
     };
 }
 
@@ -121,6 +141,7 @@ if (require.main === module) {
 module.exports = {
     auditRepositoryCatalog,
     formatAuditResult,
+    localJpegFiles,
     localJpegPaths,
     repositoryImagePaths,
     runAuditCommand,

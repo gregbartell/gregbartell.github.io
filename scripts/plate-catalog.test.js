@@ -2,6 +2,7 @@
 const assert = require("assert/strict");
 const catalog = require("./plate-catalog.js");
 const catalogValidation = require("./plate-catalog-validation.js");
+const selectedAssetFilesystem = require("./selected-asset-filesystem.js");
 
 assert.deepEqual(Object.keys(globalThis.PlateCatalog), [
     "displayCategories",
@@ -135,6 +136,32 @@ assert.deepEqual(Object.keys(catalog), [
     "catalogProjections",
     "localImageProjections",
 ]);
+
+assert.deepEqual(
+    selectedAssetFilesystem.selectedAssetPaths("fixture/selected.jpg"),
+    {
+        fullSizePath: "pics/fixture/selected.jpg",
+        thumbnailPath: "pics/thumbs/fixture/selected.jpg",
+    }
+);
+assert.equal(
+    selectedAssetFilesystem.isRepositoryFullSizeJpegPath(
+        "pics/fixture/selected.jpg"
+    ),
+    true
+);
+assert.equal(
+    selectedAssetFilesystem.isRepositoryFullSizeJpegPath(
+        "pics/thumbs/fixture/selected.jpg"
+    ),
+    false
+);
+assert.equal(
+    selectedAssetFilesystem.isRepositoryThumbnailJpegPath(
+        "pics/thumbs/fixture/selected.jpeg"
+    ),
+    true
+);
 
 const fixtureProjections = catalog.catalogProjections(fixtureCategories);
 const selectedAssetProjectionsDescriptor = Object.getOwnPropertyDescriptor(

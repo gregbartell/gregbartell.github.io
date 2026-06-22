@@ -1,4 +1,5 @@
 const catalogValidation = require("./plate-catalog-validation.js");
+const selectedAssetFilesystem = require("./selected-asset-filesystem.js");
 
 const COLLATOR = new Intl.Collator("en", {
     sensitivity: "base",
@@ -13,6 +14,7 @@ function auditCatalog({
     sourceCategories,
     fullSizePaths = [],
     thumbnailPaths = [],
+    fileMetadataByPath,
 } = {}) {
     const errors = [];
     const notices = [];
@@ -22,6 +24,7 @@ function auditCatalog({
         errors,
         fullSizePaths,
         thumbnailPaths,
+        fileMetadataByPath,
         sourceCategories,
     });
     auditUnselectedLocalImages({
@@ -60,6 +63,7 @@ function auditSelectedAssetFiles({
     errors,
     fullSizePaths,
     thumbnailPaths,
+    fileMetadataByPath,
     sourceCategories,
 }) {
     if (!Array.isArray(fullSizePaths)) {
@@ -109,6 +113,19 @@ function auditSelectedAssetFiles({
             );
         }
     });
+
+    try {
+        selectedAssetFilesystem
+            .thumbnailFreshnessDiagnostics({
+                requirements,
+                metadataByPath: fileMetadataByPath,
+            })
+            .forEach((error) => errors.push(error));
+    } catch (error) {
+        errors.push(
+            `selectedAssetFilesystem.thumbnailFreshnessDiagnostics threw: ${error.message}`
+        );
+    }
 }
 
 function auditUnselectedLocalImages({

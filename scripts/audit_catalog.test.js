@@ -92,6 +92,27 @@ assert.deepEqual(
     }
 );
 
+assert.deepEqual(
+    auditCatalog({
+        sourceCategories: fixtureCategories,
+        fullSizePaths: selectedFullSizePaths,
+        thumbnailPaths: selectedThumbnailPaths,
+        fileMetadataByPath: {
+            "pics/alpha/selected.jpg": { mtimeMs: 3000 },
+            "pics/thumbs/alpha/selected.jpg": { mtimeMs: 1000 },
+            "pics/misc/selected.jpg": { mtimeMs: 1000 },
+            "pics/thumbs/misc/selected.jpg": { mtimeMs: 1000 },
+        },
+    }),
+    {
+        passed: false,
+        errors: [
+            "alpha/alpha-selected stale Selected Asset thumbnail file: pics/thumbs/alpha/selected.jpg older than pics/alpha/selected.jpg",
+        ],
+        notices: [],
+    }
+);
+
 {
     const invalidCategories = JSON.parse(JSON.stringify(fixtureCategories));
     invalidCategories[0].plates[0].photoStatus = "archived";
