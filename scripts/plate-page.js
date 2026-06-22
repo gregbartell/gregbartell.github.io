@@ -67,28 +67,21 @@
         const card = document.createElement("div");
         card.className = "plate-card";
 
-        const status = catalog.photoStatusFor(plate);
-        const statusDetails = catalog.photoStatusDetailsFor(plate);
-        card.dataset.photoStatus = status;
+        const photoStatus = catalog.photoStatusPresentationFor(plate, category);
+        card.dataset.photoStatus = photoStatus.status;
 
         const title = document.createElement("h3");
         title.textContent = plate.title;
         card.append(title);
 
-        if (statusDetails.placeholder) {
-            card.append(
-                renderMissingPlaceholder(
-                    plate,
-                    category,
-                    statusDetails.placeholder
-                )
-            );
+        if (photoStatus.missingPlaceholder) {
+            card.append(renderMissingPlaceholder(photoStatus.missingPlaceholder));
         } else {
             card.append(renderPlateImage(plate));
         }
 
-        if (statusDetails.cardBadge) {
-            card.append(renderPhotoStatusBadge(statusDetails.cardBadge));
+        if (photoStatus.badge) {
+            card.append(renderPhotoStatusBadge(photoStatus.badge));
         }
 
         return card;
@@ -122,14 +115,11 @@
         return badge;
     }
 
-    function renderMissingPlaceholder(plate, category, placeholderDetails) {
+    function renderMissingPlaceholder(placeholderDetails) {
         const placeholder = document.createElement("div");
         placeholder.className = "plate-empty";
         placeholder.setAttribute("role", "img");
-        placeholder.setAttribute(
-            "aria-label",
-            `${catalog.imageAlt(plate)} — ${placeholderDetails.ariaSuffix}`
-        );
+        placeholder.setAttribute("aria-label", placeholderDetails.ariaLabel);
 
         const strip = document.createElement("div");
         strip.className = "plate-empty__strip";
@@ -141,13 +131,17 @@
         const body = document.createElement("div");
         body.className = "plate-empty__body";
         body.append(
-            renderPlaceholderRow("Plate", plate.title, "plate-empty__name"),
+            renderPlaceholderRow(
+                "Plate",
+                placeholderDetails.plateTitle,
+                "plate-empty__name"
+            ),
             renderPlaceholderRow(
                 "Category",
-                category.title,
+                placeholderDetails.categoryTitle,
                 "plate-empty__category"
             ),
-            renderPlaceholderRow("Status", placeholderDetails.statusValue)
+            renderPlaceholderRow("Status", placeholderDetails.statusText)
         );
 
         const rubber = document.createElement("div");

@@ -29,6 +29,24 @@
         });
     }
 
+    function hasOwn(object, key) {
+        return Object.prototype.hasOwnProperty.call(object, key);
+    }
+
+    function isPlainObject(value) {
+        return value !== null && typeof value === "object" && !Array.isArray(value);
+    }
+
+    function isNonEmptyText(value) {
+        return typeof value === "string" && value.trim() !== "";
+    }
+
+    function requirePolicyText(errors, value, label) {
+        if (!isNonEmptyText(value)) {
+            errors.push(`${label} must be non-empty text`);
+        }
+    }
+
     const PHOTO_STATUS_DETAILS = Object.freeze({
         [PHOTO_STATUSES.SATISFIED]: statusDetails({
             status: PHOTO_STATUSES.SATISFIED,
@@ -669,6 +687,43 @@
         return details;
     }
 
+    function photoStatusBadgeFor(plate) {
+        const { cardBadge } = photoStatusDetailsFor(plate);
+        if (!cardBadge) return null;
+
+        return Object.freeze({
+            text: cardBadge.text,
+            ariaLabel: cardBadge.ariaLabel,
+        });
+    }
+
+    function missingPhotoPlaceholderFor(plate, category) {
+        const { placeholder } = photoStatusDetailsFor(plate);
+        if (!placeholder) return null;
+        if (!category || !isNonEmptyText(category.title)) {
+            throw new Error(
+                `${plate.id} requires a Category for missing-photo placeholder display`
+            );
+        }
+
+        return Object.freeze({
+            ariaLabel: `${imageAlt(plate)} \u2014 ${placeholder.ariaSuffix}`,
+            stripDetail: placeholder.stripDetail,
+            plateTitle: plate.title,
+            categoryTitle: category.title,
+            statusText: placeholder.statusValue,
+            stampText: placeholder.stampText,
+        });
+    }
+
+    function photoStatusPresentationFor(plate, category) {
+        return Object.freeze({
+            status: photoStatusFor(plate),
+            badge: photoStatusBadgeFor(plate),
+            missingPlaceholder: missingPhotoPlaceholderFor(plate, category),
+        });
+    }
+
     function imageKindFor(plate) {
         return plate.imageKind || IMAGE_KINDS.PLATE;
     }
@@ -790,16 +845,217 @@
         });
     }
 
+    function validatePhotoStatusDetails(errors) {
+        const photoStatuses = Object.values(PHOTO_STATUSES);
+        const validPhotoStatuses = new Set(photoStatuses);
+
+        if (!isPlainObject(PHOTO_STATUS_DETAILS)) {
+            errors.push("Photo Status policy details must be an object");
+            return;
+        }
+
+        photoStatuses.forEach((status) => {
+            if (!hasOwn(PHOTO_STATUS_DETAILS, status)) {
+                errors.push(`Photo Status policy missing status: ${status}`);
+            }
+        });
+
+        Object.entries(PHOTO_STATUS_DETAILS).forEach(([status, details]) => {
+            const prefix = `Photo Status policy for ${status}`;
+
+            if (!validPhotoStatuses.has(status)) {
+                errors.push(`Photo Status policy has unknown status: ${status}`);
+            }
+            if (!isPlainObject(details)) {
+                errors.push(`${prefix} must be an object`);
+                return;
+            }
+            if (details.status !== status) {
+                errors.push(`${prefix} must set status to ${status}`);
+            }
+
+            if (details.cardBadge !== null) {
+                if (!isPlainObject(details.cardBadge)) {
+                    errors.push(`${prefix} badge must be null or an object`);
+                } else {
+                    requirePolicyText(
+                        errors,
+                        details.cardBadge.text,
+                        `${prefix} badge text`
+                    );
+                    requirePolicyText(
+                        errors,
+                        details.cardBadge.ariaLabel,
+                        `${prefix} badge aria label`
+                    );
+                }
+            }
+
+            if (details.checklist !== null) {
+                if (!isPlainObject(details.checklist)) {
+                    errors.push(`${prefix} checklist must be null or an object`);
+                } else {
+                    requirePolicyText(
+                        errors,
+                        details.checklist.title,
+                        `${prefix} checklist title`
+                    );
+                    requirePolicyText(
+                        errors,
+                        details.checklist.emptyMessage,
+                        `${prefix} checklist empty message`
+                    );
+                }
+            }
+
+            if (details.placeholder !== null) {
+                if (!isPlainObject(details.placeholder)) {
+                    errors.push(
+                        `${prefix} missing-photo placeholder must be null or an object`
+                    );
+                } else {
+                    [
+                        "ariaSuffix",
+                        "stripDetail",
+                        "statusValue",
+                        "stampText",
+                    ].forEach((property) => {
+                        requirePolicyText(
+                            errors,
+                            details.placeholder[property],
+                            `${prefix} missing-photo placeholder ${property}`
+                        );
+                    });
+                }
+            }
+        });
+    }
+
+    function validatePhotoStatusPresentation(errors, sourceCategories) {
+        getPlateEntries(sourceCategories).forEach(({ category, plate }) => {
+            const prefix = `${category.id}/${plate.id}`;
+            let presentation;
+
+            try {
+                presentation = photoStatusPresentationFor(plate, category);
+            } catch (error) {
+                errors.push(
+                    `${prefix} Photo Status presentation failed: ${error.message}`
+                );
+                return;
+            }
+
+            if (presentation.status !== photoStatusFor(plate)) {
+                errors.push(`${prefix} Photo Status presentation status drifted`);
+            }
+
+            if (presentation.badge !== null) {
+                if (!isPlainObject(presentation.badge)) {
+                    errors.push(`${prefix} Photo Status badge must be null or object`);
+                } else {
+                    requirePolicyText(
+                        errors,
+                        presentation.badge.text,
+                        `${prefix} Photo Status badge text`
+                    );
+                    requirePolicyText(
+                        errors,
+                        presentation.badge.ariaLabel,
+                        `${prefix} Photo Status badge aria label`
+                    );
+                }
+            }
+
+            if (presentation.missingPlaceholder !== null) {
+                if (!isPlainObject(presentation.missingPlaceholder)) {
+                    errors.push(
+                        `${prefix} missing-photo placeholder must be null or object`
+                    );
+                } else {
+                    [
+                        "ariaLabel",
+                        "stripDetail",
+                        "plateTitle",
+                        "categoryTitle",
+                        "statusText",
+                        "stampText",
+                    ].forEach((property) => {
+                        requirePolicyText(
+                            errors,
+                            presentation.missingPlaceholder[property],
+                            `${prefix} missing-photo placeholder ${property}`
+                        );
+                    });
+                }
+            }
+        });
+    }
+
+    function validatePhotoStatusChecklist(errors, sourceCategories) {
+        let sections;
+        const checklistStatusSet = new Set(CHECKLIST_PHOTO_STATUSES);
+
+        Object.entries(PHOTO_STATUS_DETAILS).forEach(([status, details]) => {
+            if (details?.checklist && !checklistStatusSet.has(status)) {
+                errors.push(
+                    `Photo Status policy for ${status} has checklist display but is not included in checklist sections`
+                );
+            }
+        });
+
+        try {
+            sections = checklistSections(sourceCategories);
+        } catch (error) {
+            errors.push(`Photo Status checklist failed: ${error.message}`);
+            return;
+        }
+
+        if (!Array.isArray(sections)) {
+            errors.push("Photo Status checklist sections must be an array");
+            return;
+        }
+
+        sections.forEach((section, index) => {
+            const prefix = `Photo Status checklist section ${index}`;
+            const details = PHOTO_STATUS_DETAILS[section.status];
+
+            if (!details || !details.checklist) {
+                errors.push(`${prefix} uses a non-checklist status`);
+                return;
+            }
+
+            if (section.title !== details.checklist.title) {
+                errors.push(`${prefix} title must come from Photo Status policy`);
+            }
+            if (section.emptyMessage !== details.checklist.emptyMessage) {
+                errors.push(
+                    `${prefix} empty message must come from Photo Status policy`
+                );
+            }
+            if (!Array.isArray(section.groups)) {
+                errors.push(`${prefix} groups must be an array`);
+            }
+        });
+    }
+
+    function validatePhotoStatusPolicy(sourceCategories = categories) {
+        const errors = [];
+
+        validatePhotoStatusDetails(errors);
+        validatePhotoStatusPresentation(errors, sourceCategories);
+        validatePhotoStatusChecklist(errors, sourceCategories);
+
+        return errors;
+    }
+
     return {
         categories,
         photoStatuses: PHOTO_STATUSES,
-        photoStatusDetails: PHOTO_STATUS_DETAILS,
         imageKinds: IMAGE_KINDS,
         stickerStyles: STICKER_STYLES,
         defaultStickerFoot: DEFAULT_STICKER_FOOT,
         photoStatusFor,
-        photoStatusDetailsFor,
-        photoStatusDetailsForStatus,
+        photoStatusPresentationFor,
         imageKindFor,
         imageAlt,
         thumbnailPath,
@@ -811,5 +1067,6 @@
         getPlateEntries,
         categoriesWithStatus,
         checklistSections,
+        validatePhotoStatusPolicy,
     };
 });
