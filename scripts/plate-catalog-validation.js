@@ -114,7 +114,9 @@ function catalogRef(category, plate) {
     return `${categoryId}/${plateId}`;
 }
 
-function selectedAssetProjectionCategories(sourceCategories) {
+function projectableCatalogCategories(sourceCategories = catalog.categories) {
+    if (!Array.isArray(sourceCategories)) return [];
+
     const projectableCategories = [];
     let skippedMalformedEntry = false;
 
@@ -142,7 +144,7 @@ function selectedAssetProjectionCategories(sourceCategories) {
 
 function selectedAssetEntries(sourceCategories = catalog.categories) {
     return catalog.selectedAssetProjections(
-        selectedAssetProjectionCategories(sourceCategories)
+        projectableCatalogCategories(sourceCategories)
     );
 }
 
@@ -171,7 +173,7 @@ function unselectedLocalImages({
     thumbnailPaths = [],
 } = {}) {
     return catalog.localImageProjections({
-        sourceCategories,
+        sourceCategories: projectableCatalogCategories(sourceCategories),
         fullSizePaths,
         thumbnailPaths,
     });

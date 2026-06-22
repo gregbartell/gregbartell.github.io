@@ -45,6 +45,10 @@ const selectedThumbnailPaths = [
     "pics/thumbs/misc/selected.jpg",
 ];
 
+function clone(value) {
+    return JSON.parse(JSON.stringify(value));
+}
+
 assert.deepEqual(
     auditCatalog({
         sourceCategories: fixtureCategories,
@@ -157,11 +161,46 @@ assert.deepEqual(
         errors: [
             "Category at index 0 must be an object",
             "Catalog Order: Miscellaneous must be the last Category",
-            "catalogValidation.unselectedLocalImages threw: Cannot read properties of null (reading 'plates')",
         ],
         notices: [],
     }
 );
+
+{
+    const malformedVariantCategories = clone(fixtureCategories);
+    malformedVariantCategories[0].plates.unshift(null);
+
+    assert.deepEqual(
+        auditCatalog({
+            sourceCategories: malformedVariantCategories,
+            fullSizePaths: [
+                "pics/alpha/alternate.jpg",
+                ...selectedFullSizePaths,
+            ],
+            thumbnailPaths: [
+                ...selectedThumbnailPaths,
+                "pics/thumbs/alpha/alternate.jpg",
+            ],
+        }),
+        {
+            passed: false,
+            errors: ["Category alpha Variant at index 0 must be an object"],
+            notices: [
+                {
+                    type: "unselected-local-images",
+                    images: [
+                        {
+                            asset: "alpha/alternate.jpg",
+                            fullSizePath: "pics/alpha/alternate.jpg",
+                            thumbnailPath: "pics/thumbs/alpha/alternate.jpg",
+                            hasMatchingThumbnail: true,
+                        },
+                    ],
+                },
+            ],
+        }
+    );
+}
 
 assert.deepEqual(
     formatAuditResult({

@@ -864,4 +864,57 @@ assert.deepEqual(
     ]
 );
 
+{
+    const malformedLocalImageCategories = [
+        null,
+        {
+            id: "missing-variants",
+            title: "Missing Variants",
+            sticker: { style: "blue", mark: "MIS" },
+        },
+        {
+            id: "fixture",
+            title: "Fixture",
+            sticker: { style: "blue", mark: "FIX" },
+            plates: [null, selectedPlate, needsUpgradePlate],
+        },
+    ];
+    const errors = catalogValidation.validateCatalog(
+        malformedLocalImageCategories
+    );
+
+    assertHasError(errors, "Category at index 0 must be an object");
+    assertHasError(
+        errors,
+        "Category missing-variants must have at least one Variant"
+    );
+    assertHasError(
+        errors,
+        "Category fixture Variant at index 0 must be an object"
+    );
+    assert.deepEqual(
+        catalogValidation.unselectedLocalImages({
+            sourceCategories: malformedLocalImageCategories,
+            fullSizePaths: [
+                "pics/fixture/selected.jpg",
+                "pics/fixture/needs-upgrade.jpg",
+                "pics/fixture/unselected.jpg",
+            ],
+            thumbnailPaths: [
+                "pics/thumbs/fixture/selected.jpg",
+                "pics/thumbs/fixture/needs-upgrade.jpg",
+                "pics/thumbs/fixture/unselected.jpg",
+            ],
+        }),
+        [
+            {
+                asset: "fixture/unselected.jpg",
+                fullSizePath: "pics/fixture/unselected.jpg",
+                thumbnailPath: "pics/thumbs/fixture/unselected.jpg",
+                hasMatchingThumbnail: true,
+            },
+        ]
+    );
+}
+
 console.log("Plate catalog tests passed.");
