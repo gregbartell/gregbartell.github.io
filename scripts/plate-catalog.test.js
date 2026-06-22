@@ -80,6 +80,37 @@ function clone(value) {
     return JSON.parse(JSON.stringify(value));
 }
 
+function withCatalogValidationFixture(fakeCatalog, callback) {
+    const catalogPath = require.resolve("./plate-catalog.js");
+    const validationPath = require.resolve("./plate-catalog-validation.js");
+    const originalCatalogModule = require.cache[catalogPath];
+    const originalValidationModule = require.cache[validationPath];
+
+    delete require.cache[validationPath];
+    require.cache[catalogPath] = {
+        id: catalogPath,
+        filename: catalogPath,
+        loaded: true,
+        exports: fakeCatalog,
+    };
+
+    try {
+        return callback(require("./plate-catalog-validation.js"));
+    } finally {
+        if (originalCatalogModule) {
+            require.cache[catalogPath] = originalCatalogModule;
+        } else {
+            delete require.cache[catalogPath];
+        }
+
+        if (originalValidationModule) {
+            require.cache[validationPath] = originalValidationModule;
+        } else {
+            delete require.cache[validationPath];
+        }
+    }
+}
+
 function assertHasError(errors, expected) {
     assert.ok(
         errors.includes(expected),
@@ -333,6 +364,22 @@ assert.deepEqual(fixtureProjections.displayCategories, [
 
 assert.deepEqual(catalogValidation.validatePhotoStatusPolicy(fixtureCategories), []);
 
+assert.deepEqual(
+    withCatalogValidationFixture(
+        {
+            photoStatusPolicyErrors: () => ["fixture Photo Status policy error"],
+            photoStatusChecklistPolicies: () => {
+                throw new Error("projection policy helper should not run");
+            },
+            catalogProjections: () => {
+                throw new Error("projection helper should not run");
+            },
+        },
+        (validation) => validation.validatePhotoStatusPolicy()
+    ),
+    ["fixture Photo Status policy error"]
+);
+
 assert.deepEqual(catalogValidation.validateCatalog(validCatalogFixture), []);
 
 assert.deepEqual(
@@ -475,6 +522,26 @@ assert.deepEqual(catalogValidation.selectedAssetRequirements(validCatalogFixture
     assertHasError(
         catalogValidation.validateCatalog(invalid),
         "Catalog Order: Variants in Alpha must be alphabetical by title"
+    );
+}
+
+{
+    const invalid = clone(validCatalogFixture);
+    invalid[0].id = "Alpha";
+
+    assertHasError(
+        catalogValidation.validateCatalog(invalid),
+        "Category Alpha has invalid id: Alpha"
+    );
+}
+
+{
+    const invalid = clone(validCatalogFixture);
+    invalid[0].plates[1].id = "alpha_selected";
+
+    assertHasError(
+        catalogValidation.validateCatalog(invalid),
+        "alpha/alpha_selected has invalid Variant id"
     );
 }
 
