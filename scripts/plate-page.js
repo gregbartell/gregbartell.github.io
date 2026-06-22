@@ -38,6 +38,7 @@
         const statusBtn = document.getElementById("check-status-btn");
         const statusCloseBtn = document.getElementById("statusClose");
 
+        const catalogRoot = document.getElementById("catalog-root");
         const statusSectionsEl = document.getElementById("statusSections");
 
         let lastFocused = null;
@@ -54,34 +55,45 @@
             lastFocused?.focus();
         }
 
-        document.querySelectorAll(".plate-image").forEach((img) => {
-            const open = () => {
-                const myId = ++currentImageRequestId;
-                const thumbSrc = img.src;
-                const fullSrc = img.dataset.fullSrc;
+        function plateImageFromEvent(event) {
+            const plateImage = event.target.closest?.(".plate-image");
+            if (!plateImage || !catalogRoot?.contains(plateImage)) return null;
+            return plateImage;
+        }
 
-                enlargedImg.src = thumbSrc;
-                enlargedImg.alt = img.alt;
-                openModal(imageModal);
+        function openPlateImage(img) {
+            const myId = ++currentImageRequestId;
+            const thumbSrc = img.src;
+            const fullSrc = img.dataset.fullSrc;
 
-                if (fullSrc && fullSrc !== thumbSrc) {
-                    const full = new Image();
-                    full.onload = () => {
-                        if (myId === currentImageRequestId) {
-                            enlargedImg.src = fullSrc;
-                        }
-                    };
-                    full.src = fullSrc;
-                }
-            };
+            enlargedImg.src = thumbSrc;
+            enlargedImg.alt = img.alt;
+            openModal(imageModal);
 
-            img.addEventListener("click", open);
-            img.addEventListener("keydown", (event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    open();
-                }
-            });
+            if (fullSrc && fullSrc !== thumbSrc) {
+                const full = new Image();
+                full.onload = () => {
+                    if (myId === currentImageRequestId) {
+                        enlargedImg.src = fullSrc;
+                    }
+                };
+                full.src = fullSrc;
+            }
+        }
+
+        catalogRoot?.addEventListener("click", (event) => {
+            const plateImage = plateImageFromEvent(event);
+            if (plateImage) openPlateImage(plateImage);
+        });
+
+        catalogRoot?.addEventListener("keydown", (event) => {
+            if (event.key !== "Enter" && event.key !== " ") return;
+
+            const plateImage = plateImageFromEvent(event);
+            if (!plateImage) return;
+
+            event.preventDefault();
+            openPlateImage(plateImage);
         });
 
         imageCloseBtn.addEventListener("click", () => closeModal(imageModal));
