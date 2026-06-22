@@ -76,6 +76,8 @@
 
     const STICKER_STYLES = Object.freeze(["black", "blue", "green", "red"]);
     const DEFAULT_STICKER_FOOT = "WASHINGTON";
+    const FULL_SIZE_IMAGE_ROOT = "pics";
+    const THUMBNAIL_IMAGE_ROOT = "pics/thumbs";
 
     const categories = [
         {
@@ -676,11 +678,87 @@
     }
 
     function thumbnailPath(asset) {
-        return asset ? `pics/thumbs/${asset}` : null;
+        return asset ? `${THUMBNAIL_IMAGE_ROOT}/${asset}` : null;
     }
 
     function fullImagePath(asset) {
-        return asset ? `pics/${asset}` : null;
+        return asset ? `${FULL_SIZE_IMAGE_ROOT}/${asset}` : null;
+    }
+
+    function selectedAssetFor(plate) {
+        if (!plate.asset) return null;
+
+        return Object.freeze({
+            asset: plate.asset,
+            fullSizePath: fullImagePath(plate.asset),
+            thumbnailPath: thumbnailPath(plate.asset),
+            altText: imageAlt(plate),
+            imageKind: imageKindFor(plate),
+        });
+    }
+
+    function selectedAssetEntries(sourceCategories = categories) {
+        return getPlateEntries(sourceCategories)
+            .map(({ category, plate }) => ({
+                category,
+                plate,
+                selectedAsset: selectedAssetFor(plate),
+            }))
+            .filter(({ selectedAsset }) => selectedAsset !== null);
+    }
+
+    function selectedAssetFilePaths(sourceCategories = categories) {
+        const entries = selectedAssetEntries(sourceCategories);
+        return {
+            fullSizePaths: entries.map(
+                ({ selectedAsset }) => selectedAsset.fullSizePath
+            ),
+            thumbnailPaths: entries.map(
+                ({ selectedAsset }) => selectedAsset.thumbnailPath
+            ),
+        };
+    }
+
+    function assetFromFullSizePath(fullSizePath) {
+        const prefix = `${FULL_SIZE_IMAGE_ROOT}/`;
+        if (typeof fullSizePath !== "string") return null;
+        if (!fullSizePath.startsWith(prefix)) return null;
+        if (fullSizePath.startsWith(`${THUMBNAIL_IMAGE_ROOT}/`)) return null;
+        return fullSizePath.slice(prefix.length);
+    }
+
+    function unselectedLocalImages({
+        sourceCategories = categories,
+        fullSizePaths,
+        thumbnailPaths = [],
+    } = {}) {
+        if (!Array.isArray(fullSizePaths)) {
+            throw new Error("fullSizePaths must be an array");
+        }
+        if (!Array.isArray(thumbnailPaths)) {
+            throw new Error("thumbnailPaths must be an array");
+        }
+
+        const selectedFullSizePaths = new Set(
+            selectedAssetFilePaths(sourceCategories).fullSizePaths
+        );
+        const localThumbnailPaths = new Set(thumbnailPaths);
+
+        return fullSizePaths
+            .filter((fullSizePath) => !selectedFullSizePaths.has(fullSizePath))
+            .map((fullSizePath) => {
+                const asset = assetFromFullSizePath(fullSizePath);
+                const expectedThumbnailPath = thumbnailPath(asset);
+
+                return Object.freeze({
+                    asset,
+                    fullSizePath,
+                    thumbnailPath: expectedThumbnailPath,
+                    hasMatchingThumbnail:
+                        expectedThumbnailPath !== null &&
+                        localThumbnailPaths.has(expectedThumbnailPath),
+                });
+            });
     }
 
     function getPlateEntries(sourceCategories = categories) {
@@ -726,6 +804,10 @@
         imageAlt,
         thumbnailPath,
         fullImagePath,
+        selectedAssetFor,
+        selectedAssetEntries,
+        selectedAssetFilePaths,
+        unselectedLocalImages,
         getPlateEntries,
         categoriesWithStatus,
         checklistSections,

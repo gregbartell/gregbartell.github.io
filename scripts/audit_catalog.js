@@ -18,9 +18,14 @@ const categoryIdPattern = /^[a-z][a-z0-9_]*$/;
 const plateIdPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const errors = [];
+const notices = [];
 
 function fail(message) {
     errors.push(message);
+}
+
+function notice(message) {
+    notices.push(message);
 }
 
 function hasOwn(object, key) {
@@ -29,6 +34,37 @@ function hasOwn(object, key) {
 
 function exists(relativePath) {
     return fs.existsSync(path.join(repoRoot, relativePath));
+}
+
+function toRepoRelative(absolutePath) {
+    return path.relative(repoRoot, absolutePath).split(path.sep).join("/");
+}
+
+function localJpegPaths(rootRelativePath, shouldInclude = () => true) {
+    const rootPath = path.join(repoRoot, rootRelativePath);
+    const paths = [];
+
+    function walk(directory) {
+        fs.readdirSync(directory, { withFileTypes: true }).forEach((entry) => {
+            const absolutePath = path.join(directory, entry.name);
+            if (entry.isDirectory()) {
+                walk(absolutePath);
+                return;
+            }
+
+            if (!entry.isFile() || !/\.(?:jpe?g)$/i.test(entry.name)) {
+                return;
+            }
+
+            const relativePath = toRepoRelative(absolutePath);
+            if (shouldInclude(relativePath)) {
+                paths.push(relativePath);
+            }
+        });
+    }
+
+    if (fs.existsSync(rootPath)) walk(rootPath);
+    return paths.sort((left, right) => collator.compare(left, right));
 }
 
 function isSorted(values) {
@@ -276,31 +312,63 @@ function auditPlates() {
                 return;
             }
 
-            if (!plate.asset) {
-                fail(`${prefix} must have an asset when not missing`);
+            const selectedAsset = catalog.selectedAssetFor(plate);
+            if (!selectedAsset) {
+                fail(`${prefix} must have a Selected Asset when not missing`);
                 return;
             }
 
-            const fullPath = catalog.fullImagePath(plate.asset);
-            const thumbPath = catalog.thumbnailPath(plate.asset);
-            if (!exists(fullPath)) {
-                fail(`${prefix} missing full-size asset: ${fullPath}`);
+            if (!exists(selectedAsset.fullSizePath)) {
+                fail(
+                    `${prefix} missing Selected Asset full-size file: ${selectedAsset.fullSizePath}`
+                );
             }
-            if (!exists(thumbPath)) {
-                fail(`${prefix} missing thumbnail asset: ${thumbPath}`);
+            if (!exists(selectedAsset.thumbnailPath)) {
+                fail(
+                    `${prefix} missing Selected Asset thumbnail file: ${selectedAsset.thumbnailPath}`
+                );
             }
         });
     });
 }
 
+function auditUnselectedLocalImages() {
+    const fullSizePaths = localJpegPaths(
+        "pics",
+        (relativePath) => !relativePath.startsWith("pics/thumbs/")
+    );
+    const thumbnailPaths = localJpegPaths("pics/thumbs");
+    const unselectedImages = catalog.unselectedLocalImages({
+        fullSizePaths,
+        thumbnailPaths,
+    });
+
+    if (unselectedImages.length === 0) return;
+
+    notice("Unselected local images (informational, not catalog failures):");
+    unselectedImages.forEach((image) => {
+        const thumbnailStatus = image.hasMatchingThumbnail
+            ? `matching thumbnail: ${image.thumbnailPath}`
+            : `no matching thumbnail: ${image.thumbnailPath}`;
+        notice(`- ${image.fullSizePath} (${thumbnailStatus})`);
+    });
+}
+
+function printNotices() {
+    notices.forEach((message) => console.log(message));
+}
+
 auditCategories();
 auditPhotoStatusDetails();
 auditPlates();
+auditUnselectedLocalImages();
 
 if (errors.length > 0) {
     console.error("Catalog audit failed:");
     errors.forEach((error) => console.error(`- ${error}`));
+    printNotices();
     process.exit(1);
 }
 
 console.log("Catalog audit passed.");
+printNotices();

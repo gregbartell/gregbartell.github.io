@@ -95,15 +95,20 @@
     }
 
     function renderPlateImage(plate) {
+        const selectedAsset = catalog.selectedAssetFor(plate);
+        if (!selectedAsset) {
+            throw new Error(`${plate.id} requires a Selected Asset`);
+        }
+
         const img = document.createElement("img");
-        img.src = catalog.thumbnailPath(plate.asset);
-        img.alt = catalog.imageAlt(plate);
+        img.src = selectedAsset.thumbnailPath;
+        img.alt = selectedAsset.altText;
         img.className = "plate-image";
         img.loading = "lazy";
         img.decoding = "async";
         img.setAttribute("role", "button");
         img.setAttribute("tabindex", "0");
-        img.dataset.fullSrc = catalog.fullImagePath(plate.asset);
+        img.dataset.fullSrc = selectedAsset.fullSizePath;
         return img;
     }
 
