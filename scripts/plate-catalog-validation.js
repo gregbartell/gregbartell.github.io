@@ -7,8 +7,6 @@ const CATALOG_ORDER_COLLATOR = new Intl.Collator("en", {
 const CATEGORY_ID_PATTERN = /^[a-z][a-z0-9_]*$/;
 const VARIANT_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const MISCELLANEOUS_CATEGORY_TITLE = "Miscellaneous";
-const FULL_SIZE_IMAGE_ROOT = "pics";
-const THUMBNAIL_IMAGE_ROOT = "pics/thumbs";
 const CATALOG_ORDER_ERRORS = Object.freeze({
     miscellaneousLast: "Catalog Order: Miscellaneous must be the last Category",
     categoriesAlphabetical:
@@ -116,55 +114,36 @@ function catalogRef(category, plate) {
     return `${categoryId}/${plateId}`;
 }
 
-function imageKindFor(plate) {
-    return plate.imageKind || catalog.imageKinds.PLATE;
-}
+function selectedAssetProjectionCategories(sourceCategories) {
+    const projectableCategories = [];
+    let skippedMalformedEntry = false;
 
-function selectedAssetAltTextFor(plate) {
-    if (hasOwn(plate, "selectedAssetAltText")) {
-        return plate.selectedAssetAltText;
-    }
-    return `${plate.title} ${imageKindFor(plate)}`;
-}
+    sourceCategories.forEach((category) => {
+        if (!isPlainObject(category) || !Array.isArray(category.plates)) {
+            skippedMalformedEntry = true;
+            return;
+        }
 
-function fullImagePath(asset) {
-    return asset ? `${FULL_SIZE_IMAGE_ROOT}/${asset}` : null;
-}
+        const projectablePlates = category.plates.filter(isPlainObject);
+        if (projectablePlates.length !== category.plates.length) {
+            skippedMalformedEntry = true;
+            projectableCategories.push({
+                ...category,
+                plates: projectablePlates,
+            });
+            return;
+        }
 
-function thumbnailPath(asset) {
-    return asset ? `${THUMBNAIL_IMAGE_ROOT}/${asset}` : null;
+        projectableCategories.push(category);
+    });
+
+    return skippedMalformedEntry ? projectableCategories : sourceCategories;
 }
 
 function selectedAssetEntries(sourceCategories = catalog.categories) {
-    return sourceCategories
-        .flatMap((category) => {
-            if (!isPlainObject(category) || !Array.isArray(category.plates)) {
-                return [];
-            }
-
-            return category.plates.map((plate) => ({ category, plate }));
-        })
-        .map(({ category, plate }) => {
-            if (!isPlainObject(plate) || !plate.asset) return null;
-
-            return Object.freeze({
-                catalogRef: catalogRef(category, plate),
-                category: Object.freeze({
-                    id: category.id,
-                    title: category.title,
-                }),
-                variant: Object.freeze({
-                    id: plate.id,
-                    title: plate.title,
-                }),
-                asset: plate.asset,
-                fullSizePath: fullImagePath(plate.asset),
-                thumbnailPath: thumbnailPath(plate.asset),
-                altText: selectedAssetAltTextFor(plate),
-                imageKind: imageKindFor(plate),
-            });
-        })
-        .filter((entry) => entry !== null);
+    return catalog.selectedAssetProjections(
+        selectedAssetProjectionCategories(sourceCategories)
+    );
 }
 
 function selectedAssetRequirements(sourceCategories = catalog.categories) {

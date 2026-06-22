@@ -137,6 +137,10 @@ assert.deepEqual(Object.keys(catalog), [
 ]);
 
 const fixtureProjections = catalog.catalogProjections(fixtureCategories);
+const selectedAssetProjectionsDescriptor = Object.getOwnPropertyDescriptor(
+    catalog,
+    "selectedAssetProjections"
+);
 
 assert.deepEqual(Object.keys(fixtureProjections), [
     "selectedAssets",
@@ -145,6 +149,8 @@ assert.deepEqual(Object.keys(fixtureProjections), [
     "displayChecklistSections",
 ]);
 assert.equal("photoStatusChecklistSections" in fixtureProjections, false);
+assert.equal(selectedAssetProjectionsDescriptor.enumerable, false);
+assert.equal(typeof selectedAssetProjectionsDescriptor.value, "function");
 
 Object.keys(fixtureProjections).forEach((key) =>
     assertProjectionDataProperty(fixtureProjections, key)
@@ -192,6 +198,152 @@ assert.deepEqual(
     catalogValidation.selectedAssetEntries(fixtureCategories),
     fixtureProjections.selectedAssets
 );
+assert.deepEqual(
+    catalog.selectedAssetProjections(fixtureCategories),
+    fixtureProjections.selectedAssets
+);
+
+{
+    const projectionCategories = [
+        {
+            id: "source",
+            title: "Source",
+            plates: [
+                {
+                    id: "source-variant",
+                    title: "Source Variant",
+                    asset: "source/raw.jpg",
+                },
+            ],
+        },
+    ];
+    const projectionSelectedAssets = [
+        {
+            catalogRef: "projection/selected",
+            category: {
+                id: "projection",
+                title: "Projection",
+            },
+            variant: {
+                id: "selected",
+                title: "Selected",
+            },
+            asset: "projection/selected.jpg",
+            fullSizePath: "pics/projection/selected.jpg",
+            thumbnailPath: "pics/thumbs/projection/selected.jpg",
+            altText: "Projection selected emblem",
+            imageKind: catalog.imageKinds.EMBLEM,
+        },
+    ];
+    let projectionCalls = 0;
+
+    withCatalogValidationFixture(
+        {
+            categories: [],
+            catalogProjections() {
+                throw new Error("wide projection helper should not run");
+            },
+            selectedAssetProjections(sourceCategories) {
+                projectionCalls += 1;
+                assert.equal(sourceCategories, projectionCategories);
+
+                return projectionSelectedAssets;
+            },
+        },
+        (validation) => {
+            assert.deepEqual(
+                validation.selectedAssetEntries(projectionCategories),
+                projectionSelectedAssets
+            );
+            assert.deepEqual(
+                validation.selectedAssetRequirements(projectionCategories),
+                [
+                    {
+                        catalogRef: "projection/selected",
+                        fullSizePath: "pics/projection/selected.jpg",
+                        thumbnailPath: "pics/thumbs/projection/selected.jpg",
+                    },
+                ]
+            );
+            assert.deepEqual(
+                validation.selectedAssetFilePaths(projectionCategories),
+                {
+                    fullSizePaths: ["pics/projection/selected.jpg"],
+                    thumbnailPaths: ["pics/thumbs/projection/selected.jpg"],
+                }
+            );
+        }
+    );
+
+    assert.equal(projectionCalls, 3);
+}
+
+{
+    const validPlate = {
+        id: "selected",
+        title: "Selected",
+        asset: "source/selected.jpg",
+    };
+    const malformedProjectionCategories = [
+        null,
+        {
+            id: "missing-plates",
+            title: "Missing Plates",
+        },
+        {
+            id: "source",
+            title: "Source",
+            plates: [null, validPlate],
+        },
+    ];
+    const projectionSelectedAssets = [
+        {
+            catalogRef: "source/selected",
+            category: {
+                id: "source",
+                title: "Source",
+            },
+            variant: {
+                id: "selected",
+                title: "Selected",
+            },
+            asset: "source/selected.jpg",
+            fullSizePath: "pics/source/selected.jpg",
+            thumbnailPath: "pics/thumbs/source/selected.jpg",
+            altText: "Selected plate",
+            imageKind: catalog.imageKinds.PLATE,
+        },
+    ];
+    let projectionCategories;
+
+    withCatalogValidationFixture(
+        {
+            categories: [],
+            catalogProjections() {
+                throw new Error("wide projection helper should not run");
+            },
+            selectedAssetProjections(sourceCategories) {
+                projectionCategories = sourceCategories;
+
+                return projectionSelectedAssets;
+            },
+        },
+        (validation) => {
+            assert.deepEqual(
+                validation.selectedAssetEntries(malformedProjectionCategories),
+                projectionSelectedAssets
+            );
+        }
+    );
+
+    assert.deepEqual(projectionCategories, [
+        {
+            id: "source",
+            title: "Source",
+            plates: [validPlate],
+        },
+    ]);
+}
 
 assert.deepEqual(fixtureProjections.photoStatusPresentations, [
     {
@@ -397,6 +549,28 @@ assert.deepEqual(
         {
             catalogRef: "misc/misc-emblem",
             altText: "Misc Emblem selected art",
+        },
+    ]
+);
+
+assert.deepEqual(
+    catalogValidation.selectedAssetEntries(validCatalogFixture).map(
+        (selectedAsset) => ({
+            catalogRef: selectedAsset.catalogRef,
+            altText: selectedAsset.altText,
+            imageKind: selectedAsset.imageKind,
+        })
+    ),
+    [
+        {
+            catalogRef: "alpha/alpha-selected",
+            altText: "Alpha Selected plate",
+            imageKind: catalog.imageKinds.PLATE,
+        },
+        {
+            catalogRef: "misc/misc-emblem",
+            altText: "Misc Emblem selected art",
+            imageKind: catalog.imageKinds.EMBLEM,
         },
     ]
 );

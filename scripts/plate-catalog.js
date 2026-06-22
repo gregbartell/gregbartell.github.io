@@ -1112,6 +1112,9 @@
                 value: catalogProjections,
                 enumerable: true,
             },
+            selectedAssetProjections: {
+                value: selectedAssetProjections,
+            },
             localImageProjections: {
                 value: localImageProjections,
                 enumerable: true,

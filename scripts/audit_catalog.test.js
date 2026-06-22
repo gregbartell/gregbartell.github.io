@@ -92,17 +92,19 @@ assert.deepEqual(
     const invalidCategories = JSON.parse(JSON.stringify(fixtureCategories));
     invalidCategories[0].plates[0].photoStatus = "archived";
 
-    const result = auditCatalog({
-        sourceCategories: invalidCategories,
-        fullSizePaths: selectedFullSizePaths,
-        thumbnailPaths: selectedThumbnailPaths,
-    });
-
-    assert.equal(result.passed, false);
-    assert.ok(
-        result.errors.includes(
-            "alpha/alpha-selected has invalid Photo Status: archived"
-        )
+    assert.deepEqual(
+        auditCatalog({
+            sourceCategories: invalidCategories,
+            fullSizePaths: selectedFullSizePaths,
+            thumbnailPaths: selectedThumbnailPaths,
+        }),
+        {
+            passed: false,
+            errors: [
+                "alpha/alpha-selected has invalid Photo Status: archived",
+            ],
+            notices: [],
+        }
     );
 }
 
@@ -141,6 +143,23 @@ assert.deepEqual(
                 ],
             },
         ],
+    }
+);
+
+assert.deepEqual(
+    auditCatalog({
+        sourceCategories: [null],
+        fullSizePaths: [],
+        thumbnailPaths: [],
+    }),
+    {
+        passed: false,
+        errors: [
+            "Category at index 0 must be an object",
+            "Catalog Order: Miscellaneous must be the last Category",
+            "catalogValidation.unselectedLocalImages threw: Cannot read properties of null (reading 'plates')",
+        ],
+        notices: [],
     }
 );
 
