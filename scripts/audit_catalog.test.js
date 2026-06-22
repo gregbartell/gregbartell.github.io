@@ -164,27 +164,6 @@ assert.deepEqual(
 );
 
 assert.deepEqual(
-    auditCatalog({
-        fullSizePaths: [],
-        thumbnailPaths: [],
-        validation: {
-            validateCatalog: () => [],
-            selectedAssetRequirements: () => [],
-            unselectedLocalImages: () => {
-                throw new Error("fixture local image failure");
-            },
-        },
-    }),
-    {
-        passed: false,
-        errors: [
-            "catalogValidation.unselectedLocalImages threw: fixture local image failure",
-        ],
-        notices: [],
-    }
-);
-
-assert.deepEqual(
     formatAuditResult({
         passed: true,
         errors: [],

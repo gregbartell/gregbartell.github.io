@@ -13,18 +13,16 @@ function auditCatalog({
     sourceCategories,
     fullSizePaths = [],
     thumbnailPaths = [],
-    validation = catalogValidation,
 } = {}) {
     const errors = [];
     const notices = [];
 
-    auditCatalogInvariants({ errors, sourceCategories, validation });
+    auditCatalogInvariants({ errors, sourceCategories });
     auditSelectedAssetFiles({
         errors,
         fullSizePaths,
         thumbnailPaths,
         sourceCategories,
-        validation,
     });
     auditUnselectedLocalImages({
         errors,
@@ -32,7 +30,6 @@ function auditCatalog({
         fullSizePaths,
         thumbnailPaths,
         sourceCategories,
-        validation,
     });
 
     return {
@@ -42,15 +39,10 @@ function auditCatalog({
     };
 }
 
-function auditCatalogInvariants({ errors, sourceCategories, validation }) {
-    if (typeof validation.validateCatalog !== "function") {
-        errors.push("catalogValidation.validateCatalog must be a function");
-        return;
-    }
-
+function auditCatalogInvariants({ errors, sourceCategories }) {
     let validationErrors;
     try {
-        validationErrors = validation.validateCatalog(sourceCategories);
+        validationErrors = catalogValidation.validateCatalog(sourceCategories);
     } catch (error) {
         errors.push(`catalogValidation.validateCatalog threw: ${error.message}`);
         return;
@@ -69,12 +61,7 @@ function auditSelectedAssetFiles({
     fullSizePaths,
     thumbnailPaths,
     sourceCategories,
-    validation,
 }) {
-    if (typeof validation.selectedAssetRequirements !== "function") {
-        errors.push("catalogValidation.selectedAssetRequirements must be a function");
-        return;
-    }
     if (!Array.isArray(fullSizePaths)) {
         errors.push("fullSizePaths must be an array");
         return;
@@ -86,7 +73,8 @@ function auditSelectedAssetFiles({
 
     let requirements;
     try {
-        requirements = validation.selectedAssetRequirements(sourceCategories);
+        requirements =
+            catalogValidation.selectedAssetRequirements(sourceCategories);
     } catch (error) {
         errors.push(
             `catalogValidation.selectedAssetRequirements threw: ${error.message}`
@@ -129,19 +117,14 @@ function auditUnselectedLocalImages({
     fullSizePaths,
     thumbnailPaths,
     sourceCategories,
-    validation,
 }) {
-    if (typeof validation.unselectedLocalImages !== "function") {
-        errors.push("catalogValidation.unselectedLocalImages must be a function");
-        return;
-    }
     if (!Array.isArray(fullSizePaths) || !Array.isArray(thumbnailPaths)) {
         return;
     }
 
     let unselectedImages;
     try {
-        unselectedImages = validation.unselectedLocalImages({
+        unselectedImages = catalogValidation.unselectedLocalImages({
             sourceCategories,
             fullSizePaths: sortedPaths(fullSizePaths),
             thumbnailPaths: sortedPaths(thumbnailPaths),
