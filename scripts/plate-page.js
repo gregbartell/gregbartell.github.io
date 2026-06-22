@@ -1,12 +1,16 @@
 (function () {
     const catalog = window.PlateCatalog;
     const renderer = window.PlateCatalogRenderer;
+    const modalLifecycle = window.PlateModalLifecycle;
 
     if (!catalog) {
         throw new Error("PlateCatalog is required before plate-page.js");
     }
     if (!renderer) {
         throw new Error("PlateCatalogRenderer is required before plate-page.js");
+    }
+    if (!modalLifecycle) {
+        throw new Error("PlateModalLifecycle is required before plate-page.js");
     }
 
     function onReady(fn) {
@@ -41,19 +45,16 @@
         const catalogRoot = document.getElementById("catalog-root");
         const statusSectionsEl = document.getElementById("statusSections");
 
-        let lastFocused = null;
         let currentImageRequestId = 0;
-
-        function openModal(modal) {
-            lastFocused = document.activeElement;
-            modal.style.display = "flex";
-            modal.querySelector(".close")?.focus();
-        }
-
-        function closeModal(modal) {
-            modal.style.display = "none";
-            lastFocused?.focus();
-        }
+        const lifecycle = modalLifecycle.createModalLifecycle({ document });
+        const imageDialog = lifecycle.register({
+            modal: imageModal,
+            closeButton: imageCloseBtn,
+        });
+        const statusDialog = lifecycle.register({
+            modal: statusModal,
+            closeButton: statusCloseBtn,
+        });
 
         function openSelectedAssetPreview(previewRequest) {
             const myId = ++currentImageRequestId;
@@ -62,7 +63,7 @@
 
             enlargedImg.src = thumbSrc;
             enlargedImg.alt = previewRequest.altText;
-            openModal(imageModal);
+            imageDialog.open();
 
             if (fullSrc && fullSrc !== thumbSrc) {
                 const full = new Image();
@@ -77,28 +78,12 @@
 
         renderer.bindSelectedAssetPreview(catalogRoot, openSelectedAssetPreview);
 
-        imageCloseBtn.addEventListener("click", () => closeModal(imageModal));
-        statusCloseBtn.addEventListener("click", () => closeModal(statusModal));
-
         statusBtn.addEventListener("click", () => {
             renderer.renderChecklist(
                 statusSectionsEl,
                 catalog.displayChecklistSections()
             );
-            openModal(statusModal);
-        });
-
-        imageModal.addEventListener("click", (event) => {
-            if (event.target === imageModal) closeModal(imageModal);
-        });
-        statusModal.addEventListener("click", (event) => {
-            if (event.target === statusModal) closeModal(statusModal);
-        });
-
-        document.addEventListener("keydown", (event) => {
-            if (event.key !== "Escape") return;
-            if (imageModal.style.display === "flex") closeModal(imageModal);
-            else if (statusModal.style.display === "flex") closeModal(statusModal);
+            statusDialog.open();
         });
     }
 })();
