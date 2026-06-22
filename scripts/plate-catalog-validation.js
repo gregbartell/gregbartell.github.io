@@ -121,21 +121,14 @@ function catalogRef(category, plate) {
 }
 
 function selectedAssetEntries(sourceCategories = catalog.categories) {
-    return catalog
-        .getPlateEntries(sourceCategories)
-        .map(({ category, plate }) => ({
-            category,
-            plate,
-            selectedAsset: catalog.selectedAssetFor(plate),
-        }))
-        .filter(({ selectedAsset }) => selectedAsset !== null);
+    return catalog.catalogProjections(sourceCategories).selectedAssets;
 }
 
 function selectedAssetRequirements(sourceCategories = catalog.categories) {
     return selectedAssetEntries(sourceCategories).map(
-        ({ category, plate, selectedAsset }) =>
+        (selectedAsset) =>
             Object.freeze({
-                catalogRef: catalogRef(category, plate),
+                catalogRef: selectedAsset.catalogRef,
                 fullSizePath: selectedAsset.fullSizePath,
                 thumbnailPath: selectedAsset.thumbnailPath,
             })
@@ -145,21 +138,9 @@ function selectedAssetRequirements(sourceCategories = catalog.categories) {
 function selectedAssetFilePaths(sourceCategories = catalog.categories) {
     const entries = selectedAssetEntries(sourceCategories);
     return {
-        fullSizePaths: entries.map(
-            ({ selectedAsset }) => selectedAsset.fullSizePath
-        ),
-        thumbnailPaths: entries.map(
-            ({ selectedAsset }) => selectedAsset.thumbnailPath
-        ),
+        fullSizePaths: entries.map((selectedAsset) => selectedAsset.fullSizePath),
+        thumbnailPaths: entries.map((selectedAsset) => selectedAsset.thumbnailPath),
     };
-}
-
-function assetFromFullSizePath(fullSizePath) {
-    const prefix = `${catalog.fullSizeImageRoot}/`;
-    if (typeof fullSizePath !== "string") return null;
-    if (!fullSizePath.startsWith(prefix)) return null;
-    if (fullSizePath.startsWith(`${catalog.thumbnailImageRoot}/`)) return null;
-    return fullSizePath.slice(prefix.length);
 }
 
 function unselectedLocalImages({
@@ -167,137 +148,67 @@ function unselectedLocalImages({
     fullSizePaths,
     thumbnailPaths = [],
 } = {}) {
-    if (!Array.isArray(fullSizePaths)) {
-        throw new Error("fullSizePaths must be an array");
-    }
-    if (!Array.isArray(thumbnailPaths)) {
-        throw new Error("thumbnailPaths must be an array");
-    }
-
-    const selectedFullSizePaths = new Set(
-        selectedAssetFilePaths(sourceCategories).fullSizePaths
-    );
-    const localThumbnailPaths = new Set(thumbnailPaths);
-
-    return fullSizePaths
-        .filter((fullSizePath) => !selectedFullSizePaths.has(fullSizePath))
-        .map((fullSizePath) => {
-            const asset = assetFromFullSizePath(fullSizePath);
-            const expectedThumbnailPath = catalog.thumbnailPath(asset);
-
-            return Object.freeze({
-                asset,
-                fullSizePath,
-                thumbnailPath: expectedThumbnailPath,
-                hasMatchingThumbnail:
-                    expectedThumbnailPath !== null &&
-                    localThumbnailPaths.has(expectedThumbnailPath),
-            });
-        });
+    return catalog.localImageProjections({
+        sourceCategories,
+        fullSizePaths,
+        thumbnailPaths,
+    });
 }
 
 function validatePhotoStatusDetails(errors) {
-    const photoStatuses = Object.values(catalog.photoStatuses);
-    const validPhotoStatuses = new Set(photoStatuses);
-
-    if (!isPlainObject(catalog.photoStatusDetails)) {
-        errors.push("Photo Status policy details must be an object");
+    if (typeof catalog.photoStatusPolicyErrors !== "function") {
+        errors.push("Photo Status policy validator must be a function");
         return;
     }
 
-    photoStatuses.forEach((status) => {
-        if (!hasOwn(catalog.photoStatusDetails, status)) {
-            errors.push(`Photo Status policy missing status: ${status}`);
-        }
-    });
+    let policyErrors;
+    try {
+        policyErrors = catalog.photoStatusPolicyErrors();
+    } catch (error) {
+        errors.push(`Photo Status policy validation failed: ${error.message}`);
+        return;
+    }
 
-    Object.entries(catalog.photoStatusDetails).forEach(([status, details]) => {
-        const prefix = `Photo Status policy for ${status}`;
+    if (!Array.isArray(policyErrors)) {
+        errors.push("Photo Status policy validator must return an array");
+        return;
+    }
 
-        if (!validPhotoStatuses.has(status)) {
-            errors.push(`Photo Status policy has unknown status: ${status}`);
-        }
-        if (!isPlainObject(details)) {
-            errors.push(`${prefix} must be an object`);
-            return;
-        }
-        if (details.status !== status) {
-            errors.push(`${prefix} must set status to ${status}`);
-        }
-
-        if (details.cardBadge !== null) {
-            if (!isPlainObject(details.cardBadge)) {
-                errors.push(`${prefix} badge must be null or an object`);
-            } else {
-                requirePolicyText(
-                    errors,
-                    details.cardBadge.text,
-                    `${prefix} badge text`
-                );
-                requirePolicyText(
-                    errors,
-                    details.cardBadge.ariaLabel,
-                    `${prefix} badge aria label`
-                );
-            }
-        }
-
-        if (details.checklist !== null) {
-            if (!isPlainObject(details.checklist)) {
-                errors.push(`${prefix} checklist must be null or an object`);
-            } else {
-                requirePolicyText(
-                    errors,
-                    details.checklist.title,
-                    `${prefix} checklist title`
-                );
-                requirePolicyText(
-                    errors,
-                    details.checklist.emptyMessage,
-                    `${prefix} checklist empty message`
-                );
-            }
-        }
-
-        if (details.placeholder !== null) {
-            if (!isPlainObject(details.placeholder)) {
-                errors.push(
-                    `${prefix} missing-photo placeholder must be null or an object`
-                );
-            } else {
-                [
-                    "ariaSuffix",
-                    "stripDetail",
-                    "statusValue",
-                    "stampText",
-                ].forEach((property) => {
-                    requirePolicyText(
-                        errors,
-                        details.placeholder[property],
-                        `${prefix} missing-photo placeholder ${property}`
-                    );
-                });
-            }
-        }
-    });
+    policyErrors.forEach((error) => errors.push(error));
 }
 
 function validatePhotoStatusPresentation(errors, sourceCategories) {
-    catalog.getPlateEntries(sourceCategories).forEach(({ category, plate }) => {
-        const prefix = `${category.id}/${plate.id}`;
-        let presentation;
+    let presentations;
 
-        try {
-            presentation = catalog.photoStatusPresentationFor(plate, category);
-        } catch (error) {
-            errors.push(
-                `${prefix} Photo Status presentation failed: ${error.message}`
-            );
+    try {
+        presentations =
+            catalog.catalogProjections(sourceCategories).photoStatusPresentations;
+    } catch (error) {
+        errors.push(`Photo Status presentation failed: ${error.message}`);
+        return;
+    }
+
+    if (!Array.isArray(presentations)) {
+        errors.push("Photo Status presentations must be an array");
+        return;
+    }
+
+    const validPhotoStatuses = new Set(Object.values(catalog.photoStatuses));
+
+    presentations.forEach((presentation, index) => {
+        const prefix = isNonEmptyText(presentation?.catalogRef)
+            ? presentation.catalogRef
+            : `Photo Status presentation ${index}`;
+
+        if (!isPlainObject(presentation)) {
+            errors.push(`${prefix} must be an object`);
             return;
         }
 
-        if (presentation.status !== catalog.photoStatusFor(plate)) {
-            errors.push(`${prefix} Photo Status presentation status drifted`);
+        if (!validPhotoStatuses.has(presentation.status)) {
+            errors.push(
+                `${prefix} Photo Status presentation has invalid status: ${presentation.status}`
+            );
         }
 
         if (presentation.badge !== null) {
@@ -344,18 +255,46 @@ function validatePhotoStatusPresentation(errors, sourceCategories) {
 
 function validatePhotoStatusChecklist(errors, sourceCategories) {
     let sections;
-    const checklistStatusSet = new Set(catalog.checklistPhotoStatuses);
+    let checklistPolicies;
 
-    Object.entries(catalog.photoStatusDetails).forEach(([status, details]) => {
-        if (details?.checklist && !checklistStatusSet.has(status)) {
-            errors.push(
-                `Photo Status policy for ${status} has checklist display but is not included in checklist sections`
-            );
+    try {
+        checklistPolicies = catalog.photoStatusChecklistPolicies();
+    } catch (error) {
+        errors.push(`Photo Status checklist policy failed: ${error.message}`);
+        return;
+    }
+
+    if (!Array.isArray(checklistPolicies)) {
+        errors.push("Photo Status checklist policy must be an array");
+        return;
+    }
+
+    const checklistPolicyByStatus = new Map();
+    checklistPolicies.forEach((policy, index) => {
+        const prefix = `Photo Status checklist policy ${index}`;
+
+        if (!isPlainObject(policy)) {
+            errors.push(`${prefix} must be an object`);
+            return;
+        }
+
+        requirePolicyText(errors, policy.status, `${prefix} status`);
+        requirePolicyText(errors, policy.title, `${prefix} title`);
+        requirePolicyText(
+            errors,
+            policy.emptyMessage,
+            `${prefix} empty message`
+        );
+
+        if (isNonEmptyText(policy.status)) {
+            checklistPolicyByStatus.set(policy.status, policy);
         }
     });
 
     try {
-        sections = catalog.checklistSections(sourceCategories);
+        sections =
+            catalog.catalogProjections(sourceCategories)
+                .photoStatusChecklistSections;
     } catch (error) {
         errors.push(`Photo Status checklist failed: ${error.message}`);
         return;
@@ -368,17 +307,17 @@ function validatePhotoStatusChecklist(errors, sourceCategories) {
 
     sections.forEach((section, index) => {
         const prefix = `Photo Status checklist section ${index}`;
-        const details = catalog.photoStatusDetails[section.status];
+        const checklistPolicy = checklistPolicyByStatus.get(section.status);
 
-        if (!details || !details.checklist) {
+        if (!checklistPolicy) {
             errors.push(`${prefix} uses a non-checklist status`);
             return;
         }
 
-        if (section.title !== details.checklist.title) {
+        if (section.title !== checklistPolicy.title) {
             errors.push(`${prefix} title must come from Photo Status policy`);
         }
-        if (section.emptyMessage !== details.checklist.emptyMessage) {
+        if (section.emptyMessage !== checklistPolicy.emptyMessage) {
             errors.push(`${prefix} empty message must come from Photo Status policy`);
         }
         if (!Array.isArray(section.groups)) {
@@ -473,6 +412,15 @@ function validateVariantFacts(errors, sourceCategories) {
     const validPhotoStatuses = new Set(Object.values(catalog.photoStatuses));
     const validImageKinds = new Set(Object.values(catalog.imageKinds));
     const entries = validPlateEntries(sourceCategories);
+    const categoriesWithPlates = sourceCategories.filter(
+        (category) => isPlainObject(category) && Array.isArray(category.plates)
+    );
+    const selectedAssetByRef = new Map(
+        selectedAssetEntries(categoriesWithPlates).map((selectedAsset) => [
+            selectedAsset.catalogRef,
+            selectedAsset,
+        ])
+    );
 
     duplicateValues(entries.map(({ plate }) => plate?.id)).forEach((id) => {
         errors.push(`duplicate Variant id: ${id}`);
@@ -522,7 +470,7 @@ function validateVariantFacts(errors, sourceCategories) {
             return;
         }
 
-        const selectedAsset = catalog.selectedAssetFor(plate);
+        const selectedAsset = selectedAssetByRef.get(prefix);
         if (!selectedAsset) {
             errors.push(`${prefix} Selected Asset policy returned no asset`);
             return;
@@ -552,11 +500,18 @@ function validateVariantFacts(errors, sourceCategories) {
 }
 
 function validatePageFacingCatalog(errors, sourceCategories) {
-    let display;
-    let checklist;
+    let projections;
 
     try {
-        display = catalog.displayCategories(sourceCategories);
+        projections = catalog.catalogProjections(sourceCategories);
+    } catch (error) {
+        errors.push(`page-facing Plate Catalog data failed: ${error.message}`);
+        return;
+    }
+
+    let display;
+    try {
+        display = projections.displayCategories;
     } catch (error) {
         errors.push(`page-facing Plate Catalog data failed: ${error.message}`);
         return;
@@ -566,8 +521,9 @@ function validatePageFacingCatalog(errors, sourceCategories) {
         errors.push("page-facing Plate Catalog data must be an array");
     }
 
+    let checklist;
     try {
-        checklist = catalog.displayChecklistSections(sourceCategories);
+        checklist = projections.displayChecklistSections;
     } catch (error) {
         errors.push(`page-facing checklist data failed: ${error.message}`);
         return;

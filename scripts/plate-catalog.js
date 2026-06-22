@@ -33,6 +33,20 @@
         return typeof value === "string" && value.trim() !== "";
     }
 
+    function hasOwn(object, key) {
+        return Object.prototype.hasOwnProperty.call(object, key);
+    }
+
+    function isPlainObject(value) {
+        return value !== null && typeof value === "object" && !Array.isArray(value);
+    }
+
+    function requirePolicyText(errors, value, label) {
+        if (!isNonEmptyText(value)) {
+            errors.push(`${label} must be non-empty text`);
+        }
+    }
+
     const PHOTO_STATUS_DETAILS = Object.freeze({
         [PHOTO_STATUSES.SATISFIED]: statusDetails({
             status: PHOTO_STATUSES.SATISFIED,
@@ -710,6 +724,127 @@
         });
     }
 
+    function photoStatusPolicyErrors() {
+        const errors = [];
+        const photoStatuses = Object.values(PHOTO_STATUSES);
+        const validPhotoStatuses = new Set(photoStatuses);
+
+        if (!isPlainObject(PHOTO_STATUS_DETAILS)) {
+            return ["Photo Status policy details must be an object"];
+        }
+
+        photoStatuses.forEach((status) => {
+            if (!hasOwn(PHOTO_STATUS_DETAILS, status)) {
+                errors.push(`Photo Status policy missing status: ${status}`);
+            }
+        });
+
+        Object.entries(PHOTO_STATUS_DETAILS).forEach(([status, details]) => {
+            const prefix = `Photo Status policy for ${status}`;
+
+            if (!validPhotoStatuses.has(status)) {
+                errors.push(`Photo Status policy has unknown status: ${status}`);
+            }
+            if (!isPlainObject(details)) {
+                errors.push(`${prefix} must be an object`);
+                return;
+            }
+            if (details.status !== status) {
+                errors.push(`${prefix} must set status to ${status}`);
+            }
+
+            if (details.cardBadge !== null) {
+                if (!isPlainObject(details.cardBadge)) {
+                    errors.push(`${prefix} badge must be null or an object`);
+                } else {
+                    requirePolicyText(
+                        errors,
+                        details.cardBadge.text,
+                        `${prefix} badge text`
+                    );
+                    requirePolicyText(
+                        errors,
+                        details.cardBadge.ariaLabel,
+                        `${prefix} badge aria label`
+                    );
+                }
+            }
+
+            if (details.checklist !== null) {
+                if (!isPlainObject(details.checklist)) {
+                    errors.push(`${prefix} checklist must be null or an object`);
+                } else {
+                    requirePolicyText(
+                        errors,
+                        details.checklist.title,
+                        `${prefix} checklist title`
+                    );
+                    requirePolicyText(
+                        errors,
+                        details.checklist.emptyMessage,
+                        `${prefix} checklist empty message`
+                    );
+                }
+            }
+
+            if (details.placeholder !== null) {
+                if (!isPlainObject(details.placeholder)) {
+                    errors.push(
+                        `${prefix} missing-photo placeholder must be null or an object`
+                    );
+                } else {
+                    [
+                        "ariaSuffix",
+                        "stripDetail",
+                        "statusValue",
+                        "stampText",
+                    ].forEach((property) => {
+                        requirePolicyText(
+                            errors,
+                            details.placeholder[property],
+                            `${prefix} missing-photo placeholder ${property}`
+                        );
+                    });
+                }
+            }
+        });
+
+        const checklistStatusSet = new Set(CHECKLIST_PHOTO_STATUSES);
+        Object.entries(PHOTO_STATUS_DETAILS).forEach(([status, details]) => {
+            if (details?.checklist && !checklistStatusSet.has(status)) {
+                errors.push(
+                    `Photo Status policy for ${status} has checklist display but is not included in checklist sections`
+                );
+            }
+        });
+
+        CHECKLIST_PHOTO_STATUSES.forEach((status) => {
+            const details = PHOTO_STATUS_DETAILS[status];
+            if (!details?.checklist) {
+                errors.push(
+                    `Photo Status checklist includes non-checklist status: ${status}`
+                );
+            }
+        });
+
+        return errors;
+    }
+
+    function photoStatusChecklistPolicyForStatus(status) {
+        const { checklist } = photoStatusDetailsForStatus(status);
+        if (!checklist) return null;
+
+        return Object.freeze({
+            status,
+            title: checklist.title,
+            emptyMessage: checklist.emptyMessage,
+        });
+    }
+
+    function photoStatusChecklistPolicies() {
+        return CHECKLIST_PHOTO_STATUSES.map(photoStatusChecklistPolicyForStatus);
+    }
+
     function imageKindFor(plate) {
         return plate.imageKind || IMAGE_KINDS.PLATE;
     }
@@ -738,6 +873,142 @@
         });
     }
 
+    function catalogRef(category, plate) {
+        return `${category.id}/${plate.id}`;
+    }
+
+    function categoryReference(category) {
+        return Object.freeze({
+            id: category.id,
+            title: category.title,
+        });
+    }
+
+    function variantReference(plate) {
+        return Object.freeze({
+            id: plate.id,
+            title: plate.title,
+        });
+    }
+
+    function selectedAssetProjections(sourceCategories = categories) {
+        return getPlateEntries(sourceCategories)
+            .map(({ category, plate }) => {
+                const selectedAsset = selectedAssetFor(plate);
+                if (!selectedAsset) return null;
+
+                return Object.freeze({
+                    catalogRef: catalogRef(category, plate),
+                    category: categoryReference(category),
+                    variant: variantReference(plate),
+                    asset: selectedAsset.asset,
+                    fullSizePath: selectedAsset.fullSizePath,
+                    thumbnailPath: selectedAsset.thumbnailPath,
+                    altText: selectedAsset.altText,
+                    imageKind: selectedAsset.imageKind,
+                });
+            })
+            .filter((entry) => entry !== null);
+    }
+
+    function photoStatusPresentationProjections(sourceCategories = categories) {
+        return getPlateEntries(sourceCategories).map(({ category, plate }) => {
+            const presentation = photoStatusPresentationFor(plate, category);
+
+            return Object.freeze({
+                catalogRef: catalogRef(category, plate),
+                category: categoryReference(category),
+                variant: variantReference(plate),
+                status: presentation.status,
+                badge: presentation.badge,
+                missingPlaceholder: presentation.missingPlaceholder,
+            });
+        });
+    }
+
+    function catalogProjections(sourceCategories = categories) {
+        const projections = {};
+
+        Object.defineProperties(projections, {
+            selectedAssets: {
+                enumerable: true,
+                get() {
+                    return selectedAssetProjections(sourceCategories);
+                },
+            },
+            photoStatusPresentations: {
+                enumerable: true,
+                get() {
+                    return photoStatusPresentationProjections(sourceCategories);
+                },
+            },
+            photoStatusChecklistSections: {
+                enumerable: true,
+                get() {
+                    return displayChecklistSections(sourceCategories);
+                },
+            },
+            displayCategories: {
+                enumerable: true,
+                get() {
+                    return displayCategories(sourceCategories);
+                },
+            },
+            displayChecklistSections: {
+                enumerable: true,
+                get() {
+                    return displayChecklistSections(sourceCategories);
+                },
+            },
+        });
+
+        return Object.freeze(projections);
+    }
+
+    function assetFromFullSizePath(fullSizePath) {
+        const prefix = `${FULL_SIZE_IMAGE_ROOT}/`;
+        if (typeof fullSizePath !== "string") return null;
+        if (!fullSizePath.startsWith(prefix)) return null;
+        if (fullSizePath.startsWith(`${THUMBNAIL_IMAGE_ROOT}/`)) return null;
+        return fullSizePath.slice(prefix.length);
+    }
+
+    function localImageProjections({
+        sourceCategories = categories,
+        fullSizePaths,
+        thumbnailPaths = [],
+    } = {}) {
+        if (!Array.isArray(fullSizePaths)) {
+            throw new Error("fullSizePaths must be an array");
+        }
+        if (!Array.isArray(thumbnailPaths)) {
+            throw new Error("thumbnailPaths must be an array");
+        }
+
+        const selectedFullSizePaths = new Set(
+            selectedAssetProjections(sourceCategories).map(
+                (selectedAsset) => selectedAsset.fullSizePath
+            )
+        );
+        const localThumbnailPaths = new Set(thumbnailPaths);
+
+        return fullSizePaths
+            .filter((fullSizePath) => !selectedFullSizePaths.has(fullSizePath))
+            .map((fullSizePath) => {
+                const asset = assetFromFullSizePath(fullSizePath);
+                const expectedThumbnailPath = thumbnailPath(asset);
+
+                return Object.freeze({
+                    asset,
+                    fullSizePath,
+                    thumbnailPath: expectedThumbnailPath,
+                    hasMatchingThumbnail:
+                        expectedThumbnailPath !== null &&
+                        localThumbnailPaths.has(expectedThumbnailPath),
+                });
+            });
+    }
+
     function getPlateEntries(sourceCategories = categories) {
         return sourceCategories.flatMap((category) =>
             category.plates.map((plate) => ({ category, plate }))
@@ -757,11 +1028,11 @@
 
     function checklistSections(sourceCategories = categories) {
         return CHECKLIST_PHOTO_STATUSES.map((status) => {
-            const details = photoStatusDetailsForStatus(status);
+            const checklistPolicy = photoStatusChecklistPolicyForStatus(status);
             return {
-                status,
-                title: details.checklist.title,
-                emptyMessage: details.checklist.emptyMessage,
+                status: checklistPolicy.status,
+                title: checklistPolicy.title,
+                emptyMessage: checklistPolicy.emptyMessage,
                 groups: categoriesWithStatus(status, sourceCategories),
             };
         });
@@ -850,33 +1121,36 @@
         });
     }
 
+    function nodeApi() {
+        const api = {};
+
+        Object.defineProperties(api, {
+            categories: { value: categories, enumerable: true },
+            photoStatuses: { value: PHOTO_STATUSES, enumerable: true },
+            imageKinds: { value: IMAGE_KINDS, enumerable: true },
+            stickerStyles: { value: STICKER_STYLES, enumerable: true },
+            catalogProjections: {
+                value: catalogProjections,
+                enumerable: true,
+            },
+            localImageProjections: {
+                value: localImageProjections,
+                enumerable: true,
+            },
+            photoStatusPolicyErrors: { value: photoStatusPolicyErrors },
+            photoStatusChecklistPolicies: {
+                value: photoStatusChecklistPolicies,
+            },
+        });
+
+        return Object.freeze(api);
+    }
+
     return {
         browser: Object.freeze({
             displayCategories,
             displayChecklistSections,
         }),
-        node: Object.freeze({
-            categories,
-            photoStatuses: PHOTO_STATUSES,
-            imageKinds: IMAGE_KINDS,
-            stickerStyles: STICKER_STYLES,
-            defaultStickerFoot: DEFAULT_STICKER_FOOT,
-            photoStatusDetails: PHOTO_STATUS_DETAILS,
-            checklistPhotoStatuses: CHECKLIST_PHOTO_STATUSES,
-            fullSizeImageRoot: FULL_SIZE_IMAGE_ROOT,
-            thumbnailImageRoot: THUMBNAIL_IMAGE_ROOT,
-            photoStatusFor,
-            photoStatusPresentationFor,
-            imageKindFor,
-            imageAlt,
-            thumbnailPath,
-            fullImagePath,
-            selectedAssetFor,
-            getPlateEntries,
-            categoriesWithStatus,
-            checklistSections,
-            displayCategories,
-            displayChecklistSections,
-        }),
+        node: nodeApi(),
     };
 });

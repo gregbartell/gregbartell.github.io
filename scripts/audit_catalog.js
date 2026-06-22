@@ -1,28 +1,13 @@
 #!/usr/bin/env node
 const fs = require("fs");
 const path = require("path");
-const catalogValidation = require("./plate-catalog-validation.js");
+const { auditCatalog } = require("./plate-catalog-audit.js");
 
 const repoRoot = path.resolve(__dirname, "..");
 const collator = new Intl.Collator("en", {
     sensitivity: "base",
     numeric: true,
 });
-
-const errors = [];
-const notices = [];
-
-function fail(message) {
-    errors.push(message);
-}
-
-function notice(message) {
-    notices.push(message);
-}
-
-function exists(relativePath) {
-    return fs.existsSync(path.join(repoRoot, relativePath));
-}
 
 function toRepoRelative(absolutePath) {
     return path.relative(repoRoot, absolutePath).split(path.sep).join("/");
@@ -55,102 +40,88 @@ function localJpegPaths(rootRelativePath, shouldInclude = () => true) {
     return paths.sort((left, right) => collator.compare(left, right));
 }
 
-function auditCatalogInvariants() {
-    if (typeof catalogValidation.validateCatalog !== "function") {
-        fail("catalogValidation.validateCatalog must be a function");
-        return;
-    }
-
-    let validationErrors;
-    try {
-        validationErrors = catalogValidation.validateCatalog();
-    } catch (error) {
-        fail(`catalogValidation.validateCatalog threw: ${error.message}`);
-        return;
-    }
-
-    if (!Array.isArray(validationErrors)) {
-        fail("catalogValidation.validateCatalog must return an array");
-        return;
-    }
-
-    validationErrors.forEach((error) => fail(error));
+function repositoryImagePaths() {
+    return {
+        fullSizePaths: localJpegPaths(
+            "pics",
+            (relativePath) => !relativePath.startsWith("pics/thumbs/")
+        ),
+        thumbnailPaths: localJpegPaths("pics/thumbs"),
+    };
 }
 
-function auditSelectedAssetFiles() {
-    if (typeof catalogValidation.selectedAssetRequirements !== "function") {
-        fail("catalogValidation.selectedAssetRequirements must be a function");
-        return;
-    }
-
-    let requirements;
-    try {
-        requirements = catalogValidation.selectedAssetRequirements();
-    } catch (error) {
-        fail(`catalogValidation.selectedAssetRequirements threw: ${error.message}`);
-        return;
-    }
-
-    if (!Array.isArray(requirements)) {
-        fail("catalogValidation.selectedAssetRequirements must return an array");
-        return;
-    }
-
-    requirements.forEach((requirement) => {
-        if (!requirement || typeof requirement.catalogRef !== "string") {
-            fail("catalogValidation.selectedAssetRequirements returned an invalid item");
-            return;
-        }
-
-        if (!exists(requirement.fullSizePath)) {
-            fail(
-                `${requirement.catalogRef} missing Selected Asset full-size file: ${requirement.fullSizePath}`
-            );
-        }
-        if (!exists(requirement.thumbnailPath)) {
-            fail(
-                `${requirement.catalogRef} missing Selected Asset thumbnail file: ${requirement.thumbnailPath}`
-            );
-        }
-    });
+function auditRepositoryCatalog() {
+    return auditCatalog(repositoryImagePaths());
 }
 
-function auditUnselectedLocalImages() {
-    const fullSizePaths = localJpegPaths(
-        "pics",
-        (relativePath) => !relativePath.startsWith("pics/thumbs/")
-    );
-    const thumbnailPaths = localJpegPaths("pics/thumbs");
-    const unselectedImages = catalogValidation.unselectedLocalImages({
-        fullSizePaths,
-        thumbnailPaths,
+function formatNoticeLines(notice) {
+    if (notice.type !== "unselected-local-images" || notice.images.length === 0) {
+        return [];
+    }
+
+    return [
+        "Unselected local images (informational, not catalog failures):",
+        ...notice.images.map((image) => {
+            const thumbnailStatus = image.hasMatchingThumbnail
+                ? `matching thumbnail: ${image.thumbnailPath}`
+                : `no matching thumbnail: ${image.thumbnailPath}`;
+            return `- ${image.fullSizePath} (${thumbnailStatus})`;
+        }),
+    ];
+}
+
+function formatAuditResult(result) {
+    const stdout = [];
+    const stderr = [];
+
+    if (result.passed) {
+        stdout.push("Catalog audit passed.");
+    } else {
+        stderr.push("Catalog audit failed:");
+        result.errors.forEach((error) => stderr.push(`- ${error}`));
+    }
+
+    result.notices.flatMap(formatNoticeLines).forEach((line) => {
+        stdout.push(line);
     });
 
-    if (unselectedImages.length === 0) return;
-
-    notice("Unselected local images (informational, not catalog failures):");
-    unselectedImages.forEach((image) => {
-        const thumbnailStatus = image.hasMatchingThumbnail
-            ? `matching thumbnail: ${image.thumbnailPath}`
-            : `no matching thumbnail: ${image.thumbnailPath}`;
-        notice(`- ${image.fullSizePath} (${thumbnailStatus})`);
-    });
+    return {
+        exitCode: result.passed ? 0 : 1,
+        stdout,
+        stderr,
+    };
 }
 
-function printNotices() {
-    notices.forEach((message) => console.log(message));
+function writeLines(lines, writeLine) {
+    lines.forEach((line) => writeLine(line));
 }
 
-auditCatalogInvariants();
-auditSelectedAssetFiles();
-auditUnselectedLocalImages();
+function runAuditCommand({
+    result = auditRepositoryCatalog(),
+    stdout = console.log,
+    stderr = console.error,
+    exit = process.exit,
+} = {}) {
+    const output = formatAuditResult(result);
 
-if (errors.length > 0) {
-    console.error("Catalog audit failed:");
-    errors.forEach((error) => console.error(`- ${error}`));
-    printNotices();
-    process.exit(1);
+    writeLines(output.stderr, stderr);
+    writeLines(output.stdout, stdout);
+
+    if (output.exitCode !== 0) {
+        exit(output.exitCode);
+    }
+
+    return output.exitCode;
 }
 
-console.log("Catalog audit passed.");
-printNotices();
+if (require.main === module) {
+    runAuditCommand();
+}
+
+module.exports = {
+    auditRepositoryCatalog,
+    formatAuditResult,
+    localJpegPaths,
+    repositoryImagePaths,
+    runAuditCommand,
+};

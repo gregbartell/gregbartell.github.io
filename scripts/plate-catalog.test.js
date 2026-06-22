@@ -86,25 +86,80 @@ function assertHasError(errors, expected) {
     );
 }
 
-assert.deepEqual(catalog.selectedAssetFor(selectedPlate), {
-    asset: "fixture/selected.jpg",
-    fullSizePath: "pics/fixture/selected.jpg",
-    thumbnailPath: "pics/thumbs/fixture/selected.jpg",
-    altText: "Selected Plate plate",
-    imageKind: catalog.imageKinds.PLATE,
-});
+assert.deepEqual(Object.keys(catalog), [
+    "categories",
+    "photoStatuses",
+    "imageKinds",
+    "stickerStyles",
+    "catalogProjections",
+    "localImageProjections",
+]);
 
-assert.equal(catalog.selectedAssetFor(missingPlate), null);
-
-assert.deepEqual(catalog.photoStatusPresentationFor(selectedPlate), {
-    status: catalog.photoStatuses.SATISFIED,
-    badge: null,
-    missingPlaceholder: null,
-});
+const fixtureProjections = catalog.catalogProjections(fixtureCategories);
 
 assert.deepEqual(
-    catalog.photoStatusPresentationFor(missingPlate, fixtureCategories[0]),
+    fixtureProjections.selectedAssets,
+    [
+        {
+            catalogRef: "fixture/selected",
+            category: {
+                id: "fixture",
+                title: "Fixture",
+            },
+            variant: {
+                id: "selected",
+                title: "Selected Plate",
+            },
+            asset: "fixture/selected.jpg",
+            fullSizePath: "pics/fixture/selected.jpg",
+            thumbnailPath: "pics/thumbs/fixture/selected.jpg",
+            altText: "Selected Plate plate",
+            imageKind: catalog.imageKinds.PLATE,
+        },
+        {
+            catalogRef: "fixture/needs-upgrade",
+            category: {
+                id: "fixture",
+                title: "Fixture",
+            },
+            variant: {
+                id: "needs-upgrade",
+                title: "Needs Upgrade Plate",
+            },
+            asset: "fixture/needs-upgrade.jpg",
+            fullSizePath: "pics/fixture/needs-upgrade.jpg",
+            thumbnailPath: "pics/thumbs/fixture/needs-upgrade.jpg",
+            altText: "Needs Upgrade Plate plate",
+            imageKind: catalog.imageKinds.PLATE,
+        },
+    ]
+);
+
+assert.deepEqual(fixtureProjections.photoStatusPresentations, [
     {
+        catalogRef: "fixture/selected",
+        category: {
+            id: "fixture",
+            title: "Fixture",
+        },
+        variant: {
+            id: "selected",
+            title: "Selected Plate",
+        },
+        status: catalog.photoStatuses.SATISFIED,
+        badge: null,
+        missingPlaceholder: null,
+    },
+    {
+        catalogRef: "fixture/missing",
+        category: {
+            id: "fixture",
+            title: "Fixture",
+        },
+        variant: {
+            id: "missing",
+            title: "Missing Plate",
+        },
         status: catalog.photoStatuses.MISSING,
         badge: null,
         missingPlaceholder: {
@@ -115,27 +170,59 @@ assert.deepEqual(
             statusText: "Pending",
             stampText: "Pending",
         },
-    }
-);
-
-assert.deepEqual(catalog.photoStatusPresentationFor(needsUpgradePlate), {
-    status: catalog.photoStatuses.NEEDS_UPGRADE,
-    badge: {
-        text: "LOW QUALITY",
-        ariaLabel: "Low quality photo",
     },
-    missingPlaceholder: null,
-});
+    {
+        catalogRef: "fixture/needs-upgrade",
+        category: {
+            id: "fixture",
+            title: "Fixture",
+        },
+        variant: {
+            id: "needs-upgrade",
+            title: "Needs Upgrade Plate",
+        },
+        status: catalog.photoStatuses.NEEDS_UPGRADE,
+        badge: {
+            text: "LOW QUALITY",
+            ariaLabel: "Low quality photo",
+        },
+        missingPlaceholder: null,
+    },
+]);
 
-assert.deepEqual(catalog.checklistSections(fixtureCategories), [
+assert.deepEqual(catalog.photoStatusPolicyErrors(), []);
+
+assert.deepEqual(catalog.photoStatusChecklistPolicies(), [
     {
         status: catalog.photoStatuses.MISSING,
         title: "Left to Find",
         emptyMessage: "Collection is complete! \u{1F389}",
+    },
+    {
+        status: catalog.photoStatuses.NEEDS_UPGRADE,
+        title: "Needs Better Photo",
+        emptyMessage: "No upgrades needed. \u{1F44D}",
+    },
+]);
+
+assert.deepEqual(fixtureProjections.photoStatusChecklistSections, [
+    {
+        status: catalog.photoStatuses.MISSING,
+        title: "Left to Find",
+        emptyMessage: "Collection is complete! \u{1F389}",
+        count: 1,
         groups: [
             {
-                category: fixtureCategories[0],
-                plates: [missingPlate],
+                category: {
+                    id: "fixture",
+                    title: "Fixture",
+                },
+                variants: [
+                    {
+                        id: "missing",
+                        title: "Missing Plate",
+                    },
+                ],
             },
         ],
     },
@@ -143,16 +230,25 @@ assert.deepEqual(catalog.checklistSections(fixtureCategories), [
         status: catalog.photoStatuses.NEEDS_UPGRADE,
         title: "Needs Better Photo",
         emptyMessage: "No upgrades needed. \u{1F44D}",
+        count: 1,
         groups: [
             {
-                category: fixtureCategories[0],
-                plates: [needsUpgradePlate],
+                category: {
+                    id: "fixture",
+                    title: "Fixture",
+                },
+                variants: [
+                    {
+                        id: "needs-upgrade",
+                        title: "Needs Upgrade Plate",
+                    },
+                ],
             },
         ],
     },
 ]);
 
-assert.deepEqual(catalog.displayCategories(fixtureCategories), [
+assert.deepEqual(fixtureProjections.displayCategories, [
     {
         id: "fixture",
         title: "Fixture",
@@ -208,48 +304,10 @@ assert.deepEqual(catalog.displayCategories(fixtureCategories), [
     },
 ]);
 
-assert.deepEqual(catalog.displayChecklistSections(fixtureCategories), [
-    {
-        status: catalog.photoStatuses.MISSING,
-        title: "Left to Find",
-        emptyMessage: "Collection is complete! \u{1F389}",
-        count: 1,
-        groups: [
-            {
-                category: {
-                    id: "fixture",
-                    title: "Fixture",
-                },
-                variants: [
-                    {
-                        id: "missing",
-                        title: "Missing Plate",
-                    },
-                ],
-            },
-        ],
-    },
-    {
-        status: catalog.photoStatuses.NEEDS_UPGRADE,
-        title: "Needs Better Photo",
-        emptyMessage: "No upgrades needed. \u{1F44D}",
-        count: 1,
-        groups: [
-            {
-                category: {
-                    id: "fixture",
-                    title: "Fixture",
-                },
-                variants: [
-                    {
-                        id: "needs-upgrade",
-                        title: "Needs Upgrade Plate",
-                    },
-                ],
-            },
-        ],
-    },
-]);
+assert.deepEqual(
+    fixtureProjections.displayChecklistSections,
+    fixtureProjections.photoStatusChecklistSections
+);
 
 assert.deepEqual(catalogValidation.validatePhotoStatusPolicy(fixtureCategories), []);
 
