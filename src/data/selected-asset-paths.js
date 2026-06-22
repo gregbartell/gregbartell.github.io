@@ -9,8 +9,8 @@
         root.SelectedAssetPaths = api;
     }
 })(typeof window !== "undefined" ? window : globalThis, function () {
-    const FULL_SIZE_IMAGE_ROOT = "pics";
-    const THUMBNAIL_IMAGE_ROOT = "pics/thumbs";
+    const FULL_SIZE_IMAGE_ROOT = "assets/plates/full";
+    const THUMBNAIL_IMAGE_ROOT = "assets/plates/thumbs";
 
     function isNonEmptyText(value) {
         return typeof value === "string" && value.trim() !== "";

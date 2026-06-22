@@ -1,4 +1,4 @@
-const catalog = require("./plate-catalog.js");
+const catalog = require("../data/plate-catalog.js");
 const selectedAssetFilesystem = require("./selected-asset-filesystem.js");
 
 const CATALOG_ORDER_COLLATOR = new Intl.Collator("en", {

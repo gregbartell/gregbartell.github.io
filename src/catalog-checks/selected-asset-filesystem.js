@@ -1,4 +1,4 @@
-const selectedAssetPathRules = require("./selected-asset-paths.js");
+const selectedAssetPathRules = require("../data/selected-asset-paths.js");
 
 const {
     assetFromFullSizePath,

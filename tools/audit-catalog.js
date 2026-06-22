@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 const fs = require("fs");
 const path = require("path");
-const { auditCatalog } = require("./plate-catalog-audit.js");
-const selectedAssetFilesystem = require("./selected-asset-filesystem.js");
+const { auditCatalog } = require("../src/catalog-checks/plate-catalog-audit.js");
+const selectedAssetFilesystem = require("../src/catalog-checks/selected-asset-filesystem.js");
 
 const repoRoot = path.resolve(__dirname, "..");
 const collator = new Intl.Collator("en", {

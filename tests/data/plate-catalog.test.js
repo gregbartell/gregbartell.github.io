@@ -3,10 +3,10 @@ const assert = require("assert/strict");
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
-const catalog = require("./plate-catalog.js");
-const catalogValidation = require("./plate-catalog-validation.js");
-const selectedAssetPaths = require("./selected-asset-paths.js");
-const selectedAssetFilesystem = require("./selected-asset-filesystem.js");
+const catalog = require("../../src/data/plate-catalog.js");
+const catalogValidation = require("../../src/catalog-checks/plate-catalog-validation.js");
+const selectedAssetPaths = require("../../src/data/selected-asset-paths.js");
+const selectedAssetFilesystem = require("../../src/catalog-checks/selected-asset-filesystem.js");
 
 assert.deepEqual(Object.keys(globalThis.PlateCatalog), [
     "displayCategories",
@@ -86,8 +86,10 @@ function clone(value) {
 }
 
 function withCatalogValidationFixture(fakeCatalog, callback) {
-    const catalogPath = require.resolve("./plate-catalog.js");
-    const validationPath = require.resolve("./plate-catalog-validation.js");
+    const catalogPath = require.resolve("../../src/data/plate-catalog.js");
+    const validationPath = require.resolve(
+        "../../src/catalog-checks/plate-catalog-validation.js"
+    );
     const originalCatalogModule = require.cache[catalogPath];
     const originalValidationModule = require.cache[validationPath];
 
@@ -100,7 +102,9 @@ function withCatalogValidationFixture(fakeCatalog, callback) {
     };
 
     try {
-        return callback(require("./plate-catalog-validation.js"));
+        return callback(
+            require("../../src/catalog-checks/plate-catalog-validation.js")
+        );
     } finally {
         if (originalCatalogModule) {
             require.cache[catalogPath] = originalCatalogModule;
@@ -152,25 +156,25 @@ assert.deepEqual(Object.keys(catalog), [
 assert.deepEqual(
     selectedAssetPaths.selectedAssetPaths("fixture/selected.jpg"),
     {
-        fullSizePath: "pics/fixture/selected.jpg",
-        thumbnailPath: "pics/thumbs/fixture/selected.jpg",
+        fullSizePath: "assets/plates/full/fixture/selected.jpg",
+        thumbnailPath: "assets/plates/thumbs/fixture/selected.jpg",
     }
 );
 assert.equal(
     selectedAssetFilesystem.isRepositoryFullSizeJpegPath(
-        "pics/fixture/selected.jpg"
+        "assets/plates/full/fixture/selected.jpg"
     ),
     true
 );
 assert.equal(
     selectedAssetFilesystem.isRepositoryFullSizeJpegPath(
-        "pics/thumbs/fixture/selected.jpg"
+        "assets/plates/thumbs/fixture/selected.jpg"
     ),
     false
 );
 assert.equal(
     selectedAssetFilesystem.isRepositoryThumbnailJpegPath(
-        "pics/thumbs/fixture/selected.jpeg"
+        "assets/plates/thumbs/fixture/selected.jpeg"
     ),
     true
 );
@@ -201,8 +205,8 @@ assert.equal(
     browserContext.window = browserContext;
     browserContext.globalThis = browserContext;
 
-    runBrowserScript("selected-asset-paths.js", browserContext);
-    runBrowserScript("plate-catalog.js", browserContext);
+    runBrowserScript("../../src/data/selected-asset-paths.js", browserContext);
+    runBrowserScript("../../src/data/plate-catalog.js", browserContext);
 
     assert.equal(browserContext.SelectedAssetFilesystem, undefined);
     assert.deepEqual(Object.keys(browserContext.PlateCatalog), [
@@ -212,7 +216,7 @@ assert.equal(
     assert.equal(
         browserContext.PlateCatalog.displayCategories()[0].variants[0].image
             .thumbnailSrc,
-        "pics/thumbs/collector_vehicles/collector_vehicle.jpg"
+        "assets/plates/thumbs/collector_vehicles/collector_vehicle.jpg"
     );
 }
 
@@ -260,8 +264,8 @@ assert.deepEqual(
                 title: "Selected Plate",
             },
             asset: "fixture/selected.jpg",
-            fullSizePath: "pics/fixture/selected.jpg",
-            thumbnailPath: "pics/thumbs/fixture/selected.jpg",
+            fullSizePath: "assets/plates/full/fixture/selected.jpg",
+            thumbnailPath: "assets/plates/thumbs/fixture/selected.jpg",
             altText: "Selected Plate plate",
             imageKind: catalog.imageKinds.PLATE,
         },
@@ -276,8 +280,8 @@ assert.deepEqual(
                 title: "Needs Upgrade Plate",
             },
             asset: "fixture/needs-upgrade.jpg",
-            fullSizePath: "pics/fixture/needs-upgrade.jpg",
-            thumbnailPath: "pics/thumbs/fixture/needs-upgrade.jpg",
+            fullSizePath: "assets/plates/full/fixture/needs-upgrade.jpg",
+            thumbnailPath: "assets/plates/thumbs/fixture/needs-upgrade.jpg",
             altText: "Needs Upgrade Plate plate",
             imageKind: catalog.imageKinds.PLATE,
         },
@@ -319,8 +323,8 @@ assert.deepEqual(
                 title: "Selected",
             },
             asset: "projection/selected.jpg",
-            fullSizePath: "pics/projection/selected.jpg",
-            thumbnailPath: "pics/thumbs/projection/selected.jpg",
+            fullSizePath: "assets/plates/full/projection/selected.jpg",
+            thumbnailPath: "assets/plates/thumbs/projection/selected.jpg",
             altText: "Projection selected emblem",
             imageKind: catalog.imageKinds.EMBLEM,
         },
@@ -350,16 +354,16 @@ assert.deepEqual(
                 [
                     {
                         catalogRef: "projection/selected",
-                        fullSizePath: "pics/projection/selected.jpg",
-                        thumbnailPath: "pics/thumbs/projection/selected.jpg",
+                        fullSizePath: "assets/plates/full/projection/selected.jpg",
+                        thumbnailPath: "assets/plates/thumbs/projection/selected.jpg",
                     },
                 ]
             );
             assert.deepEqual(
                 validation.selectedAssetFilePaths(projectionCategories),
                 {
-                    fullSizePaths: ["pics/projection/selected.jpg"],
-                    thumbnailPaths: ["pics/thumbs/projection/selected.jpg"],
+                    fullSizePaths: ["assets/plates/full/projection/selected.jpg"],
+                    thumbnailPaths: ["assets/plates/thumbs/projection/selected.jpg"],
                 }
             );
         }
@@ -398,8 +402,8 @@ assert.deepEqual(
                 title: "Selected",
             },
             asset: "source/selected.jpg",
-            fullSizePath: "pics/source/selected.jpg",
-            thumbnailPath: "pics/thumbs/source/selected.jpg",
+            fullSizePath: "assets/plates/full/source/selected.jpg",
+            thumbnailPath: "assets/plates/thumbs/source/selected.jpg",
             altText: "Selected plate",
             imageKind: catalog.imageKinds.PLATE,
         },
@@ -577,8 +581,8 @@ assert.deepEqual(fixtureProjections.displayCategories, [
                 title: "Selected Plate",
                 photoStatus: catalog.photoStatuses.SATISFIED,
                 image: {
-                    thumbnailSrc: "pics/thumbs/fixture/selected.jpg",
-                    fullSizeSrc: "pics/fixture/selected.jpg",
+                    thumbnailSrc: "assets/plates/thumbs/fixture/selected.jpg",
+                    fullSizeSrc: "assets/plates/full/fixture/selected.jpg",
                     altText: "Selected Plate plate",
                 },
                 missingPlaceholder: null,
@@ -604,8 +608,8 @@ assert.deepEqual(fixtureProjections.displayCategories, [
                 title: "Needs Upgrade Plate",
                 photoStatus: catalog.photoStatuses.NEEDS_UPGRADE,
                 image: {
-                    thumbnailSrc: "pics/thumbs/fixture/needs-upgrade.jpg",
-                    fullSizeSrc: "pics/fixture/needs-upgrade.jpg",
+                    thumbnailSrc: "assets/plates/thumbs/fixture/needs-upgrade.jpg",
+                    fullSizeSrc: "assets/plates/full/fixture/needs-upgrade.jpg",
                     altText: "Needs Upgrade Plate plate",
                 },
                 missingPlaceholder: null,
@@ -751,13 +755,13 @@ assert.equal(
 assert.deepEqual(catalogValidation.selectedAssetRequirements(validCatalogFixture), [
     {
         catalogRef: "alpha/alpha-selected",
-        fullSizePath: "pics/alpha/selected.jpg",
-        thumbnailPath: "pics/thumbs/alpha/selected.jpg",
+        fullSizePath: "assets/plates/full/alpha/selected.jpg",
+        thumbnailPath: "assets/plates/thumbs/alpha/selected.jpg",
     },
     {
         catalogRef: "misc/misc-emblem",
-        fullSizePath: "pics/misc/emblem.jpg",
-        thumbnailPath: "pics/thumbs/misc/emblem.jpg",
+        fullSizePath: "assets/plates/full/misc/emblem.jpg",
+        thumbnailPath: "assets/plates/thumbs/misc/emblem.jpg",
     },
 ]);
 
@@ -911,12 +915,12 @@ assert.deepEqual(catalogValidation.selectedAssetRequirements(validCatalogFixture
 
 assert.deepEqual(catalogValidation.selectedAssetFilePaths(fixtureCategories), {
     fullSizePaths: [
-        "pics/fixture/selected.jpg",
-        "pics/fixture/needs-upgrade.jpg",
+        "assets/plates/full/fixture/selected.jpg",
+        "assets/plates/full/fixture/needs-upgrade.jpg",
     ],
     thumbnailPaths: [
-        "pics/thumbs/fixture/selected.jpg",
-        "pics/thumbs/fixture/needs-upgrade.jpg",
+        "assets/plates/thumbs/fixture/selected.jpg",
+        "assets/plates/thumbs/fixture/needs-upgrade.jpg",
     ],
 });
 
@@ -924,21 +928,21 @@ assert.deepEqual(
     catalogValidation.unselectedLocalImages({
         sourceCategories: fixtureCategories,
         fullSizePaths: [
-            "pics/fixture/selected.jpg",
-            "pics/fixture/needs-upgrade.jpg",
-            "pics/fixture/unselected.jpg",
+            "assets/plates/full/fixture/selected.jpg",
+            "assets/plates/full/fixture/needs-upgrade.jpg",
+            "assets/plates/full/fixture/unselected.jpg",
         ],
         thumbnailPaths: [
-            "pics/thumbs/fixture/selected.jpg",
-            "pics/thumbs/fixture/needs-upgrade.jpg",
-            "pics/thumbs/fixture/unselected.jpg",
+            "assets/plates/thumbs/fixture/selected.jpg",
+            "assets/plates/thumbs/fixture/needs-upgrade.jpg",
+            "assets/plates/thumbs/fixture/unselected.jpg",
         ],
     }),
     [
         {
             asset: "fixture/unselected.jpg",
-            fullSizePath: "pics/fixture/unselected.jpg",
-            thumbnailPath: "pics/thumbs/fixture/unselected.jpg",
+            fullSizePath: "assets/plates/full/fixture/unselected.jpg",
+            thumbnailPath: "assets/plates/thumbs/fixture/unselected.jpg",
             hasMatchingThumbnail: true,
         },
     ]
@@ -976,21 +980,21 @@ assert.deepEqual(
         catalogValidation.unselectedLocalImages({
             sourceCategories: malformedLocalImageCategories,
             fullSizePaths: [
-                "pics/fixture/selected.jpg",
-                "pics/fixture/needs-upgrade.jpg",
-                "pics/fixture/unselected.jpg",
+                "assets/plates/full/fixture/selected.jpg",
+                "assets/plates/full/fixture/needs-upgrade.jpg",
+                "assets/plates/full/fixture/unselected.jpg",
             ],
             thumbnailPaths: [
-                "pics/thumbs/fixture/selected.jpg",
-                "pics/thumbs/fixture/needs-upgrade.jpg",
-                "pics/thumbs/fixture/unselected.jpg",
+                "assets/plates/thumbs/fixture/selected.jpg",
+                "assets/plates/thumbs/fixture/needs-upgrade.jpg",
+                "assets/plates/thumbs/fixture/unselected.jpg",
             ],
         }),
         [
             {
                 asset: "fixture/unselected.jpg",
-                fullSizePath: "pics/fixture/unselected.jpg",
-                thumbnailPath: "pics/thumbs/fixture/unselected.jpg",
+                fullSizePath: "assets/plates/full/fixture/unselected.jpg",
+                thumbnailPath: "assets/plates/thumbs/fixture/unselected.jpg",
                 hasMatchingThumbnail: true,
             },
         ]

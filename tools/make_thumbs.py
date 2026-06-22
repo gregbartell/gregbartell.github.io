@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Generate 800px-wide JPEG thumbnails of every plate image under pics/.
+"""Generate 800px-wide JPEG thumbnails of every plate image under assets/plates/full/.
 
-Mirrors directory structure under pics/thumbs/. Skips current thumbnails, so
+Mirrors directory structure under assets/plates/thumbs/. Skips current thumbnails, so
 repeat runs are cheap, and refreshes thumbnails older than their source image.
 Honors EXIF orientation.
 """
@@ -19,7 +19,7 @@ QUALITY = 85
 
 def thumbnail_jobs():
     result = subprocess.run(
-        ["node", str(SCRIPT_ROOT / "thumbnail_plan.js")],
+        ["node", str(SCRIPT_ROOT / "thumbnail-plan.js")],
         check=True,
         capture_output=True,
         text=True,

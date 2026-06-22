@@ -5,7 +5,7 @@
             : root?.SelectedAssetPaths;
     const selectedAssetFilesystem =
         typeof module === "object" && module.exports
-            ? require("./selected-asset-filesystem.js")
+            ? require("../catalog-checks/selected-asset-filesystem.js")
             : null;
     const api = factory(selectedAssetPathRules, selectedAssetFilesystem);
 

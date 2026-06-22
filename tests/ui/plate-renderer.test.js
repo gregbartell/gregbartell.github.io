@@ -2,7 +2,7 @@
 const assert = require("assert/strict");
 
 delete globalThis.PlateCatalogRenderer;
-require("./plate-renderer.js");
+require("../../src/ui/plate-renderer.js");
 
 const renderer = globalThis.PlateCatalogRenderer;
 
@@ -39,10 +39,10 @@ function fakeCatalogRoot() {
 function selectedAssetImage(overrides = {}) {
     return {
         insideCatalogRoot: true,
-        src: "pics/thumbs/fixture/selected.jpg",
+        src: "assets/plates/thumbs/fixture/selected.jpg",
         alt: "Selected Plate plate",
         dataset: {
-            fullSrc: "pics/fixture/selected.jpg",
+            fullSrc: "assets/plates/full/fixture/selected.jpg",
         },
         closest() {
             return this;
@@ -71,8 +71,8 @@ function missingPhotoPlaceholder() {
 
     assert.deepEqual(requests, [
         {
-            thumbnailSrc: "pics/thumbs/fixture/selected.jpg",
-            fullSizeSrc: "pics/fixture/selected.jpg",
+            thumbnailSrc: "assets/plates/thumbs/fixture/selected.jpg",
+            fullSizeSrc: "assets/plates/full/fixture/selected.jpg",
             altText: "Selected Plate plate",
         },
     ]);
@@ -97,8 +97,8 @@ function missingPhotoPlaceholder() {
 
     assert.deepEqual(requests, [
         {
-            thumbnailSrc: "pics/thumbs/fixture/selected.jpg",
-            fullSizeSrc: "pics/fixture/selected.jpg",
+            thumbnailSrc: "assets/plates/thumbs/fixture/selected.jpg",
+            fullSizeSrc: "assets/plates/full/fixture/selected.jpg",
             altText: "Selected Plate plate",
         },
     ]);

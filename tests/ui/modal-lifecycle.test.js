@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const assert = require("assert/strict");
-const { createModalLifecycle } = require("./modal-lifecycle.js");
+const { createModalLifecycle } = require("../../src/ui/modal-lifecycle.js");
 
 function fakeDocument() {
     const listeners = {};
