@@ -55,19 +55,13 @@
             lastFocused?.focus();
         }
 
-        function plateImageFromEvent(event) {
-            const plateImage = event.target.closest?.(".plate-image");
-            if (!plateImage || !catalogRoot?.contains(plateImage)) return null;
-            return plateImage;
-        }
-
-        function openPlateImage(img) {
+        function openSelectedAssetPreview(previewRequest) {
             const myId = ++currentImageRequestId;
-            const thumbSrc = img.src;
-            const fullSrc = img.dataset.fullSrc;
+            const thumbSrc = previewRequest.thumbnailSrc;
+            const fullSrc = previewRequest.fullSizeSrc;
 
             enlargedImg.src = thumbSrc;
-            enlargedImg.alt = img.alt;
+            enlargedImg.alt = previewRequest.altText;
             openModal(imageModal);
 
             if (fullSrc && fullSrc !== thumbSrc) {
@@ -81,20 +75,7 @@
             }
         }
 
-        catalogRoot?.addEventListener("click", (event) => {
-            const plateImage = plateImageFromEvent(event);
-            if (plateImage) openPlateImage(plateImage);
-        });
-
-        catalogRoot?.addEventListener("keydown", (event) => {
-            if (event.key !== "Enter" && event.key !== " ") return;
-
-            const plateImage = plateImageFromEvent(event);
-            if (!plateImage) return;
-
-            event.preventDefault();
-            openPlateImage(plateImage);
-        });
+        renderer.bindSelectedAssetPreview(catalogRoot, openSelectedAssetPreview);
 
         imageCloseBtn.addEventListener("click", () => closeModal(imageModal));
         statusCloseBtn.addEventListener("click", () => closeModal(statusModal));

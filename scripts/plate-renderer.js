@@ -1,4 +1,7 @@
 (function (root) {
+    const SELECTED_ASSET_IMAGE_CLASS = "plate-image";
+    const SELECTED_ASSET_FULL_SIZE_DATA = "fullSrc";
+
     function renderCatalog(rootEl, categories) {
         rootEl.replaceChildren(
             ...categories.map((category) => renderCategory(category))
@@ -69,13 +72,61 @@
         const img = document.createElement("img");
         img.src = image.thumbnailSrc;
         img.alt = image.altText;
-        img.className = "plate-image";
+        img.className = SELECTED_ASSET_IMAGE_CLASS;
         img.loading = "lazy";
         img.decoding = "async";
         img.setAttribute("role", "button");
         img.setAttribute("tabindex", "0");
-        img.dataset.fullSrc = image.fullSizeSrc;
+        img.dataset[SELECTED_ASSET_FULL_SIZE_DATA] = image.fullSizeSrc;
         return img;
+    }
+
+    function bindSelectedAssetPreview(rootEl, requestPreview) {
+        if (!rootEl) return () => {};
+
+        if (typeof requestPreview !== "function") {
+            throw new Error("Selected Asset preview callback is required");
+        }
+
+        function selectedAssetFromEvent(event) {
+            const selectedAsset = event.target.closest?.(
+                `.${SELECTED_ASSET_IMAGE_CLASS}`
+            );
+            if (!selectedAsset || !rootEl.contains(selectedAsset)) return null;
+            return selectedAsset;
+        }
+
+        function previewRequestFor(selectedAsset) {
+            return {
+                thumbnailSrc: selectedAsset.src,
+                fullSizeSrc:
+                    selectedAsset.dataset[SELECTED_ASSET_FULL_SIZE_DATA],
+                altText: selectedAsset.alt,
+            };
+        }
+
+        function openSelectedAsset(event) {
+            const selectedAsset = selectedAssetFromEvent(event);
+            if (selectedAsset) requestPreview(previewRequestFor(selectedAsset));
+        }
+
+        function openSelectedAssetFromKeyboard(event) {
+            if (event.key !== "Enter" && event.key !== " ") return;
+
+            const selectedAsset = selectedAssetFromEvent(event);
+            if (!selectedAsset) return;
+
+            event.preventDefault();
+            requestPreview(previewRequestFor(selectedAsset));
+        }
+
+        rootEl.addEventListener("click", openSelectedAsset);
+        rootEl.addEventListener("keydown", openSelectedAssetFromKeyboard);
+
+        return () => {
+            rootEl.removeEventListener("click", openSelectedAsset);
+            rootEl.removeEventListener("keydown", openSelectedAssetFromKeyboard);
+        };
     }
 
     function renderPhotoStatusBadge(cardBadge) {
@@ -208,5 +259,6 @@
     root.PlateCatalogRenderer = Object.freeze({
         renderCatalog,
         renderChecklist,
+        bindSelectedAssetPreview,
     });
 })(typeof window !== "undefined" ? window : globalThis);
