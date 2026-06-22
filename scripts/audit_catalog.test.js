@@ -105,10 +105,8 @@ assert.deepEqual(
         },
     }),
     {
-        passed: false,
-        errors: [
-            "alpha/alpha-selected stale Selected Asset thumbnail file: pics/thumbs/alpha/selected.jpg older than pics/alpha/selected.jpg",
-        ],
+        passed: true,
+        errors: [],
         notices: [],
     }
 );

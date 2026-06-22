@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 const assert = require("assert/strict");
+const fs = require("fs");
+const path = require("path");
+const vm = require("vm");
 const catalog = require("./plate-catalog.js");
 const catalogValidation = require("./plate-catalog-validation.js");
+const selectedAssetPaths = require("./selected-asset-paths.js");
 const selectedAssetFilesystem = require("./selected-asset-filesystem.js");
 
 assert.deepEqual(Object.keys(globalThis.PlateCatalog), [
@@ -128,6 +132,14 @@ function assertProjectionDataProperty(projections, key) {
     assert.equal(Array.isArray(descriptor.value), true);
 }
 
+function runBrowserScript(scriptPath, context) {
+    vm.runInNewContext(
+        fs.readFileSync(path.join(__dirname, scriptPath), "utf8"),
+        context,
+        { filename: scriptPath }
+    );
+}
+
 assert.deepEqual(Object.keys(catalog), [
     "categories",
     "photoStatuses",
@@ -138,7 +150,7 @@ assert.deepEqual(Object.keys(catalog), [
 ]);
 
 assert.deepEqual(
-    selectedAssetFilesystem.selectedAssetPaths("fixture/selected.jpg"),
+    selectedAssetPaths.selectedAssetPaths("fixture/selected.jpg"),
     {
         fullSizePath: "pics/fixture/selected.jpg",
         thumbnailPath: "pics/thumbs/fixture/selected.jpg",
@@ -162,6 +174,47 @@ assert.equal(
     ),
     true
 );
+assert.equal(
+    selectedAssetFilesystem.thumbnailNeedsRefresh({
+        fullSizeMetadata: { mtimeMs: 3000 },
+        thumbnailMetadata: { mtimeMs: 1000 },
+    }),
+    true
+);
+assert.equal(
+    selectedAssetFilesystem.thumbnailNeedsRefresh({
+        fullSizeMetadata: { mtimeMs: 1000 },
+        thumbnailMetadata: { mtimeMs: 3000 },
+    }),
+    false
+);
+assert.equal(
+    selectedAssetFilesystem.thumbnailNeedsRefresh({
+        fullSizeMetadata: { mtimeMs: 1000 },
+        thumbnailMetadata: null,
+    }),
+    true
+);
+
+{
+    const browserContext = { console };
+    browserContext.window = browserContext;
+    browserContext.globalThis = browserContext;
+
+    runBrowserScript("selected-asset-paths.js", browserContext);
+    runBrowserScript("plate-catalog.js", browserContext);
+
+    assert.equal(browserContext.SelectedAssetFilesystem, undefined);
+    assert.deepEqual(Object.keys(browserContext.PlateCatalog), [
+        "displayCategories",
+        "displayChecklistSections",
+    ]);
+    assert.equal(
+        browserContext.PlateCatalog.displayCategories()[0].variants[0].image
+            .thumbnailSrc,
+        "pics/thumbs/collector_vehicles/collector_vehicle.jpg"
+    );
+}
 
 const fixtureProjections = catalog.catalogProjections(fixtureCategories);
 const selectedAssetProjectionsDescriptor = Object.getOwnPropertyDescriptor(

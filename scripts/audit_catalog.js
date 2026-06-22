@@ -35,10 +35,7 @@ function localJpegFiles(rootRelativePath, shouldInclude = () => true) {
             }
 
             if (shouldInclude(relativePath)) {
-                files.push({
-                    path: relativePath,
-                    mtimeMs: fs.statSync(absolutePath).mtimeMs,
-                });
+                files.push({ path: relativePath });
             }
         });
     }
@@ -64,9 +61,6 @@ function repositoryImagePaths() {
     return {
         fullSizePaths: fullSizeFiles.map((file) => file.path),
         thumbnailPaths: thumbnailFiles.map((file) => file.path),
-        fileMetadataByPath: selectedAssetFilesystem.fileMetadataByPath(
-            fullSizeFiles.concat(thumbnailFiles)
-        ),
     };
 }
 

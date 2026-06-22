@@ -1,9 +1,13 @@
 (function (root, factory) {
+    const selectedAssetPathRules =
+        typeof module === "object" && module.exports
+            ? require("./selected-asset-paths.js")
+            : root?.SelectedAssetPaths;
     const selectedAssetFilesystem =
         typeof module === "object" && module.exports
             ? require("./selected-asset-filesystem.js")
-            : root?.SelectedAssetFilesystem;
-    const api = factory(selectedAssetFilesystem);
+            : null;
+    const api = factory(selectedAssetPathRules, selectedAssetFilesystem);
 
     if (typeof module === "object" && module.exports) {
         module.exports = api.node;
@@ -12,12 +16,11 @@
         root.PlateCatalog = api.browser;
     }
 })(typeof window !== "undefined" ? window : globalThis, function (
+    selectedAssetPathRules,
     selectedAssetFilesystem
 ) {
-    if (!selectedAssetFilesystem) {
-        throw new Error(
-            "SelectedAssetFilesystem is required before plate-catalog.js"
-        );
+    if (!selectedAssetPathRules) {
+        throw new Error("SelectedAssetPaths is required before plate-catalog.js");
     }
 
     const PHOTO_STATUSES = Object.freeze({
@@ -1045,7 +1048,7 @@
 
     function selectedAssetFor(plate) {
         if (!plate.asset) return null;
-        const paths = selectedAssetFilesystem.selectedAssetPaths(plate.asset);
+        const paths = selectedAssetPathRules.selectedAssetPaths(plate.asset);
 
         return Object.freeze({
             asset: plate.asset,
@@ -1127,6 +1130,12 @@
         fullSizePaths,
         thumbnailPaths = [],
     } = {}) {
+        if (!selectedAssetFilesystem) {
+            throw new Error(
+                "SelectedAssetFilesystem is required for local image projections"
+            );
+        }
+
         return selectedAssetFilesystem.localImageProjections({
             selectedAssets: selectedAssetProjections(sourceCategories),
             fullSizePaths,
