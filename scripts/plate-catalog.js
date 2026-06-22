@@ -17,6 +17,9 @@
     function statusDetails(details) {
         return Object.freeze({
             ...details,
+            selectedAssetCompatibility: details.selectedAssetCompatibility
+                ? Object.freeze(details.selectedAssetCompatibility)
+                : null,
             cardBadge: details.cardBadge
                 ? Object.freeze(details.cardBadge)
                 : null,
@@ -47,15 +50,40 @@
         }
     }
 
+    function selectedAssetCompatibility({
+        requiresSelectedAsset,
+        forbidsSelectedAsset,
+        allowsSelectedAssetAltText,
+    }) {
+        return Object.freeze({
+            requiresSelectedAsset,
+            forbidsSelectedAsset,
+            allowsSelectedAssetAltText,
+        });
+    }
+
+    const NON_MISSING_SELECTED_ASSET_COMPATIBILITY =
+        selectedAssetCompatibility({
+            requiresSelectedAsset: true,
+            forbidsSelectedAsset: false,
+            allowsSelectedAssetAltText: true,
+        });
+
     const PHOTO_STATUS_DETAILS = Object.freeze({
         [PHOTO_STATUSES.SATISFIED]: statusDetails({
             status: PHOTO_STATUSES.SATISFIED,
+            selectedAssetCompatibility: NON_MISSING_SELECTED_ASSET_COMPATIBILITY,
             cardBadge: null,
             checklist: null,
             placeholder: null,
         }),
         [PHOTO_STATUSES.MISSING]: statusDetails({
             status: PHOTO_STATUSES.MISSING,
+            selectedAssetCompatibility: selectedAssetCompatibility({
+                requiresSelectedAsset: false,
+                forbidsSelectedAsset: true,
+                allowsSelectedAssetAltText: false,
+            }),
             cardBadge: null,
             checklist: {
                 title: "Left to Find",
@@ -70,6 +98,7 @@
         }),
         [PHOTO_STATUSES.NEEDS_UPGRADE]: statusDetails({
             status: PHOTO_STATUSES.NEEDS_UPGRADE,
+            selectedAssetCompatibility: NON_MISSING_SELECTED_ASSET_COMPATIBILITY,
             cardBadge: {
                 text: "LOW QUALITY",
                 ariaLabel: "Low quality photo",
@@ -159,6 +188,16 @@
             return checklistStatuses.map(checklistPolicyForStatus);
         }
 
+        function selectedAssetCompatibilityFor(status) {
+            const details = detailsByStatus[status];
+
+            // Invalid Photo Status values are still "not missing" for Selected
+            // Asset validation, while receiving their own invalid-status error.
+            if (!details) return NON_MISSING_SELECTED_ASSET_COMPATIBILITY;
+
+            return details.selectedAssetCompatibility;
+        }
+
         function categoriesWithStatus(status, sourceCategories) {
             return sourceCategories
                 .map((category) => ({
@@ -211,6 +250,38 @@
                 }
                 if (details.status !== status) {
                     errors.push(`${prefix} must set status to ${status}`);
+                }
+
+                if (!isPlainObject(details.selectedAssetCompatibility)) {
+                    errors.push(
+                        `${prefix} Selected Asset compatibility must be an object`
+                    );
+                } else {
+                    [
+                        "requiresSelectedAsset",
+                        "forbidsSelectedAsset",
+                        "allowsSelectedAssetAltText",
+                    ].forEach((property) => {
+                        if (
+                            typeof details.selectedAssetCompatibility[
+                                property
+                            ] !== "boolean"
+                        ) {
+                            errors.push(
+                                `${prefix} Selected Asset compatibility ${property} must be a boolean`
+                            );
+                        }
+                    });
+
+                    if (
+                        details.selectedAssetCompatibility
+                            .requiresSelectedAsset &&
+                        details.selectedAssetCompatibility.forbidsSelectedAsset
+                    ) {
+                        errors.push(
+                            `${prefix} Selected Asset compatibility cannot require and forbid a Selected Asset`
+                        );
+                    }
                 }
 
                 if (details.cardBadge !== null) {
@@ -296,6 +367,7 @@
             presentationFor,
             checklistPolicies,
             checklistSections,
+            selectedAssetCompatibilityFor,
             validationErrors,
         });
     }
@@ -899,6 +971,10 @@
         return photoStatusPolicy.checklistPolicies();
     }
 
+    function photoStatusSelectedAssetCompatibility(photoStatus) {
+        return photoStatusPolicy.selectedAssetCompatibilityFor(photoStatus);
+    }
+
     function imageKindFor(plate) {
         return plate.imageKind || IMAGE_KINDS.PLATE;
     }
@@ -1157,6 +1233,9 @@
             photoStatusPolicyErrors: { value: photoStatusPolicyErrors },
             photoStatusChecklistPolicies: {
                 value: photoStatusChecklistPolicies,
+            },
+            photoStatusSelectedAssetCompatibility: {
+                value: photoStatusSelectedAssetCompatibility,
             },
         });
 

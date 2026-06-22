@@ -207,6 +207,34 @@ function validatePhotoStatusPolicy() {
     return errors;
 }
 
+function photoStatusSelectedAssetCompatibility(photoStatus) {
+    return catalog.photoStatusSelectedAssetCompatibility(photoStatus);
+}
+
+function validateSelectedAssetCompatibility(errors, prefix, plate) {
+    const compatibility = photoStatusSelectedAssetCompatibility(plate.photoStatus);
+
+    if (compatibility.forbidsSelectedAsset && plate.asset !== null) {
+        errors.push(`${prefix} must use asset: null when Photo Status is missing`);
+    }
+    if (
+        !compatibility.allowsSelectedAssetAltText &&
+        hasOwn(plate, "selectedAssetAltText")
+    ) {
+        errors.push(
+            `${prefix} must not override Selected Asset alt text when Photo Status is missing`
+        );
+    }
+    if (
+        compatibility.requiresSelectedAsset &&
+        !isNonEmptyText(plate.asset)
+    ) {
+        errors.push(
+            `${prefix} must have a Selected Asset when Photo Status is not missing`
+        );
+    }
+}
+
 function validateCategoryFacts(errors, sourceCategories) {
     duplicateValues(sourceCategories.map((category) => category?.id)).forEach(
         (id) => {
@@ -326,25 +354,7 @@ function validateVariantFacts(errors, sourceCategories) {
             );
         }
 
-        if (plate.photoStatus === catalog.photoStatuses.MISSING) {
-            if (plate.asset !== null) {
-                errors.push(
-                    `${prefix} must use asset: null when Photo Status is missing`
-                );
-            }
-            if (hasOwn(plate, "selectedAssetAltText")) {
-                errors.push(
-                    `${prefix} must not override Selected Asset alt text when Photo Status is missing`
-                );
-            }
-            return;
-        }
-
-        if (!isNonEmptyText(plate.asset)) {
-            errors.push(
-                `${prefix} must have a Selected Asset when Photo Status is not missing`
-            );
-        }
+        validateSelectedAssetCompatibility(errors, prefix, plate);
     });
 }
 

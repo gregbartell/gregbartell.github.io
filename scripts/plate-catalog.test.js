@@ -761,6 +761,26 @@ assert.deepEqual(catalogValidation.selectedAssetRequirements(validCatalogFixture
 
 {
     const invalid = clone(validCatalogFixture);
+    invalid[0].plates[0].asset = "alpha/missing.jpg";
+
+    assertHasError(
+        catalogValidation.validateCatalog(invalid),
+        "alpha/alpha-missing must use asset: null when Photo Status is missing"
+    );
+}
+
+{
+    const invalid = clone(validCatalogFixture);
+    invalid[0].plates[0].selectedAssetAltText = "Alpha Missing selected art";
+
+    assertHasError(
+        catalogValidation.validateCatalog(invalid),
+        "alpha/alpha-missing must not override Selected Asset alt text when Photo Status is missing"
+    );
+}
+
+{
+    const invalid = clone(validCatalogFixture);
     invalid[1].plates[0].id = "alpha-selected";
 
     assertHasError(
