@@ -87,6 +87,15 @@ function assertHasError(errors, expected) {
     );
 }
 
+function assertProjectionDataProperty(projections, key) {
+    const descriptor = Object.getOwnPropertyDescriptor(projections, key);
+
+    assert.equal(descriptor.enumerable, true);
+    assert.equal(Object.prototype.hasOwnProperty.call(descriptor, "value"), true);
+    assert.equal(descriptor.get, undefined);
+    assert.equal(Array.isArray(descriptor.value), true);
+}
+
 assert.deepEqual(Object.keys(catalog), [
     "categories",
     "photoStatuses",
@@ -97,6 +106,18 @@ assert.deepEqual(Object.keys(catalog), [
 ]);
 
 const fixtureProjections = catalog.catalogProjections(fixtureCategories);
+
+assert.deepEqual(Object.keys(fixtureProjections), [
+    "selectedAssets",
+    "photoStatusPresentations",
+    "displayCategories",
+    "displayChecklistSections",
+]);
+assert.equal("photoStatusChecklistSections" in fixtureProjections, false);
+
+Object.keys(fixtureProjections).forEach((key) =>
+    assertProjectionDataProperty(fixtureProjections, key)
+);
 
 assert.deepEqual(
     fixtureProjections.selectedAssets,
@@ -134,6 +155,11 @@ assert.deepEqual(
             imageKind: catalog.imageKinds.PLATE,
         },
     ]
+);
+
+assert.deepEqual(
+    catalogValidation.selectedAssetEntries(fixtureCategories),
+    fixtureProjections.selectedAssets
 );
 
 assert.deepEqual(fixtureProjections.photoStatusPresentations, [
@@ -206,7 +232,7 @@ assert.deepEqual(catalog.photoStatusChecklistPolicies(), [
     },
 ]);
 
-assert.deepEqual(fixtureProjections.photoStatusChecklistSections, [
+assert.deepEqual(fixtureProjections.displayChecklistSections, [
     {
         status: catalog.photoStatuses.MISSING,
         title: "Left to Find",
@@ -304,11 +330,6 @@ assert.deepEqual(fixtureProjections.displayCategories, [
         ],
     },
 ]);
-
-assert.deepEqual(
-    fixtureProjections.displayChecklistSections,
-    fixtureProjections.photoStatusChecklistSections
-);
 
 assert.deepEqual(catalogValidation.validatePhotoStatusPolicy(fixtureCategories), []);
 

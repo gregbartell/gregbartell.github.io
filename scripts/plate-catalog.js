@@ -935,42 +935,13 @@
     }
 
     function catalogProjections(sourceCategories = categories) {
-        const projections = {};
-
-        Object.defineProperties(projections, {
-            selectedAssets: {
-                enumerable: true,
-                get() {
-                    return selectedAssetProjections(sourceCategories);
-                },
-            },
-            photoStatusPresentations: {
-                enumerable: true,
-                get() {
-                    return photoStatusPresentationProjections(sourceCategories);
-                },
-            },
-            photoStatusChecklistSections: {
-                enumerable: true,
-                get() {
-                    return displayChecklistSections(sourceCategories);
-                },
-            },
-            displayCategories: {
-                enumerable: true,
-                get() {
-                    return displayCategories(sourceCategories);
-                },
-            },
-            displayChecklistSections: {
-                enumerable: true,
-                get() {
-                    return displayChecklistSections(sourceCategories);
-                },
-            },
-        });
-
-        return Object.freeze(projections);
+        return {
+            selectedAssets: selectedAssetProjections(sourceCategories),
+            photoStatusPresentations:
+                photoStatusPresentationProjections(sourceCategories),
+            displayCategories: displayCategories(sourceCategories),
+            displayChecklistSections: displayChecklistSections(sourceCategories),
+        };
     }
 
     function assetFromFullSizePath(fullSizePath) {

@@ -7,6 +7,8 @@ const CATALOG_ORDER_COLLATOR = new Intl.Collator("en", {
 const CATEGORY_ID_PATTERN = /^[a-z][a-z0-9_]*$/;
 const VARIANT_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const MISCELLANEOUS_CATEGORY_TITLE = "Miscellaneous";
+const FULL_SIZE_IMAGE_ROOT = "pics";
+const THUMBNAIL_IMAGE_ROOT = "pics/thumbs";
 const CATALOG_ORDER_ERRORS = Object.freeze({
     miscellaneousLast: "Catalog Order: Miscellaneous must be the last Category",
     categoriesAlphabetical:
@@ -120,8 +122,55 @@ function catalogRef(category, plate) {
     return `${categoryId}/${plateId}`;
 }
 
+function imageKindFor(plate) {
+    return plate.imageKind || catalog.imageKinds.PLATE;
+}
+
+function selectedAssetAltTextFor(plate) {
+    if (hasOwn(plate, "selectedAssetAltText")) {
+        return plate.selectedAssetAltText;
+    }
+    return `${plate.title} ${imageKindFor(plate)}`;
+}
+
+function fullImagePath(asset) {
+    return asset ? `${FULL_SIZE_IMAGE_ROOT}/${asset}` : null;
+}
+
+function thumbnailPath(asset) {
+    return asset ? `${THUMBNAIL_IMAGE_ROOT}/${asset}` : null;
+}
+
 function selectedAssetEntries(sourceCategories = catalog.categories) {
-    return catalog.catalogProjections(sourceCategories).selectedAssets;
+    return sourceCategories
+        .flatMap((category) => {
+            if (!isPlainObject(category) || !Array.isArray(category.plates)) {
+                return [];
+            }
+
+            return category.plates.map((plate) => ({ category, plate }));
+        })
+        .map(({ category, plate }) => {
+            if (!isPlainObject(plate) || !plate.asset) return null;
+
+            return Object.freeze({
+                catalogRef: catalogRef(category, plate),
+                category: Object.freeze({
+                    id: category.id,
+                    title: category.title,
+                }),
+                variant: Object.freeze({
+                    id: plate.id,
+                    title: plate.title,
+                }),
+                asset: plate.asset,
+                fullSizePath: fullImagePath(plate.asset),
+                thumbnailPath: thumbnailPath(plate.asset),
+                altText: selectedAssetAltTextFor(plate),
+                imageKind: imageKindFor(plate),
+            });
+        })
+        .filter((entry) => entry !== null);
 }
 
 function selectedAssetRequirements(sourceCategories = catalog.categories) {
@@ -292,9 +341,9 @@ function validatePhotoStatusChecklist(errors, sourceCategories) {
     });
 
     try {
-        sections =
-            catalog.catalogProjections(sourceCategories)
-                .photoStatusChecklistSections;
+        sections = catalog.catalogProjections(
+            sourceCategories
+        ).displayChecklistSections;
     } catch (error) {
         errors.push(`Photo Status checklist failed: ${error.message}`);
         return;
