@@ -71,6 +71,7 @@
 
         const title = document.createElement("h3");
         title.textContent = variant.title;
+        title.title = variant.title;
         card.append(title);
 
         if (variant.missingPlaceholder) {

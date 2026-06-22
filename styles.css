@@ -413,6 +413,9 @@ body.stamped-cards .plate-card:hover {
     position: relative;
     z-index: 2;
     letter-spacing: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* ===== Empty-plate placeholder =====
