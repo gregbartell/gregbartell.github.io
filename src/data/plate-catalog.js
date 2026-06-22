@@ -426,7 +426,7 @@
         checklistStatuses: CHECKLIST_PHOTO_STATUSES,
     });
 
-    const IMAGE_KINDS = Object.freeze({
+    const VARIANT_KINDS = Object.freeze({
         PLATE: "plate",
         EMBLEM: "emblem",
     });
@@ -549,7 +549,7 @@
                     id: "988-prevent-veteran-suicide",
                     title: "988 - Prevent Veteran Suicide",
                     photoStatus: PHOTO_STATUSES.SATISFIED,
-                    imageKind: IMAGE_KINDS.EMBLEM,
+                    variantKind: VARIANT_KINDS.EMBLEM,
                     asset: "mil/988.jpg",
                 },
                 {
@@ -628,7 +628,7 @@
                     id: "veteran-military-service-award-emblems",
                     title: "Veteran/Military Service Award emblems",
                     photoStatus: PHOTO_STATUSES.NEEDS_UPGRADE,
-                    imageKind: IMAGE_KINDS.EMBLEM,
+                    variantKind: VARIANT_KINDS.EMBLEM,
                     selectedAssetAltText: "Veteran/Military Service Award emblems",
                     asset: "mil/nat_guard_ribbon.jpg",
                 },
@@ -1031,12 +1031,12 @@
         );
     }
 
-    function imageKindFor(plate) {
-        return plate.imageKind || IMAGE_KINDS.PLATE;
+    function variantKindFor(plate) {
+        return plate.variantKind || VARIANT_KINDS.PLATE;
     }
 
     function imageAlt(plate) {
-        return `${plate.title} ${imageKindFor(plate)}`;
+        return `${plate.title} ${variantKindFor(plate)}`;
     }
 
     function selectedAssetAltTextFor(plate) {
@@ -1055,7 +1055,7 @@
             fullSizePath: paths.fullSizePath,
             thumbnailPath: paths.thumbnailPath,
             altText: selectedAssetAltTextFor(plate),
-            imageKind: imageKindFor(plate),
+            variantKind: variantKindFor(plate),
         });
     }
 
@@ -1091,7 +1091,7 @@
                     fullSizePath: selectedAsset.fullSizePath,
                     thumbnailPath: selectedAsset.thumbnailPath,
                     altText: selectedAsset.altText,
-                    imageKind: selectedAsset.imageKind,
+                    variantKind: selectedAsset.variantKind,
                 });
             })
             .filter((entry) => entry !== null);
@@ -1240,7 +1240,7 @@
         Object.defineProperties(api, {
             categories: { value: categories, enumerable: true },
             photoStatuses: { value: PHOTO_STATUSES, enumerable: true },
-            imageKinds: { value: IMAGE_KINDS, enumerable: true },
+            variantKinds: { value: VARIANT_KINDS, enumerable: true },
             stickerStyles: { value: STICKER_STYLES, enumerable: true },
             catalogProjections: {
                 value: catalogProjections,

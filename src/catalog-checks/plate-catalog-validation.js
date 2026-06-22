@@ -299,7 +299,7 @@ function validateVariantOrder(errors, category) {
 
 function validateVariantFacts(errors, sourceCategories) {
     const validPhotoStatuses = new Set(Object.values(catalog.photoStatuses));
-    const validImageKinds = new Set(Object.values(catalog.imageKinds));
+    const validVariantKinds = new Set(Object.values(catalog.variantKinds));
     const entries = validPlateEntries(sourceCategories);
 
     duplicateValues(entries.map(({ plate }) => plate?.id)).forEach((id) => {
@@ -327,8 +327,11 @@ function validateVariantFacts(errors, sourceCategories) {
         if (!validPhotoStatuses.has(plate.photoStatus)) {
             errors.push(`${prefix} has invalid Photo Status: ${plate.photoStatus}`);
         }
-        if (hasOwn(plate, "imageKind") && !validImageKinds.has(plate.imageKind)) {
-            errors.push(`${prefix} has invalid Image Kind: ${plate.imageKind}`);
+        if (
+            hasOwn(plate, "variantKind") &&
+            !validVariantKinds.has(plate.variantKind)
+        ) {
+            errors.push(`${prefix} has invalid Variant Kind: ${plate.variantKind}`);
         }
         if (hasOwn(plate, "alt")) {
             errors.push(

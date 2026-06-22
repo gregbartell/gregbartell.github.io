@@ -3,40 +3,40 @@
 This context describes the catalog language for the Washington license plate
 collection site.
 
-## Language
+Keep the Language section alphabetized by vocabulary term.
 
-**Category**:
-A named group of related plate entries presented together in the catalog.
-_Avoid_: Section, group, plate type
+## Language
 
 **Catalog Order**:
 The presentation order for the catalog: categories are alphabetical except
-Miscellaneous, which appears last; plates are alphabetical within each category.
+Miscellaneous, which appears last; Variants are alphabetical within each
+Category.
 _Avoid_: Sort order, display order, list order
 
-**Image Kind**:
-Whether the selected asset represents a plate or an emblem. Image alt text is
-derived from the plate title and this kind. A Variant may set
-`selectedAssetAltText` to non-empty text for an exceptional Selected Asset whose
-accessible text would otherwise be repetitive or inaccurate.
-_Avoid_: Asset type, image type, media type
+**Category**:
+A named group of related Variants presented together in the catalog.
+_Avoid_: Section, group, plate type
 
 **Photo Status**:
-The current catalog state of a plate's selected photo: satisfied, missing, or
-needs-upgrade.
+The catalog state of a Variant's photo: satisfied, missing, or needs upgrade.
 _Avoid_: Image status, asset state, photo quality, current
 
 **Plate Catalog**:
-The authoritative set of plate entries in the collection. It defines the
-current facts used to present plates and collection status.
+The authoritative collection record of Categories and Variants. It captures
+what the collection contains and which photos are still needed.
 _Avoid_: Checklist, inventory, plate list
 
 **Selected Asset**:
-The image file chosen to represent a plate entry, written relative to the
-collection image root.
+The image chosen to represent a Variant in the collection.
 _Avoid_: Primary image, featured image, catalog image
 
 **Variant**:
-A distinct plate design that the site intentionally presents as part of the
-collection.
+A distinct collectible design that the site intentionally presents as part of
+the collection. Most Variants are plates, but emblem Variants are also
+first-class collection items.
 _Avoid_: Design, version, plate type
+
+**Variant Kind**:
+The kind of collectible design a Variant represents. The Variant Kinds are
+plate and emblem.
+_Avoid_: Image Kind, asset type, image type, media type

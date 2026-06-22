@@ -73,7 +73,7 @@ const validCatalogFixture = [
                 id: "misc-emblem",
                 title: "Misc Emblem",
                 photoStatus: catalog.photoStatuses.SATISFIED,
-                imageKind: catalog.imageKinds.EMBLEM,
+                variantKind: catalog.variantKinds.EMBLEM,
                 selectedAssetAltText: "Misc Emblem selected art",
                 asset: "misc/emblem.jpg",
             },
@@ -147,7 +147,7 @@ function runBrowserScript(scriptPath, context) {
 assert.deepEqual(Object.keys(catalog), [
     "categories",
     "photoStatuses",
-    "imageKinds",
+    "variantKinds",
     "stickerStyles",
     "catalogProjections",
     "localImageProjections",
@@ -267,7 +267,7 @@ assert.deepEqual(
             fullSizePath: "assets/plates/full/fixture/selected.jpg",
             thumbnailPath: "assets/plates/thumbs/fixture/selected.jpg",
             altText: "Selected Plate plate",
-            imageKind: catalog.imageKinds.PLATE,
+            variantKind: catalog.variantKinds.PLATE,
         },
         {
             catalogRef: "fixture/needs-upgrade",
@@ -283,7 +283,7 @@ assert.deepEqual(
             fullSizePath: "assets/plates/full/fixture/needs-upgrade.jpg",
             thumbnailPath: "assets/plates/thumbs/fixture/needs-upgrade.jpg",
             altText: "Needs Upgrade Plate plate",
-            imageKind: catalog.imageKinds.PLATE,
+            variantKind: catalog.variantKinds.PLATE,
         },
     ]
 );
@@ -326,7 +326,7 @@ assert.deepEqual(
             fullSizePath: "assets/plates/full/projection/selected.jpg",
             thumbnailPath: "assets/plates/thumbs/projection/selected.jpg",
             altText: "Projection selected emblem",
-            imageKind: catalog.imageKinds.EMBLEM,
+            variantKind: catalog.variantKinds.EMBLEM,
         },
     ];
     let projectionCalls = 0;
@@ -405,7 +405,7 @@ assert.deepEqual(
             fullSizePath: "assets/plates/full/source/selected.jpg",
             thumbnailPath: "assets/plates/thumbs/source/selected.jpg",
             altText: "Selected plate",
-            imageKind: catalog.imageKinds.PLATE,
+            variantKind: catalog.variantKinds.PLATE,
         },
     ];
     let projectionCategories;
@@ -666,19 +666,19 @@ assert.deepEqual(
         (selectedAsset) => ({
             catalogRef: selectedAsset.catalogRef,
             altText: selectedAsset.altText,
-            imageKind: selectedAsset.imageKind,
+            variantKind: selectedAsset.variantKind,
         })
     ),
     [
         {
             catalogRef: "alpha/alpha-selected",
             altText: "Alpha Selected plate",
-            imageKind: catalog.imageKinds.PLATE,
+            variantKind: catalog.variantKinds.PLATE,
         },
         {
             catalogRef: "misc/misc-emblem",
             altText: "Misc Emblem selected art",
-            imageKind: catalog.imageKinds.EMBLEM,
+            variantKind: catalog.variantKinds.EMBLEM,
         },
     ]
 );
@@ -839,11 +839,11 @@ assert.deepEqual(catalogValidation.selectedAssetRequirements(validCatalogFixture
 
 {
     const invalid = clone(validCatalogFixture);
-    invalid[0].plates[1].imageKind = "decal";
+    invalid[0].plates[1].variantKind = "decal";
 
     assertHasError(
         catalogValidation.validateCatalog(invalid),
-        "alpha/alpha-selected has invalid Image Kind: decal"
+        "alpha/alpha-selected has invalid Variant Kind: decal"
     );
 }
 
