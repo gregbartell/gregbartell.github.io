@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const fs = require("fs");
 const path = require("path");
-const catalog = require("./plate-catalog.js");
+const catalogValidation = require("./plate-catalog-validation.js");
 
 const repoRoot = path.resolve(__dirname, "..");
 const collator = new Intl.Collator("en", {
@@ -56,21 +56,21 @@ function localJpegPaths(rootRelativePath, shouldInclude = () => true) {
 }
 
 function auditCatalogInvariants() {
-    if (typeof catalog.validateCatalog !== "function") {
-        fail("catalog.validateCatalog must be a function");
+    if (typeof catalogValidation.validateCatalog !== "function") {
+        fail("catalogValidation.validateCatalog must be a function");
         return;
     }
 
     let validationErrors;
     try {
-        validationErrors = catalog.validateCatalog();
+        validationErrors = catalogValidation.validateCatalog();
     } catch (error) {
-        fail(`catalog.validateCatalog threw: ${error.message}`);
+        fail(`catalogValidation.validateCatalog threw: ${error.message}`);
         return;
     }
 
     if (!Array.isArray(validationErrors)) {
-        fail("catalog.validateCatalog must return an array");
+        fail("catalogValidation.validateCatalog must return an array");
         return;
     }
 
@@ -78,27 +78,27 @@ function auditCatalogInvariants() {
 }
 
 function auditSelectedAssetFiles() {
-    if (typeof catalog.selectedAssetRequirements !== "function") {
-        fail("catalog.selectedAssetRequirements must be a function");
+    if (typeof catalogValidation.selectedAssetRequirements !== "function") {
+        fail("catalogValidation.selectedAssetRequirements must be a function");
         return;
     }
 
     let requirements;
     try {
-        requirements = catalog.selectedAssetRequirements();
+        requirements = catalogValidation.selectedAssetRequirements();
     } catch (error) {
-        fail(`catalog.selectedAssetRequirements threw: ${error.message}`);
+        fail(`catalogValidation.selectedAssetRequirements threw: ${error.message}`);
         return;
     }
 
     if (!Array.isArray(requirements)) {
-        fail("catalog.selectedAssetRequirements must return an array");
+        fail("catalogValidation.selectedAssetRequirements must return an array");
         return;
     }
 
     requirements.forEach((requirement) => {
         if (!requirement || typeof requirement.catalogRef !== "string") {
-            fail("catalog.selectedAssetRequirements returned an invalid item");
+            fail("catalogValidation.selectedAssetRequirements returned an invalid item");
             return;
         }
 
@@ -121,7 +121,7 @@ function auditUnselectedLocalImages() {
         (relativePath) => !relativePath.startsWith("pics/thumbs/")
     );
     const thumbnailPaths = localJpegPaths("pics/thumbs");
-    const unselectedImages = catalog.unselectedLocalImages({
+    const unselectedImages = catalogValidation.unselectedLocalImages({
         fullSizePaths,
         thumbnailPaths,
     });

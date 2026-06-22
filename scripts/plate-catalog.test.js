@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 const assert = require("assert/strict");
 const catalog = require("./plate-catalog.js");
+const catalogValidation = require("./plate-catalog-validation.js");
+
+assert.deepEqual(Object.keys(globalThis.PlateCatalog), [
+    "displayCategories",
+    "displayChecklistSections",
+]);
 
 const fixtureCategories = [
     {
@@ -245,11 +251,11 @@ assert.deepEqual(catalog.displayChecklistSections(fixtureCategories), [
     },
 ]);
 
-assert.deepEqual(catalog.validatePhotoStatusPolicy(fixtureCategories), []);
+assert.deepEqual(catalogValidation.validatePhotoStatusPolicy(fixtureCategories), []);
 
-assert.deepEqual(catalog.validateCatalog(validCatalogFixture), []);
+assert.deepEqual(catalogValidation.validateCatalog(validCatalogFixture), []);
 
-assert.deepEqual(catalog.selectedAssetRequirements(validCatalogFixture), [
+assert.deepEqual(catalogValidation.selectedAssetRequirements(validCatalogFixture), [
     {
         catalogRef: "alpha/alpha-selected",
         fullSizePath: "pics/alpha/selected.jpg",
@@ -267,7 +273,7 @@ assert.deepEqual(catalog.selectedAssetRequirements(validCatalogFixture), [
     invalid.reverse();
 
     assertHasError(
-        catalog.validateCatalog(invalid),
+        catalogValidation.validateCatalog(invalid),
         "Catalog Order: Miscellaneous must be the last Category"
     );
 }
@@ -289,7 +295,7 @@ assert.deepEqual(catalog.selectedAssetRequirements(validCatalogFixture), [
     });
 
     assertHasError(
-        catalog.validateCatalog(invalid),
+        catalogValidation.validateCatalog(invalid),
         "Catalog Order: Categories before Miscellaneous must be alphabetical by title"
     );
 }
@@ -299,7 +305,7 @@ assert.deepEqual(catalog.selectedAssetRequirements(validCatalogFixture), [
     invalid[0].plates[1].photoStatus = "archived";
 
     assertHasError(
-        catalog.validateCatalog(invalid),
+        catalogValidation.validateCatalog(invalid),
         "alpha/alpha-selected has invalid Photo Status: archived"
     );
 }
@@ -309,7 +315,7 @@ assert.deepEqual(catalog.selectedAssetRequirements(validCatalogFixture), [
     invalid[0].plates[1].imageKind = "decal";
 
     assertHasError(
-        catalog.validateCatalog(invalid),
+        catalogValidation.validateCatalog(invalid),
         "alpha/alpha-selected has invalid Image Kind: decal"
     );
 }
@@ -319,7 +325,7 @@ assert.deepEqual(catalog.selectedAssetRequirements(validCatalogFixture), [
     invalid[0].plates[1].asset = null;
 
     assertHasError(
-        catalog.validateCatalog(invalid),
+        catalogValidation.validateCatalog(invalid),
         "alpha/alpha-selected must have a Selected Asset when Photo Status is not missing"
     );
 }
@@ -329,12 +335,12 @@ assert.deepEqual(catalog.selectedAssetRequirements(validCatalogFixture), [
     invalid[1].plates[0].id = "alpha-selected";
 
     assertHasError(
-        catalog.validateCatalog(invalid),
+        catalogValidation.validateCatalog(invalid),
         "duplicate Variant id: alpha-selected"
     );
 }
 
-assert.deepEqual(catalog.selectedAssetFilePaths(fixtureCategories), {
+assert.deepEqual(catalogValidation.selectedAssetFilePaths(fixtureCategories), {
     fullSizePaths: [
         "pics/fixture/selected.jpg",
         "pics/fixture/needs-upgrade.jpg",
@@ -346,7 +352,7 @@ assert.deepEqual(catalog.selectedAssetFilePaths(fixtureCategories), {
 });
 
 assert.deepEqual(
-    catalog.unselectedLocalImages({
+    catalogValidation.unselectedLocalImages({
         sourceCategories: fixtureCategories,
         fullSizePaths: [
             "pics/fixture/selected.jpg",
