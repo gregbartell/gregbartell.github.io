@@ -255,6 +255,66 @@ assert.deepEqual(catalogValidation.validatePhotoStatusPolicy(fixtureCategories),
 
 assert.deepEqual(catalogValidation.validateCatalog(validCatalogFixture), []);
 
+assert.deepEqual(
+    catalogValidation.catalogOrderPolicy.diagnosticsForCategories(
+        validCatalogFixture
+    ),
+    []
+);
+assert.equal(
+    catalogValidation.catalogOrderPolicy.compareTitles(
+        "Category 2",
+        "Category 10"
+    ) < 0,
+    true
+);
+assert.equal(
+    catalogValidation.catalogOrderPolicy.compareTitles("alpha", "Alpha"),
+    0
+);
+
+{
+    const invalid = clone(validCatalogFixture);
+    invalid.reverse();
+
+    assertHasError(
+        catalogValidation.catalogOrderPolicy.diagnosticsForCategories(invalid),
+        "Catalog Order: Miscellaneous must be the last Category"
+    );
+}
+
+{
+    const invalid = clone(validCatalogFixture);
+    invalid.unshift({
+        id: "beta",
+        title: "Beta",
+        sticker: { style: "red", mark: "BET" },
+        plates: [
+            {
+                id: "beta-selected",
+                title: "Beta Selected",
+                photoStatus: catalog.photoStatuses.SATISFIED,
+                asset: "beta/selected.jpg",
+            },
+        ],
+    });
+
+    assertHasError(
+        catalogValidation.catalogOrderPolicy.diagnosticsForCategories(invalid),
+        "Catalog Order: Categories before Miscellaneous must be alphabetical by title"
+    );
+}
+
+{
+    const invalid = clone(validCatalogFixture);
+    invalid[0].plates.reverse();
+
+    assertHasError(
+        catalogValidation.catalogOrderPolicy.diagnosticsForVariants(invalid[0]),
+        "Catalog Order: Variants in Alpha must be alphabetical by title"
+    );
+}
+
 assert.deepEqual(catalogValidation.selectedAssetRequirements(validCatalogFixture), [
     {
         catalogRef: "alpha/alpha-selected",
@@ -297,6 +357,16 @@ assert.deepEqual(catalogValidation.selectedAssetRequirements(validCatalogFixture
     assertHasError(
         catalogValidation.validateCatalog(invalid),
         "Catalog Order: Categories before Miscellaneous must be alphabetical by title"
+    );
+}
+
+{
+    const invalid = clone(validCatalogFixture);
+    invalid[0].plates.reverse();
+
+    assertHasError(
+        catalogValidation.validateCatalog(invalid),
+        "Catalog Order: Variants in Alpha must be alphabetical by title"
     );
 }
 

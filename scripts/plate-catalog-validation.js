@@ -1,11 +1,17 @@
 const catalog = require("./plate-catalog.js");
 
-const CATALOG_COLLATOR = new Intl.Collator("en", {
+const CATALOG_ORDER_COLLATOR = new Intl.Collator("en", {
     sensitivity: "base",
     numeric: true,
 });
 const CATEGORY_ID_PATTERN = /^[a-z][a-z0-9_]*$/;
 const VARIANT_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const MISCELLANEOUS_CATEGORY_TITLE = "Miscellaneous";
+const CATALOG_ORDER_ERRORS = Object.freeze({
+    miscellaneousLast: "Catalog Order: Miscellaneous must be the last Category",
+    categoriesAlphabetical:
+        "Catalog Order: Categories before Miscellaneous must be alphabetical by title",
+});
 
 function hasOwn(object, key) {
     return Object.prototype.hasOwnProperty.call(object, key);
@@ -25,14 +31,66 @@ function requirePolicyText(errors, value, label) {
     }
 }
 
-function isSortedText(values) {
+function catalogOrderTitlesAreAlphabetical(values) {
     for (let index = 1; index < values.length; index += 1) {
-        if (CATALOG_COLLATOR.compare(values[index - 1], values[index]) > 0) {
+        if (
+            catalogOrderPolicy.compareTitles(values[index - 1], values[index]) > 0
+        ) {
             return false;
         }
     }
     return true;
 }
+
+function catalogOrderDiagnosticsForCategories(
+    sourceCategories = catalog.categories
+) {
+    const errors = [];
+    const categoryTitles = sourceCategories.map((category) => category?.title);
+    const lastCategoryTitle = categoryTitles[categoryTitles.length - 1];
+
+    if (lastCategoryTitle !== MISCELLANEOUS_CATEGORY_TITLE) {
+        errors.push(CATALOG_ORDER_ERRORS.miscellaneousLast);
+    }
+
+    const orderedTitles = categoryTitles.slice(0, -1);
+    if (
+        orderedTitles.every(isNonEmptyText) &&
+        !catalogOrderTitlesAreAlphabetical(orderedTitles)
+    ) {
+        errors.push(CATALOG_ORDER_ERRORS.categoriesAlphabetical);
+    }
+
+    return errors;
+}
+
+function catalogOrderDiagnosticsForVariants(category) {
+    const errors = [];
+
+    if (!isPlainObject(category) || !Array.isArray(category.plates)) {
+        return errors;
+    }
+
+    const titles = category.plates.map((plate) => plate?.title);
+    if (
+        titles.every(isNonEmptyText) &&
+        !catalogOrderTitlesAreAlphabetical(titles)
+    ) {
+        errors.push(
+            `Catalog Order: Variants in ${category.title} must be alphabetical by title`
+        );
+    }
+
+    return errors;
+}
+
+const catalogOrderPolicy = Object.freeze({
+    compareTitles(left, right) {
+        return CATALOG_ORDER_COLLATOR.compare(left, right);
+    },
+    diagnosticsForCategories: catalogOrderDiagnosticsForCategories,
+    diagnosticsForVariants: catalogOrderDiagnosticsForVariants,
+});
 
 function duplicateValues(values) {
     const seen = new Set();
@@ -386,19 +444,9 @@ function validateCategoryFacts(errors, sourceCategories) {
 }
 
 function validateCatalogOrder(errors, sourceCategories) {
-    const categoryTitles = sourceCategories.map((category) => category?.title);
-    const lastCategoryTitle = categoryTitles[categoryTitles.length - 1];
-
-    if (lastCategoryTitle !== "Miscellaneous") {
-        errors.push("Catalog Order: Miscellaneous must be the last Category");
-    }
-
-    const orderedTitles = categoryTitles.slice(0, -1);
-    if (orderedTitles.every(isNonEmptyText) && !isSortedText(orderedTitles)) {
-        errors.push(
-            "Catalog Order: Categories before Miscellaneous must be alphabetical by title"
-        );
-    }
+    catalogOrderPolicy
+        .diagnosticsForCategories(sourceCategories)
+        .forEach((error) => errors.push(error));
 }
 
 function validPlateEntries(sourceCategories) {
@@ -416,14 +464,9 @@ function validPlateEntries(sourceCategories) {
 }
 
 function validateVariantOrder(errors, category) {
-    if (!isPlainObject(category) || !Array.isArray(category.plates)) return;
-
-    const titles = category.plates.map((plate) => plate?.title);
-    if (titles.every(isNonEmptyText) && !isSortedText(titles)) {
-        errors.push(
-            `Catalog Order: Variants in ${category.title} must be alphabetical by title`
-        );
-    }
+    catalogOrderPolicy
+        .diagnosticsForVariants(category)
+        .forEach((error) => errors.push(error));
 }
 
 function validateVariantFacts(errors, sourceCategories) {
@@ -566,6 +609,7 @@ function validateCatalog(sourceCategories = catalog.categories) {
 }
 
 module.exports = {
+    catalogOrderPolicy,
     selectedAssetEntries,
     selectedAssetRequirements,
     selectedAssetFilePaths,
