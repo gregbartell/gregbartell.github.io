@@ -845,6 +845,89 @@
         });
     }
 
+    function displayStickerFor(category) {
+        return Object.freeze({
+            style: category.sticker.style,
+            mark: category.sticker.mark,
+            foot: category.sticker.foot || DEFAULT_STICKER_FOOT,
+        });
+    }
+
+    function displayVariantImageFor(plate) {
+        const selectedAsset = selectedAssetFor(plate);
+        if (!selectedAsset) return null;
+
+        return Object.freeze({
+            thumbnailSrc: selectedAsset.thumbnailPath,
+            fullSizeSrc: selectedAsset.fullSizePath,
+            altText: selectedAsset.altText,
+        });
+    }
+
+    function displayVariantFor(plate, category) {
+        const photoStatus = photoStatusPresentationFor(plate, category);
+        const image = displayVariantImageFor(plate);
+
+        if (!photoStatus.missingPlaceholder && !image) {
+            throw new Error(`${plate.id} requires a Selected Asset`);
+        }
+
+        return Object.freeze({
+            id: plate.id,
+            title: plate.title,
+            photoStatus: photoStatus.status,
+            image,
+            missingPlaceholder: photoStatus.missingPlaceholder,
+            badge: photoStatus.badge,
+        });
+    }
+
+    function displayCategories(sourceCategories = categories) {
+        return sourceCategories.map((category) =>
+            Object.freeze({
+                id: category.id,
+                title: category.title,
+                sticker: displayStickerFor(category),
+                variants: category.plates.map((plate) =>
+                    displayVariantFor(plate, category)
+                ),
+            })
+        );
+    }
+
+    function displayChecklistGroup(group) {
+        return Object.freeze({
+            category: Object.freeze({
+                id: group.category.id,
+                title: group.category.title,
+            }),
+            variants: group.plates.map((plate) =>
+                Object.freeze({
+                    id: plate.id,
+                    title: plate.title,
+                })
+            ),
+        });
+    }
+
+    function displayChecklistSections(sourceCategories = categories) {
+        return checklistSections(sourceCategories).map((section) => {
+            const groups = section.groups.map(displayChecklistGroup);
+            const count = groups.reduce(
+                (total, group) => total + group.variants.length,
+                0
+            );
+
+            return Object.freeze({
+                status: section.status,
+                title: section.title,
+                emptyMessage: section.emptyMessage,
+                count,
+                groups,
+            });
+        });
+    }
+
     function validatePhotoStatusDetails(errors) {
         const photoStatuses = Object.values(PHOTO_STATUSES);
         const validPhotoStatuses = new Set(photoStatuses);
@@ -1067,6 +1150,8 @@
         getPlateEntries,
         categoriesWithStatus,
         checklistSections,
+        displayCategories,
+        displayChecklistSections,
         validatePhotoStatusPolicy,
     };
 });

@@ -23,7 +23,7 @@
         if (!root) return;
 
         root.replaceChildren(
-            ...catalog.categories.map((category) => renderCategory(category))
+            ...catalog.displayCategories().map((category) => renderCategory(category))
         );
     }
 
@@ -32,76 +32,70 @@
         section.className = "category-section";
 
         const heading = document.createElement("h2");
-        heading.append(renderSticker(category), ` ${category.title}`);
+        heading.append(renderSticker(category.sticker), ` ${category.title}`);
 
         const grid = document.createElement("div");
         grid.className = "plate-grid";
         grid.replaceChildren(
-            ...category.plates.map((plate) => renderPlateCard(plate, category))
+            ...category.variants.map((variant) => renderPlateCard(variant))
         );
 
         section.append(heading, grid);
         return section;
     }
 
-    function renderSticker(category) {
+    function renderSticker(stickerDisplay) {
         const sticker = document.createElement("span");
         sticker.className = [
             "cat-sticker",
-            `cat-sticker--${category.sticker.style}`,
+            `cat-sticker--${stickerDisplay.style}`,
         ].join(" ");
 
         const mark = document.createElement("span");
         mark.className = "cat-sticker__mark";
-        mark.textContent = category.sticker.mark;
+        mark.textContent = stickerDisplay.mark;
 
         const foot = document.createElement("span");
         foot.className = "cat-sticker__foot";
-        foot.textContent = category.sticker.foot || catalog.defaultStickerFoot;
+        foot.textContent = stickerDisplay.foot;
 
         sticker.append(mark, foot);
         return sticker;
     }
 
-    function renderPlateCard(plate, category) {
+    function renderPlateCard(variant) {
         const card = document.createElement("div");
         card.className = "plate-card";
 
-        const photoStatus = catalog.photoStatusPresentationFor(plate, category);
-        card.dataset.photoStatus = photoStatus.status;
+        card.dataset.photoStatus = variant.photoStatus;
 
         const title = document.createElement("h3");
-        title.textContent = plate.title;
+        title.textContent = variant.title;
         card.append(title);
 
-        if (photoStatus.missingPlaceholder) {
-            card.append(renderMissingPlaceholder(photoStatus.missingPlaceholder));
+        if (variant.missingPlaceholder) {
+            card.append(renderMissingPlaceholder(variant.missingPlaceholder));
         } else {
-            card.append(renderPlateImage(plate));
+            card.append(renderPlateImage(variant.image));
         }
 
-        if (photoStatus.badge) {
-            card.append(renderPhotoStatusBadge(photoStatus.badge));
+        if (variant.badge) {
+            card.append(renderPhotoStatusBadge(variant.badge));
         }
 
         return card;
     }
 
-    function renderPlateImage(plate) {
-        const selectedAsset = catalog.selectedAssetFor(plate);
-        if (!selectedAsset) {
-            throw new Error(`${plate.id} requires a Selected Asset`);
-        }
-
+    function renderPlateImage(image) {
         const img = document.createElement("img");
-        img.src = selectedAsset.thumbnailPath;
-        img.alt = selectedAsset.altText;
+        img.src = image.thumbnailSrc;
+        img.alt = image.altText;
         img.className = "plate-image";
         img.loading = "lazy";
         img.decoding = "async";
         img.setAttribute("role", "button");
         img.setAttribute("tabindex", "0");
-        img.dataset.fullSrc = selectedAsset.fullSizePath;
+        img.dataset.fullSrc = image.fullSizeSrc;
         return img;
     }
 
@@ -252,7 +246,7 @@
 
     function populateStatusSections(statusSectionsEl) {
         statusSectionsEl.replaceChildren(
-            ...catalog.checklistSections().map((statusSection) =>
+            ...catalog.displayChecklistSections().map((statusSection) =>
                 renderChecklistSection(statusSection)
             )
         );
@@ -275,44 +269,37 @@
         const listContainer = document.createElement("div");
         listContainer.className = "plate-list-container";
 
-        const count = renderChecklistGroups(
-            listContainer,
-            statusSection.groups,
-            statusSection.emptyMessage
-        );
-        countBadge.textContent = count;
+        renderChecklistGroups(listContainer, statusSection);
+        countBadge.textContent = statusSection.count;
 
         column.append(heading, listContainer);
         return column;
     }
 
-    function renderChecklistGroups(container, groups, emptyMessage) {
+    function renderChecklistGroups(container, statusSection) {
         container.replaceChildren();
 
-        const total = groups.reduce((count, group) => {
+        statusSection.groups.forEach((group) => {
             const header = document.createElement("h4");
             header.className = "category-header";
             header.textContent = group.category.title;
 
             const list = document.createElement("ul");
             list.className = "plate-list";
-            group.plates.forEach((plate) => {
+            group.variants.forEach((variant) => {
                 const item = document.createElement("li");
-                item.textContent = plate.title;
+                item.textContent = variant.title;
                 list.append(item);
             });
 
             container.append(header, list);
-            return count + group.plates.length;
-        }, 0);
+        });
 
-        if (total === 0) {
+        if (statusSection.count === 0) {
             const empty = document.createElement("div");
             empty.className = "empty-message";
-            empty.textContent = emptyMessage;
+            empty.textContent = statusSection.emptyMessage;
             container.append(empty);
         }
-
-        return total;
     }
 })();
