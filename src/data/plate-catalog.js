@@ -3,11 +3,11 @@
         typeof module === "object" && module.exports
             ? require("./selected-asset-paths.js")
             : root?.SelectedAssetPaths;
-    const selectedAssetFilesystem =
+    const selectedAssetFileRules =
         typeof module === "object" && module.exports
-            ? require("../catalog-checks/selected-asset-filesystem.js")
+            ? require("../catalog-checks/selected-asset-file-rules.js")
             : null;
-    const api = factory(selectedAssetPathRules, selectedAssetFilesystem);
+    const api = factory(selectedAssetPathRules, selectedAssetFileRules);
 
     if (typeof module === "object" && module.exports) {
         module.exports = api.node;
@@ -17,7 +17,7 @@
     }
 })(typeof window !== "undefined" ? window : globalThis, function (
     selectedAssetPathRules,
-    selectedAssetFilesystem
+    selectedAssetFileRules
 ) {
     if (!selectedAssetPathRules) {
         throw new Error("SelectedAssetPaths is required before plate-catalog.js");
@@ -1130,13 +1130,13 @@
         fullSizePaths,
         thumbnailPaths = [],
     } = {}) {
-        if (!selectedAssetFilesystem) {
+        if (!selectedAssetFileRules) {
             throw new Error(
-                "SelectedAssetFilesystem is required for local image projections"
+                "SelectedAssetFileRules is required for local image projections"
             );
         }
 
-        return selectedAssetFilesystem.localImageProjections({
+        return selectedAssetFileRules.localImageProjections({
             selectedAssets: selectedAssetProjections(sourceCategories),
             fullSizePaths,
             thumbnailPaths,

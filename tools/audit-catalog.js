@@ -2,7 +2,7 @@
 const fs = require("fs");
 const path = require("path");
 const { auditCatalog } = require("../src/catalog-checks/plate-catalog-audit.js");
-const selectedAssetFilesystem = require("../src/catalog-checks/selected-asset-filesystem.js");
+const selectedAssetFileRules = require("../src/catalog-checks/selected-asset-file-rules.js");
 
 const repoRoot = path.resolve(__dirname, "..");
 const collator = new Intl.Collator("en", {
@@ -29,7 +29,7 @@ function localJpegFiles(rootRelativePath, shouldInclude = () => true) {
             const relativePath = toRepoRelative(absolutePath);
             if (
                 !entry.isFile() ||
-                !selectedAssetFilesystem.isJpegPath(relativePath)
+                !selectedAssetFileRules.isJpegPath(relativePath)
             ) {
                 return;
             }
@@ -50,12 +50,12 @@ function localJpegPaths(rootRelativePath, shouldInclude = () => true) {
 
 function repositoryImagePaths() {
     const fullSizeFiles = localJpegFiles(
-        selectedAssetFilesystem.fullSizeImageRoot,
-        selectedAssetFilesystem.isRepositoryFullSizeJpegPath
+        selectedAssetFileRules.fullSizeImageRoot,
+        selectedAssetFileRules.isRepositoryFullSizeJpegPath
     );
     const thumbnailFiles = localJpegFiles(
-        selectedAssetFilesystem.thumbnailImageRoot,
-        selectedAssetFilesystem.isRepositoryThumbnailJpegPath
+        selectedAssetFileRules.thumbnailImageRoot,
+        selectedAssetFileRules.isRepositoryThumbnailJpegPath
     );
 
     return {

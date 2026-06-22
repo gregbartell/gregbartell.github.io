@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const fs = require("fs");
 const path = require("path");
-const selectedAssetFilesystem = require("../src/catalog-checks/selected-asset-filesystem.js");
+const selectedAssetFileRules = require("../src/catalog-checks/selected-asset-file-rules.js");
 
 const repoRoot = path.resolve(__dirname, "..");
 const collator = new Intl.Collator("en", {
@@ -30,18 +30,18 @@ function thumbnailAction({ existingThumbnailMetadata, needsRefresh }) {
 
 function thumbnailJobForSource(absoluteSourcePath) {
     const sourcePath = toRepoRelative(absoluteSourcePath);
-    if (!selectedAssetFilesystem.isRepositoryFullSizeJpegPath(sourcePath)) {
+    if (!selectedAssetFileRules.isRepositoryFullSizeJpegPath(sourcePath)) {
         return null;
     }
 
     const sourceMetadata = {
         mtimeMs: fs.statSync(absoluteSourcePath).mtimeMs,
     };
-    const thumbnailPath = selectedAssetFilesystem.selectedAssetPaths(
-        selectedAssetFilesystem.assetFromFullSizePath(sourcePath)
+    const thumbnailPath = selectedAssetFileRules.selectedAssetPaths(
+        selectedAssetFileRules.assetFromFullSizePath(sourcePath)
     ).thumbnailPath;
     const existingThumbnailMetadata = thumbnailMetadata(thumbnailPath);
-    const needsRefresh = selectedAssetFilesystem.thumbnailNeedsRefresh({
+    const needsRefresh = selectedAssetFileRules.thumbnailNeedsRefresh({
         fullSizeMetadata: sourceMetadata,
         thumbnailMetadata: existingThumbnailMetadata,
     });
@@ -59,7 +59,7 @@ function thumbnailJobForSource(absoluteSourcePath) {
 function repositoryThumbnailJobs() {
     const rootPath = path.join(
         repoRoot,
-        selectedAssetFilesystem.fullSizeImageRoot
+        selectedAssetFileRules.fullSizeImageRoot
     );
     const jobs = [];
 

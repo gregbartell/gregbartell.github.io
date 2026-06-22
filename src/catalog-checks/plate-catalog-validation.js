@@ -1,5 +1,5 @@
 const catalog = require("../data/plate-catalog.js");
-const selectedAssetFilesystem = require("./selected-asset-filesystem.js");
+const selectedAssetFileRules = require("./selected-asset-file-rules.js");
 
 const CATALOG_ORDER_COLLATOR = new Intl.Collator("en", {
     sensitivity: "base",
@@ -150,13 +150,13 @@ function selectedAssetEntries(sourceCategories = catalog.categories) {
 }
 
 function selectedAssetRequirements(sourceCategories = catalog.categories) {
-    return selectedAssetFilesystem.selectedAssetRequirements(
+    return selectedAssetFileRules.selectedAssetRequirements(
         selectedAssetEntries(sourceCategories)
     );
 }
 
 function selectedAssetFilePaths(sourceCategories = catalog.categories) {
-    return selectedAssetFilesystem.selectedAssetFilePaths(
+    return selectedAssetFileRules.selectedAssetFilePaths(
         selectedAssetEntries(sourceCategories)
     );
 }

@@ -6,7 +6,7 @@ const vm = require("vm");
 const catalog = require("../../src/data/plate-catalog.js");
 const catalogValidation = require("../../src/catalog-checks/plate-catalog-validation.js");
 const selectedAssetPaths = require("../../src/data/selected-asset-paths.js");
-const selectedAssetFilesystem = require("../../src/catalog-checks/selected-asset-filesystem.js");
+const selectedAssetFileRules = require("../../src/catalog-checks/selected-asset-file-rules.js");
 
 assert.deepEqual(Object.keys(globalThis.PlateCatalog), [
     "displayCategories",
@@ -161,39 +161,39 @@ assert.deepEqual(
     }
 );
 assert.equal(
-    selectedAssetFilesystem.isRepositoryFullSizeJpegPath(
+    selectedAssetFileRules.isRepositoryFullSizeJpegPath(
         "assets/plates/full/fixture/selected.jpg"
     ),
     true
 );
 assert.equal(
-    selectedAssetFilesystem.isRepositoryFullSizeJpegPath(
+    selectedAssetFileRules.isRepositoryFullSizeJpegPath(
         "assets/plates/thumbs/fixture/selected.jpg"
     ),
     false
 );
 assert.equal(
-    selectedAssetFilesystem.isRepositoryThumbnailJpegPath(
+    selectedAssetFileRules.isRepositoryThumbnailJpegPath(
         "assets/plates/thumbs/fixture/selected.jpeg"
     ),
     true
 );
 assert.equal(
-    selectedAssetFilesystem.thumbnailNeedsRefresh({
+    selectedAssetFileRules.thumbnailNeedsRefresh({
         fullSizeMetadata: { mtimeMs: 3000 },
         thumbnailMetadata: { mtimeMs: 1000 },
     }),
     true
 );
 assert.equal(
-    selectedAssetFilesystem.thumbnailNeedsRefresh({
+    selectedAssetFileRules.thumbnailNeedsRefresh({
         fullSizeMetadata: { mtimeMs: 1000 },
         thumbnailMetadata: { mtimeMs: 3000 },
     }),
     false
 );
 assert.equal(
-    selectedAssetFilesystem.thumbnailNeedsRefresh({
+    selectedAssetFileRules.thumbnailNeedsRefresh({
         fullSizeMetadata: { mtimeMs: 1000 },
         thumbnailMetadata: null,
     }),
@@ -208,7 +208,7 @@ assert.equal(
     runBrowserScript("../../src/data/selected-asset-paths.js", browserContext);
     runBrowserScript("../../src/data/plate-catalog.js", browserContext);
 
-    assert.equal(browserContext.SelectedAssetFilesystem, undefined);
+    assert.equal(browserContext.SelectedAssetFileRules, undefined);
     assert.deepEqual(Object.keys(browserContext.PlateCatalog), [
         "displayCategories",
         "displayChecklistSections",
