@@ -198,6 +198,38 @@
             return details.selectedAssetCompatibility;
         }
 
+        function selectedAssetCompatibilityDiagnosticsFor(
+            status,
+            { asset, hasSelectedAssetAltText }
+        ) {
+            const compatibility = selectedAssetCompatibilityFor(status);
+            const diagnostics = [];
+
+            if (compatibility.forbidsSelectedAsset && asset !== null) {
+                diagnostics.push(
+                    "must use asset: null when Photo Status is missing"
+                );
+            }
+            if (
+                !compatibility.allowsSelectedAssetAltText &&
+                hasSelectedAssetAltText
+            ) {
+                diagnostics.push(
+                    "must not override Selected Asset alt text when Photo Status is missing"
+                );
+            }
+            if (
+                compatibility.requiresSelectedAsset &&
+                !isNonEmptyText(asset)
+            ) {
+                diagnostics.push(
+                    "must have a Selected Asset when Photo Status is not missing"
+                );
+            }
+
+            return diagnostics;
+        }
+
         function categoriesWithStatus(status, sourceCategories) {
             return sourceCategories
                 .map((category) => ({
@@ -368,6 +400,7 @@
             checklistPolicies,
             checklistSections,
             selectedAssetCompatibilityFor,
+            selectedAssetCompatibilityDiagnosticsFor,
             validationErrors,
         });
     }
@@ -975,6 +1008,16 @@
         return photoStatusPolicy.selectedAssetCompatibilityFor(photoStatus);
     }
 
+    function photoStatusSelectedAssetCompatibilityDiagnosticsFor(
+        photoStatus,
+        facts
+    ) {
+        return photoStatusPolicy.selectedAssetCompatibilityDiagnosticsFor(
+            photoStatus,
+            facts
+        );
+    }
+
     function imageKindFor(plate) {
         return plate.imageKind || IMAGE_KINDS.PLATE;
     }
@@ -1236,6 +1279,9 @@
             },
             photoStatusSelectedAssetCompatibility: {
                 value: photoStatusSelectedAssetCompatibility,
+            },
+            photoStatusSelectedAssetCompatibilityDiagnosticsFor: {
+                value: photoStatusSelectedAssetCompatibilityDiagnosticsFor,
             },
         });
 

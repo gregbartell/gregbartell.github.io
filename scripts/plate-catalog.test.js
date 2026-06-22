@@ -141,6 +141,11 @@ const selectedAssetProjectionsDescriptor = Object.getOwnPropertyDescriptor(
     catalog,
     "selectedAssetProjections"
 );
+const selectedAssetCompatibilityDiagnosticsDescriptor =
+    Object.getOwnPropertyDescriptor(
+        catalog,
+        "photoStatusSelectedAssetCompatibilityDiagnosticsFor"
+    );
 
 assert.deepEqual(Object.keys(fixtureProjections), [
     "selectedAssets",
@@ -151,6 +156,11 @@ assert.deepEqual(Object.keys(fixtureProjections), [
 assert.equal("photoStatusChecklistSections" in fixtureProjections, false);
 assert.equal(selectedAssetProjectionsDescriptor.enumerable, false);
 assert.equal(typeof selectedAssetProjectionsDescriptor.value, "function");
+assert.equal(selectedAssetCompatibilityDiagnosticsDescriptor.enumerable, false);
+assert.equal(
+    typeof selectedAssetCompatibilityDiagnosticsDescriptor.value,
+    "function"
+);
 
 Object.keys(fixtureProjections).forEach((key) =>
     assertProjectionDataProperty(fixtureProjections, key)
@@ -401,6 +411,20 @@ assert.deepEqual(fixtureProjections.photoStatusPresentations, [
 ]);
 
 assert.deepEqual(catalog.photoStatusPolicyErrors(), []);
+
+assert.deepEqual(
+    catalog.photoStatusSelectedAssetCompatibilityDiagnosticsFor(
+        catalog.photoStatuses.MISSING,
+        {
+            asset: "fixture/missing.jpg",
+            hasSelectedAssetAltText: true,
+        }
+    ),
+    [
+        "must use asset: null when Photo Status is missing",
+        "must not override Selected Asset alt text when Photo Status is missing",
+    ]
+);
 
 assert.deepEqual(catalog.photoStatusChecklistPolicies(), [
     {
@@ -775,6 +799,22 @@ assert.deepEqual(catalogValidation.selectedAssetRequirements(validCatalogFixture
 
     assertHasError(
         catalogValidation.validateCatalog(invalid),
+        "alpha/alpha-missing must not override Selected Asset alt text when Photo Status is missing"
+    );
+}
+
+{
+    const invalid = clone(validCatalogFixture);
+    invalid[0].plates[0].asset = "alpha/missing.jpg";
+    invalid[0].plates[0].selectedAssetAltText = "Alpha Missing selected art";
+    const errors = catalogValidation.validateCatalog(invalid);
+
+    assertHasError(
+        errors,
+        "alpha/alpha-missing must use asset: null when Photo Status is missing"
+    );
+    assertHasError(
+        errors,
         "alpha/alpha-missing must not override Selected Asset alt text when Photo Status is missing"
     );
 }

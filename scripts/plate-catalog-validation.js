@@ -207,32 +207,26 @@ function validatePhotoStatusPolicy() {
     return errors;
 }
 
-function photoStatusSelectedAssetCompatibility(photoStatus) {
-    return catalog.photoStatusSelectedAssetCompatibility(photoStatus);
+function selectedAssetCompatibilityDiagnosticsFor(photoStatus, facts) {
+    return catalog.photoStatusSelectedAssetCompatibilityDiagnosticsFor(
+        photoStatus,
+        facts
+    );
+}
+
+function selectedAssetCompatibilityFacts(plate) {
+    return {
+        asset: plate.asset,
+        hasSelectedAssetAltText: hasOwn(plate, "selectedAssetAltText"),
+    };
 }
 
 function validateSelectedAssetCompatibility(errors, prefix, plate) {
-    const compatibility = photoStatusSelectedAssetCompatibility(plate.photoStatus);
-
-    if (compatibility.forbidsSelectedAsset && plate.asset !== null) {
-        errors.push(`${prefix} must use asset: null when Photo Status is missing`);
-    }
-    if (
-        !compatibility.allowsSelectedAssetAltText &&
-        hasOwn(plate, "selectedAssetAltText")
-    ) {
-        errors.push(
-            `${prefix} must not override Selected Asset alt text when Photo Status is missing`
-        );
-    }
-    if (
-        compatibility.requiresSelectedAsset &&
-        !isNonEmptyText(plate.asset)
-    ) {
-        errors.push(
-            `${prefix} must have a Selected Asset when Photo Status is not missing`
-        );
-    }
+    selectedAssetCompatibilityDiagnosticsFor(
+        plate.photoStatus,
+        selectedAssetCompatibilityFacts(plate)
+    )
+        .forEach((diagnostic) => errors.push(`${prefix} ${diagnostic}`));
 }
 
 function validateCategoryFacts(errors, sourceCategories) {
