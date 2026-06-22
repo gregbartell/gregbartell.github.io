@@ -16,7 +16,9 @@ _Avoid_: Sort order, display order, list order
 
 **Image Kind**:
 Whether the selected asset represents a plate or an emblem. Image alt text is
-derived from the plate title and this kind.
+derived from the plate title and this kind. A Variant may set
+`selectedAssetAltText` to non-empty text for an exceptional Selected Asset whose
+accessible text would otherwise be repetitive or inaccurate.
 _Avoid_: Asset type, image type, media type
 
 **Photo Status**:

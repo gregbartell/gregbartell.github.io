@@ -69,6 +69,7 @@ const validCatalogFixture = [
                 title: "Misc Emblem",
                 photoStatus: catalog.photoStatuses.SATISFIED,
                 imageKind: catalog.imageKinds.EMBLEM,
+                selectedAssetAltText: "Misc Emblem selected art",
                 asset: "misc/emblem.jpg",
             },
         ],
@@ -314,6 +315,34 @@ assert.deepEqual(catalogValidation.validatePhotoStatusPolicy(fixtureCategories),
 assert.deepEqual(catalogValidation.validateCatalog(validCatalogFixture), []);
 
 assert.deepEqual(
+    catalog.catalogProjections(validCatalogFixture).selectedAssets.map(
+        (selectedAsset) => ({
+            catalogRef: selectedAsset.catalogRef,
+            altText: selectedAsset.altText,
+        })
+    ),
+    [
+        {
+            catalogRef: "alpha/alpha-selected",
+            altText: "Alpha Selected plate",
+        },
+        {
+            catalogRef: "misc/misc-emblem",
+            altText: "Misc Emblem selected art",
+        },
+    ]
+);
+
+assert.equal(
+    catalog.catalogProjections().selectedAssets.find(
+        (selectedAsset) =>
+            selectedAsset.catalogRef ===
+            "mil/veteran-military-service-award-emblems"
+    ).altText,
+    "Veteran/Military Service Award emblems"
+);
+
+assert.deepEqual(
     catalogValidation.catalogOrderPolicy.diagnosticsForCategories(
         validCatalogFixture
     ),
@@ -445,6 +474,16 @@ assert.deepEqual(catalogValidation.selectedAssetRequirements(validCatalogFixture
     assertHasError(
         catalogValidation.validateCatalog(invalid),
         "alpha/alpha-selected has invalid Image Kind: decal"
+    );
+}
+
+{
+    const invalid = clone(validCatalogFixture);
+    invalid[1].plates[0].selectedAssetAltText = " ";
+
+    assertHasError(
+        catalogValidation.validateCatalog(invalid),
+        "misc/misc-emblem Selected Asset alt text override must be non-empty text"
     );
 }
 

@@ -292,6 +292,7 @@
                     title: "Veteran/Military Service Award emblems",
                     photoStatus: PHOTO_STATUSES.NEEDS_UPGRADE,
                     imageKind: IMAGE_KINDS.EMBLEM,
+                    selectedAssetAltText: "Veteran/Military Service Award emblems",
                     asset: "mil/nat_guard_ribbon.jpg",
                 },
             ],
@@ -853,6 +854,13 @@
         return `${plate.title} ${imageKindFor(plate)}`;
     }
 
+    function selectedAssetAltTextFor(plate) {
+        if (hasOwn(plate, "selectedAssetAltText")) {
+            return plate.selectedAssetAltText;
+        }
+        return imageAlt(plate);
+    }
+
     function thumbnailPath(asset) {
         return asset ? `${THUMBNAIL_IMAGE_ROOT}/${asset}` : null;
     }
@@ -868,7 +876,7 @@
             asset: plate.asset,
             fullSizePath: fullImagePath(plate.asset),
             thumbnailPath: thumbnailPath(plate.asset),
-            altText: imageAlt(plate),
+            altText: selectedAssetAltTextFor(plate),
             imageKind: imageKindFor(plate),
         });
     }

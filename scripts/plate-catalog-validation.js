@@ -451,13 +451,28 @@ function validateVariantFacts(errors, sourceCategories) {
             errors.push(`${prefix} has invalid Image Kind: ${plate.imageKind}`);
         }
         if (hasOwn(plate, "alt")) {
-            errors.push(`${prefix} must derive alt text instead of storing it`);
+            errors.push(
+                `${prefix} must use selectedAssetAltText for Selected Asset alt text exceptions`
+            );
+        }
+        if (
+            hasOwn(plate, "selectedAssetAltText") &&
+            !isNonEmptyText(plate.selectedAssetAltText)
+        ) {
+            errors.push(
+                `${prefix} Selected Asset alt text override must be non-empty text`
+            );
         }
 
         if (plate.photoStatus === catalog.photoStatuses.MISSING) {
             if (plate.asset !== null) {
                 errors.push(
                     `${prefix} must use asset: null when Photo Status is missing`
+                );
+            }
+            if (hasOwn(plate, "selectedAssetAltText")) {
+                errors.push(
+                    `${prefix} must not override Selected Asset alt text when Photo Status is missing`
                 );
             }
             return;
