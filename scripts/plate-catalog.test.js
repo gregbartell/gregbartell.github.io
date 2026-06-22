@@ -33,6 +33,52 @@ const fixtureCategories = [
 const selectedPlate = fixtureCategories[0].plates[0];
 const missingPlate = fixtureCategories[0].plates[1];
 const needsUpgradePlate = fixtureCategories[0].plates[2];
+const validCatalogFixture = [
+    {
+        id: "alpha",
+        title: "Alpha",
+        sticker: { style: "blue", mark: "ALP" },
+        plates: [
+            {
+                id: "alpha-missing",
+                title: "Alpha Missing",
+                photoStatus: catalog.photoStatuses.MISSING,
+                asset: null,
+            },
+            {
+                id: "alpha-selected",
+                title: "Alpha Selected",
+                photoStatus: catalog.photoStatuses.SATISFIED,
+                asset: "alpha/selected.jpg",
+            },
+        ],
+    },
+    {
+        id: "misc",
+        title: "Miscellaneous",
+        sticker: { style: "black", mark: "MSC" },
+        plates: [
+            {
+                id: "misc-emblem",
+                title: "Misc Emblem",
+                photoStatus: catalog.photoStatuses.SATISFIED,
+                imageKind: catalog.imageKinds.EMBLEM,
+                asset: "misc/emblem.jpg",
+            },
+        ],
+    },
+];
+
+function clone(value) {
+    return JSON.parse(JSON.stringify(value));
+}
+
+function assertHasError(errors, expected) {
+    assert.ok(
+        errors.includes(expected),
+        `Expected error:\n${expected}\nActual errors:\n${errors.join("\n")}`
+    );
+}
 
 assert.deepEqual(catalog.selectedAssetFor(selectedPlate), {
     asset: "fixture/selected.jpg",
@@ -200,6 +246,93 @@ assert.deepEqual(catalog.displayChecklistSections(fixtureCategories), [
 ]);
 
 assert.deepEqual(catalog.validatePhotoStatusPolicy(fixtureCategories), []);
+
+assert.deepEqual(catalog.validateCatalog(validCatalogFixture), []);
+
+assert.deepEqual(catalog.selectedAssetRequirements(validCatalogFixture), [
+    {
+        catalogRef: "alpha/alpha-selected",
+        fullSizePath: "pics/alpha/selected.jpg",
+        thumbnailPath: "pics/thumbs/alpha/selected.jpg",
+    },
+    {
+        catalogRef: "misc/misc-emblem",
+        fullSizePath: "pics/misc/emblem.jpg",
+        thumbnailPath: "pics/thumbs/misc/emblem.jpg",
+    },
+]);
+
+{
+    const invalid = clone(validCatalogFixture);
+    invalid.reverse();
+
+    assertHasError(
+        catalog.validateCatalog(invalid),
+        "Catalog Order: Miscellaneous must be the last Category"
+    );
+}
+
+{
+    const invalid = clone(validCatalogFixture);
+    invalid.unshift({
+        id: "beta",
+        title: "Beta",
+        sticker: { style: "red", mark: "BET" },
+        plates: [
+            {
+                id: "beta-selected",
+                title: "Beta Selected",
+                photoStatus: catalog.photoStatuses.SATISFIED,
+                asset: "beta/selected.jpg",
+            },
+        ],
+    });
+
+    assertHasError(
+        catalog.validateCatalog(invalid),
+        "Catalog Order: Categories before Miscellaneous must be alphabetical by title"
+    );
+}
+
+{
+    const invalid = clone(validCatalogFixture);
+    invalid[0].plates[1].photoStatus = "archived";
+
+    assertHasError(
+        catalog.validateCatalog(invalid),
+        "alpha/alpha-selected has invalid Photo Status: archived"
+    );
+}
+
+{
+    const invalid = clone(validCatalogFixture);
+    invalid[0].plates[1].imageKind = "decal";
+
+    assertHasError(
+        catalog.validateCatalog(invalid),
+        "alpha/alpha-selected has invalid Image Kind: decal"
+    );
+}
+
+{
+    const invalid = clone(validCatalogFixture);
+    invalid[0].plates[1].asset = null;
+
+    assertHasError(
+        catalog.validateCatalog(invalid),
+        "alpha/alpha-selected must have a Selected Asset when Photo Status is not missing"
+    );
+}
+
+{
+    const invalid = clone(validCatalogFixture);
+    invalid[1].plates[0].id = "alpha-selected";
+
+    assertHasError(
+        catalog.validateCatalog(invalid),
+        "duplicate Variant id: alpha-selected"
+    );
+}
 
 assert.deepEqual(catalog.selectedAssetFilePaths(fixtureCategories), {
     fullSizePaths: [

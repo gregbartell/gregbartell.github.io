@@ -9,14 +9,6 @@ const collator = new Intl.Collator("en", {
     numeric: true,
 });
 
-const photoStatuses = Object.values(catalog.photoStatuses);
-const validPhotoStatuses = new Set(photoStatuses);
-const validImageKinds = new Set(Object.values(catalog.imageKinds));
-const validStickerStyles = new Set(catalog.stickerStyles);
-
-const categoryIdPattern = /^[a-z][a-z0-9_]*$/;
-const plateIdPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-
 const errors = [];
 const notices = [];
 
@@ -26,10 +18,6 @@ function fail(message) {
 
 function notice(message) {
     notices.push(message);
-}
-
-function hasOwn(object, key) {
-    return Object.prototype.hasOwnProperty.call(object, key);
 }
 
 function exists(relativePath) {
@@ -67,155 +55,63 @@ function localJpegPaths(rootRelativePath, shouldInclude = () => true) {
     return paths.sort((left, right) => collator.compare(left, right));
 }
 
-function isSorted(values) {
-    for (let index = 1; index < values.length; index += 1) {
-        if (collator.compare(values[index - 1], values[index]) > 0) {
-            return false;
-        }
-    }
-    return true;
-}
-
-function duplicateIds(items) {
-    const seen = new Set();
-    const duplicates = new Set();
-
-    items.forEach((item) => {
-        if (seen.has(item.id)) duplicates.add(item.id);
-        seen.add(item.id);
-    });
-
-    return [...duplicates];
-}
-
-function auditPhotoStatusPolicy() {
-    if (typeof catalog.validatePhotoStatusPolicy !== "function") {
-        fail("catalog.validatePhotoStatusPolicy must be a function");
+function auditCatalogInvariants() {
+    if (typeof catalog.validateCatalog !== "function") {
+        fail("catalog.validateCatalog must be a function");
         return;
     }
 
-    let policyErrors;
+    let validationErrors;
     try {
-        policyErrors = catalog.validatePhotoStatusPolicy();
+        validationErrors = catalog.validateCatalog();
     } catch (error) {
-        fail(`catalog.validatePhotoStatusPolicy threw: ${error.message}`);
+        fail(`catalog.validateCatalog threw: ${error.message}`);
         return;
     }
 
-    if (!Array.isArray(policyErrors)) {
-        fail("catalog.validatePhotoStatusPolicy must return an array");
+    if (!Array.isArray(validationErrors)) {
+        fail("catalog.validateCatalog must return an array");
         return;
     }
 
-    policyErrors.forEach((error) => fail(error));
+    validationErrors.forEach((error) => fail(error));
 }
 
-function auditCategories() {
-    if (!Array.isArray(catalog.categories) || catalog.categories.length === 0) {
-        fail("catalog.categories must be a non-empty array");
+function auditSelectedAssetFiles() {
+    if (typeof catalog.selectedAssetRequirements !== "function") {
+        fail("catalog.selectedAssetRequirements must be a function");
         return;
     }
 
-    duplicateIds(catalog.categories).forEach((id) => {
-        fail(`duplicate category id: ${id}`);
-    });
+    let requirements;
+    try {
+        requirements = catalog.selectedAssetRequirements();
+    } catch (error) {
+        fail(`catalog.selectedAssetRequirements threw: ${error.message}`);
+        return;
+    }
 
-    catalog.categories.forEach((category) => {
-        if (!categoryIdPattern.test(category.id || "")) {
-            fail(`invalid category id: ${category.id}`);
-        }
-        if (!category.title) {
-            fail(`category ${category.id} must have a title`);
-        }
-        if (!category.sticker) {
-            fail(`category ${category.id} must have sticker facts`);
+    if (!Array.isArray(requirements)) {
+        fail("catalog.selectedAssetRequirements must return an array");
+        return;
+    }
+
+    requirements.forEach((requirement) => {
+        if (!requirement || typeof requirement.catalogRef !== "string") {
+            fail("catalog.selectedAssetRequirements returned an invalid item");
             return;
         }
-        if (!validStickerStyles.has(category.sticker.style)) {
+
+        if (!exists(requirement.fullSizePath)) {
             fail(
-                `category ${category.id} has invalid sticker style: ${category.sticker.style}`
+                `${requirement.catalogRef} missing Selected Asset full-size file: ${requirement.fullSizePath}`
             );
         }
-        if (!category.sticker.mark) {
-            fail(`category ${category.id} must have a sticker mark`);
+        if (!exists(requirement.thumbnailPath)) {
+            fail(
+                `${requirement.catalogRef} missing Selected Asset thumbnail file: ${requirement.thumbnailPath}`
+            );
         }
-        if (
-            Object.prototype.hasOwnProperty.call(category.sticker, "foot") &&
-            !category.sticker.foot
-        ) {
-            fail(`category ${category.id} has an empty sticker foot override`);
-        }
-        if (!Array.isArray(category.plates) || category.plates.length === 0) {
-            fail(`category ${category.id} must have at least one plate`);
-        }
-    });
-
-    const categoryTitles = catalog.categories.map((category) => category.title);
-    if (categoryTitles[categoryTitles.length - 1] !== "Miscellaneous") {
-        fail("Miscellaneous must be the last category");
-    }
-
-    const orderedTitles = categoryTitles.slice(0, -1);
-    if (!isSorted(orderedTitles)) {
-        fail("categories before Miscellaneous must be alphabetical by title");
-    }
-}
-
-function auditPlates() {
-    const entries = catalog.getPlateEntries();
-    duplicateIds(entries.map(({ plate }) => plate)).forEach((id) => {
-        fail(`duplicate plate id: ${id}`);
-    });
-
-    catalog.categories.forEach((category) => {
-        const titles = category.plates.map((plate) => plate.title);
-        if (!isSorted(titles)) {
-            fail(`plates in ${category.title} must be alphabetical by title`);
-        }
-
-        category.plates.forEach((plate) => {
-            const prefix = `${category.id}/${plate.id}`;
-
-            if (!plateIdPattern.test(plate.id || "")) {
-                fail(`${prefix} has invalid plate id`);
-            }
-            if (!plate.title) {
-                fail(`${prefix} must have a title`);
-            }
-            if (!validPhotoStatuses.has(plate.photoStatus)) {
-                fail(`${prefix} has invalid photoStatus: ${plate.photoStatus}`);
-            }
-            if (!validImageKinds.has(catalog.imageKindFor(plate))) {
-                fail(`${prefix} has invalid imageKind: ${plate.imageKind}`);
-            }
-            if (hasOwn(plate, "alt")) {
-                fail(`${prefix} must derive alt text instead of storing it`);
-            }
-
-            if (plate.photoStatus === catalog.photoStatuses.MISSING) {
-                if (plate.asset !== null) {
-                    fail(`${prefix} must use asset: null when missing`);
-                }
-                return;
-            }
-
-            const selectedAsset = catalog.selectedAssetFor(plate);
-            if (!selectedAsset) {
-                fail(`${prefix} must have a Selected Asset when not missing`);
-                return;
-            }
-
-            if (!exists(selectedAsset.fullSizePath)) {
-                fail(
-                    `${prefix} missing Selected Asset full-size file: ${selectedAsset.fullSizePath}`
-                );
-            }
-            if (!exists(selectedAsset.thumbnailPath)) {
-                fail(
-                    `${prefix} missing Selected Asset thumbnail file: ${selectedAsset.thumbnailPath}`
-                );
-            }
-        });
     });
 }
 
@@ -245,9 +141,8 @@ function printNotices() {
     notices.forEach((message) => console.log(message));
 }
 
-auditCategories();
-auditPhotoStatusPolicy();
-auditPlates();
+auditCatalogInvariants();
+auditSelectedAssetFiles();
 auditUnselectedLocalImages();
 
 if (errors.length > 0) {
