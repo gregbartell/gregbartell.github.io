@@ -87,6 +87,225 @@
         PHOTO_STATUSES.NEEDS_UPGRADE,
     ]);
 
+    function createPhotoStatusPolicy({
+        statuses,
+        detailsByStatus,
+        checklistStatuses,
+    }) {
+        function detailsForStatus(status) {
+            const details = detailsByStatus[status];
+            if (!details) {
+                throw new Error(`Unknown photoStatus: ${status}`);
+            }
+            return details;
+        }
+
+        function badgeFor(details) {
+            const { cardBadge } = details;
+            if (!cardBadge) return null;
+
+            return Object.freeze({
+                text: cardBadge.text,
+                ariaLabel: cardBadge.ariaLabel,
+            });
+        }
+
+        function missingPlaceholderFor(details, plate, category) {
+            const { placeholder } = details;
+            if (!placeholder) return null;
+            if (!category || !isNonEmptyText(category.title)) {
+                throw new Error(
+                    `${plate.id} requires a Category for missing-photo placeholder display`
+                );
+            }
+
+            return Object.freeze({
+                ariaLabel: `${imageAlt(plate)} \u2014 ${placeholder.ariaSuffix}`,
+                stripDetail: placeholder.stripDetail,
+                plateTitle: plate.title,
+                categoryTitle: category.title,
+                statusText: placeholder.statusValue,
+                stampText: placeholder.stampText,
+            });
+        }
+
+        function presentationFor(plate, category) {
+            const status = plate.photoStatus;
+            const details = detailsForStatus(status);
+
+            return Object.freeze({
+                status,
+                badge: badgeFor(details),
+                missingPlaceholder: missingPlaceholderFor(
+                    details,
+                    plate,
+                    category
+                ),
+            });
+        }
+
+        function checklistPolicyForStatus(status) {
+            const { checklist } = detailsForStatus(status);
+            if (!checklist) return null;
+
+            return Object.freeze({
+                status,
+                title: checklist.title,
+                emptyMessage: checklist.emptyMessage,
+            });
+        }
+
+        function checklistPolicies() {
+            return checklistStatuses.map(checklistPolicyForStatus);
+        }
+
+        function categoriesWithStatus(status, sourceCategories) {
+            return sourceCategories
+                .map((category) => ({
+                    category,
+                    plates: category.plates.filter(
+                        (plate) => plate.photoStatus === status
+                    ),
+                }))
+                .filter((group) => group.plates.length > 0);
+        }
+
+        function checklistSections(sourceCategories) {
+            return checklistPolicies().map((checklistPolicy) => ({
+                status: checklistPolicy.status,
+                title: checklistPolicy.title,
+                emptyMessage: checklistPolicy.emptyMessage,
+                groups: categoriesWithStatus(
+                    checklistPolicy.status,
+                    sourceCategories
+                ),
+            }));
+        }
+
+        function validationErrors() {
+            const errors = [];
+            const photoStatuses = Object.values(statuses);
+            const validPhotoStatuses = new Set(photoStatuses);
+
+            if (!isPlainObject(detailsByStatus)) {
+                return ["Photo Status policy details must be an object"];
+            }
+
+            photoStatuses.forEach((status) => {
+                if (!hasOwn(detailsByStatus, status)) {
+                    errors.push(`Photo Status policy missing status: ${status}`);
+                }
+            });
+
+            Object.entries(detailsByStatus).forEach(([status, details]) => {
+                const prefix = `Photo Status policy for ${status}`;
+
+                if (!validPhotoStatuses.has(status)) {
+                    errors.push(
+                        `Photo Status policy has unknown status: ${status}`
+                    );
+                }
+                if (!isPlainObject(details)) {
+                    errors.push(`${prefix} must be an object`);
+                    return;
+                }
+                if (details.status !== status) {
+                    errors.push(`${prefix} must set status to ${status}`);
+                }
+
+                if (details.cardBadge !== null) {
+                    if (!isPlainObject(details.cardBadge)) {
+                        errors.push(`${prefix} badge must be null or an object`);
+                    } else {
+                        requirePolicyText(
+                            errors,
+                            details.cardBadge.text,
+                            `${prefix} badge text`
+                        );
+                        requirePolicyText(
+                            errors,
+                            details.cardBadge.ariaLabel,
+                            `${prefix} badge aria label`
+                        );
+                    }
+                }
+
+                if (details.checklist !== null) {
+                    if (!isPlainObject(details.checklist)) {
+                        errors.push(
+                            `${prefix} checklist must be null or an object`
+                        );
+                    } else {
+                        requirePolicyText(
+                            errors,
+                            details.checklist.title,
+                            `${prefix} checklist title`
+                        );
+                        requirePolicyText(
+                            errors,
+                            details.checklist.emptyMessage,
+                            `${prefix} checklist empty message`
+                        );
+                    }
+                }
+
+                if (details.placeholder !== null) {
+                    if (!isPlainObject(details.placeholder)) {
+                        errors.push(
+                            `${prefix} missing-photo placeholder must be null or an object`
+                        );
+                    } else {
+                        [
+                            "ariaSuffix",
+                            "stripDetail",
+                            "statusValue",
+                            "stampText",
+                        ].forEach((property) => {
+                            requirePolicyText(
+                                errors,
+                                details.placeholder[property],
+                                `${prefix} missing-photo placeholder ${property}`
+                            );
+                        });
+                    }
+                }
+            });
+
+            const checklistStatusSet = new Set(checklistStatuses);
+            Object.entries(detailsByStatus).forEach(([status, details]) => {
+                if (details?.checklist && !checklistStatusSet.has(status)) {
+                    errors.push(
+                        `Photo Status policy for ${status} has checklist display but is not included in checklist sections`
+                    );
+                }
+            });
+
+            checklistStatuses.forEach((status) => {
+                const details = detailsByStatus[status];
+                if (!details?.checklist) {
+                    errors.push(
+                        `Photo Status checklist includes non-checklist status: ${status}`
+                    );
+                }
+            });
+
+            return errors;
+        }
+
+        return Object.freeze({
+            presentationFor,
+            checklistPolicies,
+            checklistSections,
+            validationErrors,
+        });
+    }
+
+    const photoStatusPolicy = createPhotoStatusPolicy({
+        statuses: PHOTO_STATUSES,
+        detailsByStatus: PHOTO_STATUS_DETAILS,
+        checklistStatuses: CHECKLIST_PHOTO_STATUSES,
+    });
+
     const IMAGE_KINDS = Object.freeze({
         PLATE: "plate",
         EMBLEM: "emblem",
@@ -672,178 +891,12 @@
         },
     ];
 
-    function photoStatusFor(plate) {
-        return plate.photoStatus;
-    }
-
-    function photoStatusDetailsFor(plate) {
-        return photoStatusDetailsForStatus(photoStatusFor(plate));
-    }
-
-    function photoStatusDetailsForStatus(status) {
-        const details = PHOTO_STATUS_DETAILS[status];
-        if (!details) {
-            throw new Error(`Unknown photoStatus: ${status}`);
-        }
-        return details;
-    }
-
-    function photoStatusBadgeFor(plate) {
-        const { cardBadge } = photoStatusDetailsFor(plate);
-        if (!cardBadge) return null;
-
-        return Object.freeze({
-            text: cardBadge.text,
-            ariaLabel: cardBadge.ariaLabel,
-        });
-    }
-
-    function missingPhotoPlaceholderFor(plate, category) {
-        const { placeholder } = photoStatusDetailsFor(plate);
-        if (!placeholder) return null;
-        if (!category || !isNonEmptyText(category.title)) {
-            throw new Error(
-                `${plate.id} requires a Category for missing-photo placeholder display`
-            );
-        }
-
-        return Object.freeze({
-            ariaLabel: `${imageAlt(plate)} \u2014 ${placeholder.ariaSuffix}`,
-            stripDetail: placeholder.stripDetail,
-            plateTitle: plate.title,
-            categoryTitle: category.title,
-            statusText: placeholder.statusValue,
-            stampText: placeholder.stampText,
-        });
-    }
-
-    function photoStatusPresentationFor(plate, category) {
-        return Object.freeze({
-            status: photoStatusFor(plate),
-            badge: photoStatusBadgeFor(plate),
-            missingPlaceholder: missingPhotoPlaceholderFor(plate, category),
-        });
-    }
-
     function photoStatusPolicyErrors() {
-        const errors = [];
-        const photoStatuses = Object.values(PHOTO_STATUSES);
-        const validPhotoStatuses = new Set(photoStatuses);
-
-        if (!isPlainObject(PHOTO_STATUS_DETAILS)) {
-            return ["Photo Status policy details must be an object"];
-        }
-
-        photoStatuses.forEach((status) => {
-            if (!hasOwn(PHOTO_STATUS_DETAILS, status)) {
-                errors.push(`Photo Status policy missing status: ${status}`);
-            }
-        });
-
-        Object.entries(PHOTO_STATUS_DETAILS).forEach(([status, details]) => {
-            const prefix = `Photo Status policy for ${status}`;
-
-            if (!validPhotoStatuses.has(status)) {
-                errors.push(`Photo Status policy has unknown status: ${status}`);
-            }
-            if (!isPlainObject(details)) {
-                errors.push(`${prefix} must be an object`);
-                return;
-            }
-            if (details.status !== status) {
-                errors.push(`${prefix} must set status to ${status}`);
-            }
-
-            if (details.cardBadge !== null) {
-                if (!isPlainObject(details.cardBadge)) {
-                    errors.push(`${prefix} badge must be null or an object`);
-                } else {
-                    requirePolicyText(
-                        errors,
-                        details.cardBadge.text,
-                        `${prefix} badge text`
-                    );
-                    requirePolicyText(
-                        errors,
-                        details.cardBadge.ariaLabel,
-                        `${prefix} badge aria label`
-                    );
-                }
-            }
-
-            if (details.checklist !== null) {
-                if (!isPlainObject(details.checklist)) {
-                    errors.push(`${prefix} checklist must be null or an object`);
-                } else {
-                    requirePolicyText(
-                        errors,
-                        details.checklist.title,
-                        `${prefix} checklist title`
-                    );
-                    requirePolicyText(
-                        errors,
-                        details.checklist.emptyMessage,
-                        `${prefix} checklist empty message`
-                    );
-                }
-            }
-
-            if (details.placeholder !== null) {
-                if (!isPlainObject(details.placeholder)) {
-                    errors.push(
-                        `${prefix} missing-photo placeholder must be null or an object`
-                    );
-                } else {
-                    [
-                        "ariaSuffix",
-                        "stripDetail",
-                        "statusValue",
-                        "stampText",
-                    ].forEach((property) => {
-                        requirePolicyText(
-                            errors,
-                            details.placeholder[property],
-                            `${prefix} missing-photo placeholder ${property}`
-                        );
-                    });
-                }
-            }
-        });
-
-        const checklistStatusSet = new Set(CHECKLIST_PHOTO_STATUSES);
-        Object.entries(PHOTO_STATUS_DETAILS).forEach(([status, details]) => {
-            if (details?.checklist && !checklistStatusSet.has(status)) {
-                errors.push(
-                    `Photo Status policy for ${status} has checklist display but is not included in checklist sections`
-                );
-            }
-        });
-
-        CHECKLIST_PHOTO_STATUSES.forEach((status) => {
-            const details = PHOTO_STATUS_DETAILS[status];
-            if (!details?.checklist) {
-                errors.push(
-                    `Photo Status checklist includes non-checklist status: ${status}`
-                );
-            }
-        });
-
-        return errors;
-    }
-
-    function photoStatusChecklistPolicyForStatus(status) {
-        const { checklist } = photoStatusDetailsForStatus(status);
-        if (!checklist) return null;
-
-        return Object.freeze({
-            status,
-            title: checklist.title,
-            emptyMessage: checklist.emptyMessage,
-        });
+        return photoStatusPolicy.validationErrors();
     }
 
     function photoStatusChecklistPolicies() {
-        return CHECKLIST_PHOTO_STATUSES.map(photoStatusChecklistPolicyForStatus);
+        return photoStatusPolicy.checklistPolicies();
     }
 
     function imageKindFor(plate) {
@@ -921,7 +974,10 @@
 
     function photoStatusPresentationProjections(sourceCategories = categories) {
         return getPlateEntries(sourceCategories).map(({ category, plate }) => {
-            const presentation = photoStatusPresentationFor(plate, category);
+            const presentation = photoStatusPolicy.presentationFor(
+                plate,
+                category
+            );
 
             return Object.freeze({
                 catalogRef: catalogRef(category, plate),
@@ -994,29 +1050,6 @@
         );
     }
 
-    function categoriesWithStatus(status, sourceCategories = categories) {
-        return sourceCategories
-            .map((category) => ({
-                category,
-                plates: category.plates.filter(
-                    (plate) => photoStatusFor(plate) === status
-                ),
-            }))
-            .filter((group) => group.plates.length > 0);
-    }
-
-    function checklistSections(sourceCategories = categories) {
-        return CHECKLIST_PHOTO_STATUSES.map((status) => {
-            const checklistPolicy = photoStatusChecklistPolicyForStatus(status);
-            return {
-                status: checklistPolicy.status,
-                title: checklistPolicy.title,
-                emptyMessage: checklistPolicy.emptyMessage,
-                groups: categoriesWithStatus(status, sourceCategories),
-            };
-        });
-    }
-
     function displayStickerFor(category) {
         return Object.freeze({
             style: category.sticker.style,
@@ -1037,7 +1070,7 @@
     }
 
     function displayVariantFor(plate, category) {
-        const photoStatus = photoStatusPresentationFor(plate, category);
+        const photoStatus = photoStatusPolicy.presentationFor(plate, category);
         const image = displayVariantImageFor(plate);
 
         if (!photoStatus.missingPlaceholder && !image) {
@@ -1083,21 +1116,23 @@
     }
 
     function displayChecklistSections(sourceCategories = categories) {
-        return checklistSections(sourceCategories).map((section) => {
-            const groups = section.groups.map(displayChecklistGroup);
-            const count = groups.reduce(
-                (total, group) => total + group.variants.length,
-                0
-            );
+        return photoStatusPolicy
+            .checklistSections(sourceCategories)
+            .map((section) => {
+                const groups = section.groups.map(displayChecklistGroup);
+                const count = groups.reduce(
+                    (total, group) => total + group.variants.length,
+                    0
+                );
 
-            return Object.freeze({
-                status: section.status,
-                title: section.title,
-                emptyMessage: section.emptyMessage,
-                count,
-                groups,
+                return Object.freeze({
+                    status: section.status,
+                    title: section.title,
+                    emptyMessage: section.emptyMessage,
+                    count,
+                    groups,
+                });
             });
-        });
     }
 
     function nodeApi() {
