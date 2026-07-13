@@ -510,7 +510,7 @@
                 {
                     id: "western-washington-university",
                     title: "Western Washington University",
-                    photoStatus: PHOTO_STATUSES.SATISFIED,
+                    photoStatus: PHOTO_STATUSES.NEEDS_UPGRADE,
                     asset: "colleges/wwu.jpg",
                 },
             ],
