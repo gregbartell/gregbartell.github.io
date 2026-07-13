@@ -510,8 +510,8 @@
                 {
                     id: "western-washington-university",
                     title: "Western Washington University",
-                    photoStatus: PHOTO_STATUSES.MISSING,
-                    asset: null,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
+                    asset: "colleges/wwu.jpg",
                 },
             ],
         },
@@ -666,8 +666,8 @@
                 {
                     id: "helping-kids-speak",
                     title: "Helping Kids Speak (Freemason)",
-                    photoStatus: PHOTO_STATUSES.NEEDS_UPGRADE,
-                    asset: "orgs/freemason.jpg",
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
+                    asset: "orgs/freemason_2.jpg",
                 },
                 {
                     id: "jp-patches-pal",
@@ -740,7 +740,7 @@
                     id: "washington-national-parks",
                     title: "Washington National Parks",
                     photoStatus: PHOTO_STATUSES.SATISFIED,
-                    asset: "parks/natl_parks.jpg",
+                    asset: "parks/natl_parks_2.jpg",
                 },
                 {
                     id: "washington-state-parks",
@@ -800,8 +800,8 @@
                 {
                     id: "keep-washington-evergreen",
                     title: "Keep Washington Evergreen",
-                    photoStatus: PHOTO_STATUSES.MISSING,
-                    asset: null,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
+                    asset: "special_interests/keep_wa_evergreen.jpg",
                 },
                 {
                     id: "lemay-americas-car-museum",
@@ -934,8 +934,8 @@
                 {
                     id: "yakima-nation",
                     title: "Yakima Nation",
-                    photoStatus: PHOTO_STATUSES.NEEDS_UPGRADE,
-                    asset: "tribal/yakima_nation.jpg",
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
+                    asset: "tribal/yakima_nation_2.jpg",
                 },
             ],
         },
