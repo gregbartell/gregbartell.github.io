@@ -691,7 +691,7 @@
                     id: "washington-wine-commission",
                     title: "Washington Wine Commission",
                     photoStatus: PHOTO_STATUSES.SATISFIED,
-                    asset: "orgs/wine_country.jpg",
+                    asset: "orgs/wine_country_2.jpg",
                 },
                 {
                     id: "we-love-our-pets",
@@ -1004,6 +1004,12 @@
                     title: "Transporter",
                     photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "misc/transporter.jpg",
+                },
+                {
+                    id: "wrecker",
+                    title: "Wrecker",
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
+                    asset: "misc/wrecker.jpg",
                 },
             ],
         },
