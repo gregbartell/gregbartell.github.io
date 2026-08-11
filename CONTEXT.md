@@ -40,3 +40,8 @@ _Avoid_: Design, version, plate type
 The kind of collectible design a Variant represents. The Variant Kinds are
 plate and emblem.
 _Avoid_: Image Kind, asset type, image type, media type
+
+**Variant Title**:
+The canonical public name of a Variant. A Variant has one Variant Title
+wherever it is identified.
+_Avoid_: Card label, display title, short title, Variant name
