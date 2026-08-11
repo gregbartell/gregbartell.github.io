@@ -642,8 +642,8 @@
                 {
                     id: "4-h",
                     title: "4-H",
-                    photoStatus: PHOTO_STATUSES.MISSING,
-                    asset: null,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
+                    asset: "orgs/4h.jpg",
                 },
                 {
                     id: "breast-cancer",
@@ -751,7 +751,7 @@
                 {
                     id: "washingtons-wildlife-bear",
                     title: "Washington's Wildlife: Bear",
-                    photoStatus: PHOTO_STATUSES.NEEDS_UPGRADE,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "parks/wa_wildlife_bear.jpg",
                 },
                 {
@@ -885,7 +885,7 @@
                 {
                     id: "tennis",
                     title: "Tennis",
-                    photoStatus: PHOTO_STATUSES.NEEDS_UPGRADE,
+                    photoStatus: PHOTO_STATUSES.SATISFIED,
                     asset: "sports/tennis.jpg",
                 },
                 {
