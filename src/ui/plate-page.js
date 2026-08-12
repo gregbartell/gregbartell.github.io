@@ -30,7 +30,12 @@
         const root = document.getElementById("catalog-root");
         if (!root) return;
 
-        renderer.renderCatalog(root, catalog.displayCategories());
+        const categories = catalog.displayCategories();
+        renderer.renderCatalog(root, categories);
+        renderer.renderCategoryNavigation(
+            document.getElementById("category-navigation-root"),
+            categories
+        );
     }
 
     function wirePageBehavior() {

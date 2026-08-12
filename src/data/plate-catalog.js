@@ -107,6 +107,10 @@
 
     const STICKER_STYLES = Object.freeze(["black", "blue", "green", "red"]);
     const DEFAULT_STICKER_FOOT = "WASHINGTON";
+    const CATEGORY_FRAGMENT_OVERRIDES = Object.freeze({
+        tribal_self_issued: "trb-self",
+        tribal: "trb-wa",
+    });
 
     const categories = [
         {
@@ -712,6 +716,13 @@
         });
     }
 
+    function categoryFragmentIdFor(category) {
+        return (
+            CATEGORY_FRAGMENT_OVERRIDES[category.id] ||
+            category.sticker.mark.toLowerCase()
+        );
+    }
+
     function displayVariantImageFor(variant) {
         if (!variant.asset) return null;
         const paths = selectedAssetPathRules.selectedAssetPaths(variant.asset);
@@ -746,6 +757,7 @@
             Object.freeze({
                 id: category.id,
                 title: category.title,
+                fragmentId: categoryFragmentIdFor(category),
                 sticker: displayStickerFor(category),
                 variants: category.plates.map((variant) =>
                     displayVariantFor(variant, category)

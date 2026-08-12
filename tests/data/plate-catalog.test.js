@@ -22,6 +22,30 @@ runBrowserScript("../../src/data/plate-catalog.js");
 assert.equal(typeof browser.PlateCatalog.displayCategories, "function");
 assert.equal(typeof browser.PlateCatalog.displayChecklistSections, "function");
 
+assert.deepEqual(
+    JSON.parse(
+        JSON.stringify(
+            browser.PlateCatalog.displayCategories().map((category) => ({
+                title: category.title,
+                fragmentId: category.fragmentId,
+            }))
+        )
+    ),
+    [
+        { title: "Collector Vehicles", fragmentId: "clv" },
+        { title: "Colleges and Universities", fragmentId: "uni" },
+        { title: "First Responders", fragmentId: "911" },
+        { title: "Military and Veterans", fragmentId: "mil" },
+        { title: "Organizations", fragmentId: "org" },
+        { title: "Parks and Environment", fragmentId: "prk" },
+        { title: "Special Interests", fragmentId: "int" },
+        { title: "Sports", fragmentId: "spt" },
+        { title: "Tribal, Self-Issued", fragmentId: "trb-self" },
+        { title: "Tribal, WA", fragmentId: "trb-wa" },
+        { title: "Miscellaneous", fragmentId: "msc" },
+    ]
+);
+
 const fixtureCategories = [
     {
         id: "fixture",
@@ -55,6 +79,8 @@ const [displayCategory] = browser.PlateCatalog.displayCategories(
     fixtureCategories
 );
 const [selected, missing, needsUpgrade] = displayCategory.variants;
+
+assert.equal(displayCategory.fragmentId, "fix");
 
 assert.deepEqual(JSON.parse(JSON.stringify(selected.image)), {
     thumbnailSrc: "assets/plates/thumbs/fixture/selected.jpg",

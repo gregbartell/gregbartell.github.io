@@ -140,6 +140,12 @@ components:
     typography: "{typography.label-md}"
     rounded: "{rounded.sticker}"
     padding: "5px 10px 4px"
+  category-register:
+    backgroundColor: "{colors.sky-haze}"
+    textColor: "{colors.ink}"
+    collapsedLabel: "Categories"
+    layout: "four-column desktop grid, two-column mobile grid"
+    behavior: "non-sticky native disclosure"
   badge-warning:
     backgroundColor: "{colors.tab-red}"
     textColor: "{colors.white}"
@@ -289,9 +295,11 @@ die-cut stamped tags resting on paper.
 ### Navigation
 
 There is no global navigation. The page is organized as a stacked catalog of
-category sections, each introduced by a registration-sticker code and a
-red thick-thin double rule. The status checklist is the only top-level control,
-centered below the intro.
+Category sections, each introduced by a registration-sticker code and a red
+thick-thin double rule. Below the centered Photo Status checklist control, a
+non-sticky “Categories” disclosure unfolds into a responsive registration-
+sticker link grid. It remains in normal page flow, uses two columns on mobile
+and four on desktop, and collapses after a visitor jumps to a Category.
 
 ### Inputs & Forms
 

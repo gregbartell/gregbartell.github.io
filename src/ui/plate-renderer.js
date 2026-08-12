@@ -14,6 +14,9 @@
         section.className = "category-section";
 
         const heading = document.createElement("h2");
+        heading.className = "category-heading";
+        heading.id = category.fragmentId;
+        heading.tabIndex = -1;
         const title = document.createElement("span");
         title.className = "category-title";
         title.textContent = category.title;
@@ -27,6 +30,85 @@
 
         section.append(heading, grid);
         return section;
+    }
+
+    function renderCategoryNavigation(rootEl, categories) {
+        if (!rootEl) return;
+
+        const register = document.createElement("details");
+        register.className = "category-register";
+
+        const summary = document.createElement("summary");
+        summary.className = "category-register__summary";
+        summary.textContent = "Categories";
+
+        const navigation = document.createElement("nav");
+        navigation.className = "category-register__navigation";
+        navigation.setAttribute("aria-label", "Plate Categories");
+
+        const list = document.createElement("ol");
+        list.className = "category-register__list";
+        list.replaceChildren(
+            ...categories.map((category) => renderCategoryLink(category))
+        );
+
+        navigation.append(list);
+        register.append(summary, navigation);
+        rootEl.replaceChildren(register);
+
+        function focusDestination(fragment) {
+            if (!fragment || fragment.charAt(0) !== "#") return;
+
+            const destination = document.getElementById(fragment.slice(1));
+            if (!destination?.classList.contains("category-heading")) return;
+
+            window.requestAnimationFrame(() =>
+                destination.focus({ preventScroll: true })
+            );
+        }
+
+        function closeAfterSelection(event) {
+            const link = event.target.closest?.(".category-register__link");
+            if (!link || !list.contains(link)) return;
+
+            register.open = false;
+            focusDestination(link.getAttribute("href"));
+        }
+
+        function closeOnEscape(event) {
+            if (event.key !== "Escape" || !register.open) return;
+
+            register.open = false;
+            summary.focus();
+        }
+
+        function focusCurrentDestination() {
+            focusDestination(window.location.hash);
+        }
+
+        list.addEventListener("click", closeAfterSelection);
+        document.addEventListener("keydown", closeOnEscape);
+        window.addEventListener("hashchange", focusCurrentDestination);
+        focusCurrentDestination();
+    }
+
+    function renderCategoryLink(category) {
+        const item = document.createElement("li");
+
+        const link = document.createElement("a");
+        link.className = "category-register__link";
+        link.setAttribute("href", `#${category.fragmentId}`);
+
+        const sticker = renderSticker(category.sticker);
+        sticker.setAttribute("aria-hidden", "true");
+
+        const title = document.createElement("span");
+        title.className = "category-register__title";
+        title.textContent = category.title;
+
+        link.append(sticker, title);
+        item.append(link);
+        return item;
     }
 
     function renderSticker(stickerDisplay) {
@@ -270,6 +352,7 @@
 
     root.PlateCatalogRenderer = Object.freeze({
         renderCatalog,
+        renderCategoryNavigation,
         renderChecklist,
         bindSelectedAssetPreview,
     });
