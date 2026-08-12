@@ -276,7 +276,7 @@
                 },
                 {
                     id: "military-affiliate-radio-system",
-                    title: "Military Affiliate Radio System (MARS)",
+                    title: "Military Affiliate Radio System",
                     photoStatus: PHOTO_STATUSES.MISSING,
                     asset: null,
                 },
@@ -300,10 +300,10 @@
                 },
                 {
                     id: "veteran-military-service-award-emblems",
-                    title: "Veteran/Military Service Award emblems",
+                    title: "Veteran Service emblems",
                     photoStatus: PHOTO_STATUSES.NEEDS_UPGRADE,
                     variantKind: VARIANT_KINDS.EMBLEM,
-                    selectedAssetAltText: "Veteran/Military Service Award emblems",
+                    selectedAssetAltText: "Veteran Service emblems",
                     asset: "mil/nat_guard_ribbon.jpg",
                 },
             ],
