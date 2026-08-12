@@ -1,33 +1,33 @@
 # Domain Docs
 
-How the engineering skills should consume this repo's domain documentation when
-exploring the codebase.
+This is a single-context repo. Agents use two sources of truth:
 
-## Layout
+- `CONTEXT.md` defines the repo's canonical domain language.
+- `docs/adr/` records architectural decisions.
 
-This is a single-context repo:
+## Before codebase work
 
-- Read `CONTEXT.md` at the repo root for domain language.
-- Read relevant ADRs under `docs/adr/` before changing behavior or
-  architecture.
+1. Read `CONTEXT.md` completely before exploring or naming domain concepts.
+2. Read every ADR that touches behavior or architecture in the requested area.
 
-## Before exploring, read these
+This preparation is complete when every relevant term and architectural
+constraint is accounted for in the planned work.
 
-- `CONTEXT.md`
-- Relevant files in `docs/adr/`
+## Canonical language
 
-If any of these files do not exist, proceed silently. The domain-modeling flow
-creates them lazily when terms or decisions are resolved.
+Use the terms defined in `CONTEXT.md` in code, tests, documentation, and
+explanations. Use terms marked `_Avoid_` only when quoting existing material or
+explaining a vocabulary mismatch.
 
-## Use the glossary's vocabulary
+Treat a missing or disputed concept as an unresolved terminology decision.
+Resolve it with the user before establishing a canonical term, then record the
+agreed language in `CONTEXT.md`.
 
-When output names a domain concept, use the term as defined in `CONTEXT.md`. Do
-not drift to synonyms the glossary explicitly avoids.
+## Architectural decisions
 
-If the concept is missing from the glossary, note it as a possible
-domain-modeling follow-up.
+Surface any conflict with an existing ADR before proceeding. Name the ADR and
+explain the conflict so the user can decide whether to preserve or revisit the
+decision.
 
-## Flag ADR conflicts
-
-If output contradicts an existing ADR, surface it explicitly rather than
-silently overriding it.
+Record approved architectural decisions under `docs/adr/` using the existing
+numbered-file style.

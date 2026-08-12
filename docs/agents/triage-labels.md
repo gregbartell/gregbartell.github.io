@@ -1,15 +1,16 @@
 # Triage Labels
 
-The skills speak in terms of five canonical triage roles. This file maps those
-roles to the actual label strings used in this repo's issue tracker.
+Local Markdown issues represent triage labels as values in their
+`**Status:**` field. An ordinary implementation issue has exactly one of these
+states:
 
-| Label in mattpocock/skills | Label in our tracker | Meaning                                  |
-| -------------------------- | -------------------- | ---------------------------------------- |
-| `needs-triage`             | `needs-triage`       | Maintainer needs to evaluate this issue  |
-| `needs-info`               | `needs-info`         | Waiting on reporter for more information |
-| `ready-for-agent`          | `ready-for-agent`    | Fully specified, ready for an AFK agent  |
-| `ready-for-human`          | `ready-for-human`    | Requires human implementation            |
-| `wontfix`                  | `wontfix`            | Will not be actioned                     |
+| Status              | Meaning                                              |
+| ------------------- | ---------------------------------------------------- |
+| `needs-triage`      | The maintainer needs to evaluate the issue.           |
+| `needs-info`        | Work is waiting for requested information.            |
+| `ready-for-agent`   | An agent can implement the fully specified issue.     |
+| `ready-for-human`   | The issue requires human judgment, access, or action. |
+| `wontfix`           | The issue will not be implemented.                    |
 
-When a skill mentions a role, use the corresponding label string from this
-table.
+Wayfinding decision tickets use the separate lifecycle states documented in
+`docs/agents/issue-tracker.md`.
