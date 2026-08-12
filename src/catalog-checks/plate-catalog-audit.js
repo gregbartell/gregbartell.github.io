@@ -1,21 +1,11 @@
 const catalogValidation = require("./plate-catalog-validation.js");
 
-const COLLATOR = new Intl.Collator("en", {
-    sensitivity: "base",
-    numeric: true,
-});
-
-function sortedPaths(paths) {
-    return [...paths].sort((left, right) => COLLATOR.compare(left, right));
-}
-
 function auditCatalog({
     sourceCategories,
     fullSizePaths = [],
     thumbnailPaths = [],
 } = {}) {
     const errors = [];
-    const notices = [];
 
     auditCatalogInvariants({ errors, sourceCategories });
     auditSelectedAssetFiles({
@@ -24,18 +14,10 @@ function auditCatalog({
         thumbnailPaths,
         sourceCategories,
     });
-    auditUnselectedLocalImages({
-        errors,
-        notices,
-        fullSizePaths,
-        thumbnailPaths,
-        sourceCategories,
-    });
 
     return {
         passed: errors.length === 0,
         errors,
-        notices,
     };
 }
 
@@ -108,42 +90,6 @@ function auditSelectedAssetFiles({
                 `${requirement.catalogRef} missing Selected Asset thumbnail file: ${requirement.thumbnailPath}`
             );
         }
-    });
-}
-
-function auditUnselectedLocalImages({
-    errors,
-    notices,
-    fullSizePaths,
-    thumbnailPaths,
-    sourceCategories,
-}) {
-    if (!Array.isArray(fullSizePaths) || !Array.isArray(thumbnailPaths)) {
-        return;
-    }
-
-    let unselectedImages;
-    try {
-        unselectedImages = catalogValidation.unselectedLocalImages({
-            sourceCategories,
-            fullSizePaths: sortedPaths(fullSizePaths),
-            thumbnailPaths: sortedPaths(thumbnailPaths),
-        });
-    } catch (error) {
-        errors.push(`catalogValidation.unselectedLocalImages threw: ${error.message}`);
-        return;
-    }
-
-    if (!Array.isArray(unselectedImages)) {
-        errors.push("catalogValidation.unselectedLocalImages must return an array");
-        return;
-    }
-
-    if (unselectedImages.length === 0) return;
-
-    notices.push({
-        type: "unselected-local-images",
-        images: unselectedImages,
     });
 }
 

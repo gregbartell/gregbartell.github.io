@@ -150,7 +150,6 @@ assert.deepEqual(Object.keys(catalog), [
     "variantKinds",
     "stickerStyles",
     "catalogProjections",
-    "localImageProjections",
 ]);
 
 assert.deepEqual(
@@ -923,82 +922,5 @@ assert.deepEqual(catalogValidation.selectedAssetFilePaths(fixtureCategories), {
         "assets/plates/thumbs/fixture/needs-upgrade.jpg",
     ],
 });
-
-assert.deepEqual(
-    catalogValidation.unselectedLocalImages({
-        sourceCategories: fixtureCategories,
-        fullSizePaths: [
-            "assets/plates/full/fixture/selected.jpg",
-            "assets/plates/full/fixture/needs-upgrade.jpg",
-            "assets/plates/full/fixture/unselected.jpg",
-        ],
-        thumbnailPaths: [
-            "assets/plates/thumbs/fixture/selected.jpg",
-            "assets/plates/thumbs/fixture/needs-upgrade.jpg",
-            "assets/plates/thumbs/fixture/unselected.jpg",
-        ],
-    }),
-    [
-        {
-            asset: "fixture/unselected.jpg",
-            fullSizePath: "assets/plates/full/fixture/unselected.jpg",
-            thumbnailPath: "assets/plates/thumbs/fixture/unselected.jpg",
-            hasMatchingThumbnail: true,
-        },
-    ]
-);
-
-{
-    const malformedLocalImageCategories = [
-        null,
-        {
-            id: "missing-variants",
-            title: "Missing Variants",
-            sticker: { style: "blue", mark: "MIS" },
-        },
-        {
-            id: "fixture",
-            title: "Fixture",
-            sticker: { style: "blue", mark: "FIX" },
-            plates: [null, selectedPlate, needsUpgradePlate],
-        },
-    ];
-    const errors = catalogValidation.validateCatalog(
-        malformedLocalImageCategories
-    );
-
-    assertHasError(errors, "Category at index 0 must be an object");
-    assertHasError(
-        errors,
-        "Category missing-variants must have at least one Variant"
-    );
-    assertHasError(
-        errors,
-        "Category fixture Variant at index 0 must be an object"
-    );
-    assert.deepEqual(
-        catalogValidation.unselectedLocalImages({
-            sourceCategories: malformedLocalImageCategories,
-            fullSizePaths: [
-                "assets/plates/full/fixture/selected.jpg",
-                "assets/plates/full/fixture/needs-upgrade.jpg",
-                "assets/plates/full/fixture/unselected.jpg",
-            ],
-            thumbnailPaths: [
-                "assets/plates/thumbs/fixture/selected.jpg",
-                "assets/plates/thumbs/fixture/needs-upgrade.jpg",
-                "assets/plates/thumbs/fixture/unselected.jpg",
-            ],
-        }),
-        [
-            {
-                asset: "fixture/unselected.jpg",
-                fullSizePath: "assets/plates/full/fixture/unselected.jpg",
-                thumbnailPath: "assets/plates/thumbs/fixture/unselected.jpg",
-                hasMatchingThumbnail: true,
-            },
-        ]
-    );
-}
 
 console.log("Plate catalog tests passed.");

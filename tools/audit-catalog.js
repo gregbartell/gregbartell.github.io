@@ -68,22 +68,6 @@ function auditRepositoryCatalog() {
     return auditCatalog(repositoryImagePaths());
 }
 
-function formatNoticeLines(notice) {
-    if (notice.type !== "unselected-local-images" || notice.images.length === 0) {
-        return [];
-    }
-
-    return [
-        "Unselected local images (informational, not catalog failures):",
-        ...notice.images.map((image) => {
-            const thumbnailStatus = image.hasMatchingThumbnail
-                ? `matching thumbnail: ${image.thumbnailPath}`
-                : `no matching thumbnail: ${image.thumbnailPath}`;
-            return `- ${image.fullSizePath} (${thumbnailStatus})`;
-        }),
-    ];
-}
-
 function formatAuditResult(result) {
     const stdout = [];
     const stderr = [];
@@ -94,10 +78,6 @@ function formatAuditResult(result) {
         stderr.push("Catalog audit failed:");
         result.errors.forEach((error) => stderr.push(`- ${error}`));
     }
-
-    result.notices.flatMap(formatNoticeLines).forEach((line) => {
-        stdout.push(line);
-    });
 
     return {
         exitCode: result.passed ? 0 : 1,

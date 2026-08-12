@@ -45,10 +45,6 @@ const selectedThumbnailPaths = [
     "assets/plates/thumbs/misc/selected.jpg",
 ];
 
-function clone(value) {
-    return JSON.parse(JSON.stringify(value));
-}
-
 assert.deepEqual(
     auditCatalog({
         sourceCategories: fixtureCategories,
@@ -58,7 +54,6 @@ assert.deepEqual(
     {
         passed: true,
         errors: [],
-        notices: [],
     }
 );
 
@@ -73,7 +68,6 @@ assert.deepEqual(
         errors: [
             "alpha/alpha-selected missing Selected Asset full-size file: assets/plates/full/alpha/selected.jpg",
         ],
-        notices: [],
     }
 );
 
@@ -88,7 +82,6 @@ assert.deepEqual(
         errors: [
             "alpha/alpha-selected missing Selected Asset thumbnail file: assets/plates/thumbs/alpha/selected.jpg",
         ],
-        notices: [],
     }
 );
 
@@ -107,7 +100,6 @@ assert.deepEqual(
     {
         passed: true,
         errors: [],
-        notices: [],
     }
 );
 
@@ -126,48 +118,33 @@ assert.deepEqual(
             errors: [
                 "alpha/alpha-selected has invalid Photo Status: archived",
             ],
-            notices: [],
         }
     );
 }
 
-assert.deepEqual(
-    auditCatalog({
-        sourceCategories: fixtureCategories,
-        fullSizePaths: [
-            "assets/plates/full/alpha/no_thumb.jpg",
-            ...selectedFullSizePaths,
-            "assets/plates/full/alpha/alternate.jpg",
-        ],
-        thumbnailPaths: [
-            ...selectedThumbnailPaths,
-            "assets/plates/thumbs/alpha/alternate.jpg",
-        ],
-    }),
-    {
-        passed: true,
-        errors: [],
-        notices: [
-            {
-                type: "unselected-local-images",
-                images: [
-                    {
-                        asset: "alpha/alternate.jpg",
-                        fullSizePath: "assets/plates/full/alpha/alternate.jpg",
-                        thumbnailPath: "assets/plates/thumbs/alpha/alternate.jpg",
-                        hasMatchingThumbnail: true,
-                    },
-                    {
-                        asset: "alpha/no_thumb.jpg",
-                        fullSizePath: "assets/plates/full/alpha/no_thumb.jpg",
-                        thumbnailPath: "assets/plates/thumbs/alpha/no_thumb.jpg",
-                        hasMatchingThumbnail: false,
-                    },
-                ],
-            },
-        ],
-    }
-);
+const auditWithUnselectedImages = auditCatalog({
+    sourceCategories: fixtureCategories,
+    fullSizePaths: [
+        "assets/plates/full/alpha/no_thumb.jpg",
+        ...selectedFullSizePaths,
+        "assets/plates/full/alpha/alternate.jpg",
+    ],
+    thumbnailPaths: [
+        ...selectedThumbnailPaths,
+        "assets/plates/thumbs/alpha/alternate.jpg",
+    ],
+});
+
+assert.deepEqual(auditWithUnselectedImages, {
+    passed: true,
+    errors: [],
+});
+
+assert.deepEqual(formatAuditResult(auditWithUnselectedImages), {
+    exitCode: 0,
+    stdout: ["Catalog audit passed."],
+    stderr: [],
+});
 
 assert.deepEqual(
     auditCatalog({
@@ -181,77 +158,6 @@ assert.deepEqual(
             "Category at index 0 must be an object",
             "Catalog Order: Miscellaneous must be the last Category",
         ],
-        notices: [],
-    }
-);
-
-{
-    const malformedVariantCategories = clone(fixtureCategories);
-    malformedVariantCategories[0].plates.unshift(null);
-
-    assert.deepEqual(
-        auditCatalog({
-            sourceCategories: malformedVariantCategories,
-            fullSizePaths: [
-                "assets/plates/full/alpha/alternate.jpg",
-                ...selectedFullSizePaths,
-            ],
-            thumbnailPaths: [
-                ...selectedThumbnailPaths,
-                "assets/plates/thumbs/alpha/alternate.jpg",
-            ],
-        }),
-        {
-            passed: false,
-            errors: ["Category alpha Variant at index 0 must be an object"],
-            notices: [
-                {
-                    type: "unselected-local-images",
-                    images: [
-                        {
-                            asset: "alpha/alternate.jpg",
-                            fullSizePath: "assets/plates/full/alpha/alternate.jpg",
-                            thumbnailPath: "assets/plates/thumbs/alpha/alternate.jpg",
-                            hasMatchingThumbnail: true,
-                        },
-                    ],
-                },
-            ],
-        }
-    );
-}
-
-assert.deepEqual(
-    formatAuditResult({
-        passed: true,
-        errors: [],
-        notices: [
-            {
-                type: "unselected-local-images",
-                images: [
-                    {
-                        fullSizePath: "assets/plates/full/colleges/esc.jpg",
-                        thumbnailPath: "assets/plates/thumbs/colleges/esc.jpg",
-                        hasMatchingThumbnail: true,
-                    },
-                    {
-                        fullSizePath: "assets/plates/full/colleges/orphan.jpg",
-                        thumbnailPath: "assets/plates/thumbs/colleges/orphan.jpg",
-                        hasMatchingThumbnail: false,
-                    },
-                ],
-            },
-        ],
-    }),
-    {
-        exitCode: 0,
-        stdout: [
-            "Catalog audit passed.",
-            "Unselected local images (informational, not catalog failures):",
-            "- assets/plates/full/colleges/esc.jpg (matching thumbnail: assets/plates/thumbs/colleges/esc.jpg)",
-            "- assets/plates/full/colleges/orphan.jpg (no matching thumbnail: assets/plates/thumbs/colleges/orphan.jpg)",
-        ],
-        stderr: [],
     }
 );
 
@@ -264,7 +170,6 @@ assert.deepEqual(
         result: {
             passed: false,
             errors: ["fixture missing Selected Asset thumbnail file"],
-            notices: [],
         },
         stdout: (line) => stdout.push(line),
         stderr: (line) => stderr.push(line),

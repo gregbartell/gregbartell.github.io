@@ -3,11 +3,7 @@
         typeof module === "object" && module.exports
             ? require("./selected-asset-paths.js")
             : root?.SelectedAssetPaths;
-    const selectedAssetFileRules =
-        typeof module === "object" && module.exports
-            ? require("../catalog-checks/selected-asset-file-rules.js")
-            : null;
-    const api = factory(selectedAssetPathRules, selectedAssetFileRules);
+    const api = factory(selectedAssetPathRules);
 
     if (typeof module === "object" && module.exports) {
         module.exports = api.node;
@@ -15,10 +11,7 @@
     if (root) {
         root.PlateCatalog = api.browser;
     }
-})(typeof window !== "undefined" ? window : globalThis, function (
-    selectedAssetPathRules,
-    selectedAssetFileRules
-) {
+})(typeof window !== "undefined" ? window : globalThis, function (selectedAssetPathRules) {
     if (!selectedAssetPathRules) {
         throw new Error("SelectedAssetPaths is required before plate-catalog.js");
     }
@@ -1131,24 +1124,6 @@
         };
     }
 
-    function localImageProjections({
-        sourceCategories = categories,
-        fullSizePaths,
-        thumbnailPaths = [],
-    } = {}) {
-        if (!selectedAssetFileRules) {
-            throw new Error(
-                "SelectedAssetFileRules is required for local image projections"
-            );
-        }
-
-        return selectedAssetFileRules.localImageProjections({
-            selectedAssets: selectedAssetProjections(sourceCategories),
-            fullSizePaths,
-            thumbnailPaths,
-        });
-    }
-
     function getPlateEntries(sourceCategories = categories) {
         return sourceCategories.flatMap((category) =>
             category.plates.map((plate) => ({ category, plate }))
@@ -1254,10 +1229,6 @@
             },
             selectedAssetProjections: {
                 value: selectedAssetProjections,
-            },
-            localImageProjections: {
-                value: localImageProjections,
-                enumerable: true,
             },
             photoStatusPolicyErrors: { value: photoStatusPolicyErrors },
             photoStatusChecklistPolicies: {

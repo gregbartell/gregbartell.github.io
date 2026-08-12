@@ -161,18 +161,6 @@ function selectedAssetFilePaths(sourceCategories = catalog.categories) {
     );
 }
 
-function unselectedLocalImages({
-    sourceCategories = catalog.categories,
-    fullSizePaths,
-    thumbnailPaths = [],
-} = {}) {
-    return catalog.localImageProjections({
-        sourceCategories: projectableCatalogCategories(sourceCategories),
-        fullSizePaths,
-        thumbnailPaths,
-    });
-}
-
 function validatePhotoStatusDetails(errors) {
     if (typeof catalog.photoStatusPolicyErrors !== "function") {
         errors.push("Photo Status policy validator must be a function");
@@ -376,7 +364,6 @@ module.exports = {
     selectedAssetEntries,
     selectedAssetRequirements,
     selectedAssetFilePaths,
-    unselectedLocalImages,
     validatePhotoStatusPolicy,
     validateCatalog,
 };
