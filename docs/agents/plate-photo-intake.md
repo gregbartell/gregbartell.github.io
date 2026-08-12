@@ -74,7 +74,9 @@ alternates, or add new Variants.
    `src/data/plate-catalog.js`; leave unselected assets unreferenced. Add or
    update Variants using the approved facts and preserve Catalog Order. Generate
    matching thumbnails under `assets/plates/thumbs/<category>/` after every
-   full-size asset is in place by running `python3 tools/make_thumbs.py`.
+   full-size asset is in place. Pass only the approved Selected Asset paths to
+   `python3 tools/make_thumbs.py <full-size-path>...`; do not generate thumbnails
+   for unselected collection photos.
 
    **Done when:** every approved full-size asset and matching thumbnail exists,
    the Plate Catalog references exactly the approved Selected Assets, intended

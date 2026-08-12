@@ -31,18 +31,9 @@
         });
     }
 
-    function assetFromFullSizePath(path) {
-        const prefix = `${FULL_SIZE_IMAGE_ROOT}/`;
-        if (typeof path !== "string") return null;
-        if (!path.startsWith(prefix)) return null;
-        if (path.startsWith(`${THUMBNAIL_IMAGE_ROOT}/`)) return null;
-        return path.slice(prefix.length);
-    }
-
     return Object.freeze({
         fullSizeImageRoot: FULL_SIZE_IMAGE_ROOT,
         thumbnailImageRoot: THUMBNAIL_IMAGE_ROOT,
         selectedAssetPaths,
-        assetFromFullSizePath,
     });
 });
