@@ -1,5 +1,6 @@
 (function (root) {
     const SELECTED_ASSET_IMAGE_CLASS = "plate-image";
+    const SELECTED_ASSET_PREVIEW_CLASS = "plate-card__preview";
     const SELECTED_ASSET_FULL_SIZE_DATA = "fullSrc";
 
     function renderCatalog(rootEl, categories) {
@@ -61,7 +62,11 @@
         if (variant.missingPlaceholder) {
             card.append(renderMissingPlaceholder(variant.missingPlaceholder));
         } else {
-            card.append(renderPlateImage(variant.image));
+            card.classList.add("plate-card--interactive");
+            card.append(
+                renderPlateImage(variant.image),
+                renderSelectedAssetPreviewControl(variant.title)
+            );
         }
 
         if (variant.badge) {
@@ -71,6 +76,15 @@
         return card;
     }
 
+    function renderSelectedAssetPreviewControl(variantTitle) {
+        const previewControl = document.createElement("button");
+        previewControl.type = "button";
+        previewControl.className = SELECTED_ASSET_PREVIEW_CLASS;
+        previewControl.setAttribute("aria-label", `Preview ${variantTitle}`);
+        previewControl.title = variantTitle;
+        return previewControl;
+    }
+
     function renderPlateImage(image) {
         const img = document.createElement("img");
         img.src = image.thumbnailSrc;
@@ -78,8 +92,6 @@
         img.className = SELECTED_ASSET_IMAGE_CLASS;
         img.loading = "lazy";
         img.decoding = "async";
-        img.setAttribute("role", "button");
-        img.setAttribute("tabindex", "0");
         img.dataset[SELECTED_ASSET_FULL_SIZE_DATA] = image.fullSizeSrc;
         return img;
     }
@@ -91,15 +103,18 @@
             throw new Error("Selected Asset preview callback is required");
         }
 
-        function selectedAssetFromEvent(event) {
-            const selectedAsset = event.target.closest?.(
-                `.${SELECTED_ASSET_IMAGE_CLASS}`
-            );
-            if (!selectedAsset || !rootEl.contains(selectedAsset)) return null;
-            return selectedAsset;
+        function previewControlFromEvent(event) {
+            const card = event.target.closest?.(".plate-card--interactive");
+            if (!card || !rootEl.contains(card)) return null;
+            return card.querySelector(`.${SELECTED_ASSET_PREVIEW_CLASS}`);
         }
 
-        function previewRequestFor(selectedAsset) {
+        function previewRequestFor(previewControl) {
+            const selectedAsset = previewControl.parentElement?.querySelector(
+                `.${SELECTED_ASSET_IMAGE_CLASS}`
+            );
+            if (!selectedAsset) return null;
+
             return {
                 thumbnailSrc: selectedAsset.src,
                 fullSizeSrc:
@@ -109,26 +124,20 @@
         }
 
         function openSelectedAsset(event) {
-            const selectedAsset = selectedAssetFromEvent(event);
-            if (selectedAsset) requestPreview(previewRequestFor(selectedAsset));
-        }
+            const previewControl = previewControlFromEvent(event);
+            if (!previewControl) return;
 
-        function openSelectedAssetFromKeyboard(event) {
-            if (event.key !== "Enter" && event.key !== " ") return;
+            const previewRequest = previewRequestFor(previewControl);
+            if (!previewRequest) return;
 
-            const selectedAsset = selectedAssetFromEvent(event);
-            if (!selectedAsset) return;
-
-            event.preventDefault();
-            requestPreview(previewRequestFor(selectedAsset));
+            previewControl.focus();
+            requestPreview(previewRequest);
         }
 
         rootEl.addEventListener("click", openSelectedAsset);
-        rootEl.addEventListener("keydown", openSelectedAssetFromKeyboard);
 
         return () => {
             rootEl.removeEventListener("click", openSelectedAsset);
-            rootEl.removeEventListener("keydown", openSelectedAssetFromKeyboard);
         };
     }
 

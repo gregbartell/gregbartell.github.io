@@ -10,131 +10,127 @@ assert.equal(typeof renderer.renderCatalog, "function");
 assert.equal(typeof renderer.renderChecklist, "function");
 assert.equal(typeof renderer.bindSelectedAssetPreview, "function");
 
-function fakeCatalogRoot() {
-    const listeners = new Map();
-
-    return {
-        addEventListener(type, listener) {
-            const typeListeners = listeners.get(type) || [];
-            typeListeners.push(listener);
-            listeners.set(type, typeListeners);
+function createElement(tagName) {
+    const element = {
+        tagName: tagName.toUpperCase(),
+        attributes: new Map(),
+        children: [],
+        dataset: {},
+        className: "",
+        append(...children) {
+            children.forEach((child) => {
+                if (typeof child === "object") child.parentElement = element;
+            });
+            element.children.push(...children);
         },
-        removeEventListener(type, listener) {
-            listeners.set(
-                type,
-                (listeners.get(type) || []).filter(
-                    (candidate) => candidate !== listener
-                )
-            );
+        replaceChildren(...children) {
+            element.children = [];
+            element.append(...children);
         },
-        contains(node) {
-            return node.insideCatalogRoot === true;
+        setAttribute(name, value) {
+            element.attributes.set(name, String(value));
         },
-        dispatch(type, event) {
-            (listeners.get(type) || []).forEach((listener) => listener(event));
-        },
-    };
-}
-
-function selectedAssetImage(overrides = {}) {
-    return {
-        insideCatalogRoot: true,
-        src: "assets/plates/thumbs/fixture/selected.jpg",
-        alt: "Selected Plate plate",
-        dataset: {
-            fullSrc: "assets/plates/full/fixture/selected.jpg",
-        },
-        closest() {
-            return this;
-        },
-        ...overrides,
-    };
-}
-
-function missingPhotoPlaceholder() {
-    return {
-        insideCatalogRoot: true,
-        closest() {
-            return null;
+        getAttribute(name) {
+            return element.attributes.get(name) ?? null;
         },
     };
+    element.classList = {
+        add(...classes) {
+            element.className = [element.className, ...classes]
+                .filter(Boolean)
+                .join(" ");
+        },
+    };
+    return element;
 }
 
-{
-    const root = fakeCatalogRoot();
-    const requests = [];
-    renderer.bindSelectedAssetPreview(root, (request) => {
-        requests.push(request);
-    });
+globalThis.document = { createElement };
 
-    root.dispatch("click", { target: selectedAssetImage() });
+const root = createElement("div");
+renderer.renderCatalog(root, [
+    {
+        title: "Fixture",
+        sticker: { style: "blue", mark: "FIX", foot: "WASHINGTON" },
+        variants: [
+            {
+                title: "Selected Plate",
+                photoStatus: "satisfied",
+                image: {
+                    thumbnailSrc:
+                        "assets/plates/thumbs/fixture/selected.jpg",
+                    fullSizeSrc: "assets/plates/full/fixture/selected.jpg",
+                    altText: "Selected Plate plate",
+                },
+            },
+            {
+                title: "Missing Plate",
+                photoStatus: "missing",
+                missingPlaceholder: {
+                    ariaLabel: "Missing Plate plate — photo pending",
+                    stripDetail: "No photo on file",
+                    plateTitle: "Missing Plate",
+                    categoryTitle: "Fixture",
+                    statusText: "Pending",
+                    stampText: "Pending",
+                },
+            },
+        ],
+    },
+]);
 
-    assert.deepEqual(requests, [
-        {
-            thumbnailSrc: "assets/plates/thumbs/fixture/selected.jpg",
-            fullSizeSrc: "assets/plates/full/fixture/selected.jpg",
-            altText: "Selected Plate plate",
-        },
-    ]);
-}
+const grid = root.children[0].children[1];
+const [selectedCard, missingCard] = grid.children;
+const selectedImage = selectedCard.children[1];
+const previewControl = selectedCard.children[2];
 
-["Enter", " "].forEach((key) => {
-    const root = fakeCatalogRoot();
-    const requests = [];
-    let preventedDefault = false;
+assert.match(selectedCard.className, /\bplate-card--interactive\b/);
+assert.equal(previewControl.tagName, "BUTTON");
+assert.equal(previewControl.type, "button");
+assert.equal(
+    previewControl.getAttribute("aria-label"),
+    "Preview Selected Plate"
+);
+assert.equal(selectedImage.getAttribute("role"), null);
+assert.equal(selectedImage.getAttribute("tabindex"), null);
+assert.equal(selectedImage.alt, "Selected Plate plate");
+assert.equal(selectedImage.loading, "lazy");
 
-    renderer.bindSelectedAssetPreview(root, (request) => {
-        requests.push(request);
-    });
+assert.doesNotMatch(missingCard.className, /\bplate-card--interactive\b/);
+assert.equal(missingCard.children.length, 2);
 
-    root.dispatch("keydown", {
-        key,
-        target: selectedAssetImage(),
-        preventDefault() {
-            preventedDefault = true;
-        },
-    });
+const listeners = new Map();
+root.addEventListener = (type, listener) => listeners.set(type, listener);
+root.contains = (element) => element === selectedCard;
+root.dispatch = (type, target) => listeners.get(type)?.({ target });
 
-    assert.deepEqual(requests, [
-        {
-            thumbnailSrc: "assets/plates/thumbs/fixture/selected.jpg",
-            fullSizeSrc: "assets/plates/full/fixture/selected.jpg",
-            altText: "Selected Plate plate",
-        },
-    ]);
-    assert.equal(preventedDefault, true);
+selectedCard.closest = () => selectedCard;
+selectedCard.querySelector = (selector) => {
+    if (selector === ".plate-card__preview") return previewControl;
+    if (selector === ".plate-image") return selectedImage;
+    return null;
+};
+previewControl.focus = () => {
+    document.activeElement = previewControl;
+};
+missingCard.closest = () => null;
+
+const requests = [];
+renderer.bindSelectedAssetPreview(root, (request) => {
+    requests.push(request);
 });
 
-{
-    const root = fakeCatalogRoot();
-    const requests = [];
-    renderer.bindSelectedAssetPreview(root, (request) => {
-        requests.push(request);
-    });
+root.dispatch("click", selectedCard);
 
-    root.dispatch("click", { target: missingPhotoPlaceholder() });
+assert.equal(document.activeElement, previewControl);
+assert.deepEqual(requests, [
+    {
+        thumbnailSrc: "assets/plates/thumbs/fixture/selected.jpg",
+        fullSizeSrc: "assets/plates/full/fixture/selected.jpg",
+        altText: "Selected Plate plate",
+    },
+]);
 
-    assert.deepEqual(requests, []);
-}
-
-{
-    const root = fakeCatalogRoot();
-    const requests = [];
-    let preventedDefault = false;
-    renderer.bindSelectedAssetPreview(root, (request) => {
-        requests.push(request);
-    });
-
-    root.dispatch("keydown", {
-        key: "Tab",
-        target: selectedAssetImage(),
-        preventDefault() {
-            preventedDefault = true;
-        },
-    });
-
-    assert.deepEqual(requests, []);
-    assert.equal(preventedDefault, false);
-}
+root.dispatch("click", missingCard);
+assert.equal(requests.length, 1);
 
 console.log("Plate renderer tests passed.");
