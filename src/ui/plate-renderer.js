@@ -13,7 +13,10 @@
         section.className = "category-section";
 
         const heading = document.createElement("h2");
-        heading.append(renderSticker(category.sticker), ` ${category.title}`);
+        const title = document.createElement("span");
+        title.className = "category-title";
+        title.textContent = category.title;
+        heading.append(renderSticker(category.sticker), title);
 
         const grid = document.createElement("div");
         grid.className = "plate-grid";

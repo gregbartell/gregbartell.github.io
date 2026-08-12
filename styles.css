@@ -273,8 +273,11 @@ main {
     display: flex;
     align-items: center;
     gap: 0.85rem;
-    flex-wrap: wrap;
     position: relative;
+}
+.category-title {
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 /* thick-thin double rule above each section header */
 .category-section h2::before {
@@ -724,5 +727,8 @@ main {
         padding: 0.85rem 1.4rem;
         font-size: 0.85rem;
         letter-spacing: 0.18em;
+    }
+    .category-section h2 {
+        align-items: flex-start;
     }
 }
