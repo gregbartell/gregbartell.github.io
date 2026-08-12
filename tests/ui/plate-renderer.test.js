@@ -89,12 +89,16 @@ renderer.renderCatalog(root, [
         variants: [
             {
                 title: "Selected Plate",
-                photoStatus: "satisfied",
+                photoStatus: "needs-upgrade",
                 image: {
                     thumbnailSrc:
                         "assets/plates/thumbs/fixture/selected.jpg",
                     fullSizeSrc: "assets/plates/full/fixture/selected.jpg",
                     altText: "Selected Plate plate",
+                },
+                badge: {
+                    text: "LOW QUALITY",
+                    ariaLabel: "Low quality photo",
                 },
             },
             {
@@ -115,10 +119,15 @@ renderer.renderCatalog(root, [
 
 const grid = root.children[0].children[1];
 const [selectedCard, missingCard] = grid.children;
-const selectedImage = selectedCard.children[1];
+const selectedAsset = selectedCard.children[1];
+const selectedImage = selectedAsset.children[0];
+const selectedBadge = selectedAsset.children[1];
 const previewControl = selectedCard.children[2];
 
 assert.match(selectedCard.className, /\bplate-card--interactive\b/);
+assert.equal(selectedAsset.className, "plate-card__selected-asset");
+assert.equal(selectedBadge.className, "photo-status-badge");
+assert.equal(selectedBadge.getAttribute("aria-label"), "Low quality photo");
 assert.equal(previewControl.tagName, "BUTTON");
 assert.equal(previewControl.type, "button");
 assert.equal(

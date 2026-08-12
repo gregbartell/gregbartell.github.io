@@ -144,15 +144,18 @@
         if (variant.missingPlaceholder) {
             card.append(renderMissingPlaceholder(variant.missingPlaceholder));
         } else {
+            const selectedAsset = document.createElement("div");
+            selectedAsset.className = "plate-card__selected-asset";
+            selectedAsset.append(renderPlateImage(variant.image));
+            if (variant.badge) {
+                selectedAsset.append(renderPhotoStatusBadge(variant.badge));
+            }
+
             card.classList.add("plate-card--interactive");
             card.append(
-                renderPlateImage(variant.image),
+                selectedAsset,
                 renderSelectedAssetPreviewControl(variant.title)
             );
-        }
-
-        if (variant.badge) {
-            card.append(renderPhotoStatusBadge(variant.badge));
         }
 
         return card;

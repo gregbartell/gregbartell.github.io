@@ -490,6 +490,9 @@ main {
     aspect-ratio: 2 / 1;
     object-fit: cover;
 }
+.plate-card__selected-asset {
+    position: relative;
+}
 .plate-card h3 {
     font-family: "Spectral", Georgia, serif;
     font-weight: 700;
@@ -617,7 +620,7 @@ main {
     padding: 4px 8px 3px;
     border-radius: 2px;
     box-shadow: var(--shadow-sticker);
-    z-index: 5;
+    z-index: 3;
     pointer-events: none;
 }
 
