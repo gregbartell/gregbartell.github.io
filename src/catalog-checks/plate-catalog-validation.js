@@ -1,5 +1,5 @@
 const catalog = require("../data/plate-catalog.js");
-const selectedAssetFileRules = require("./selected-asset-file-rules.js");
+const selectedAssetPathRules = require("../data/selected-asset-paths.js");
 
 const CATALOG_ORDER_COLLATOR = new Intl.Collator("en", {
     sensitivity: "base",
@@ -8,11 +8,6 @@ const CATALOG_ORDER_COLLATOR = new Intl.Collator("en", {
 const CATEGORY_ID_PATTERN = /^[a-z][a-z0-9_]*$/;
 const VARIANT_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const MISCELLANEOUS_CATEGORY_TITLE = "Miscellaneous";
-const CATALOG_ORDER_ERRORS = Object.freeze({
-    miscellaneousLast: "Catalog Order: Miscellaneous must be the last Category",
-    categoriesAlphabetical:
-        "Catalog Order: Categories before Miscellaneous must be alphabetical by title",
-});
 
 function hasOwn(object, key) {
     return Object.prototype.hasOwnProperty.call(object, key);
@@ -26,67 +21,6 @@ function isNonEmptyText(value) {
     return typeof value === "string" && value.trim() !== "";
 }
 
-function catalogOrderTitlesAreAlphabetical(values) {
-    for (let index = 1; index < values.length; index += 1) {
-        if (
-            catalogOrderPolicy.compareTitles(values[index - 1], values[index]) > 0
-        ) {
-            return false;
-        }
-    }
-    return true;
-}
-
-function catalogOrderDiagnosticsForCategories(
-    sourceCategories = catalog.categories
-) {
-    const errors = [];
-    const categoryTitles = sourceCategories.map((category) => category?.title);
-    const lastCategoryTitle = categoryTitles[categoryTitles.length - 1];
-
-    if (lastCategoryTitle !== MISCELLANEOUS_CATEGORY_TITLE) {
-        errors.push(CATALOG_ORDER_ERRORS.miscellaneousLast);
-    }
-
-    const orderedTitles = categoryTitles.slice(0, -1);
-    if (
-        orderedTitles.every(isNonEmptyText) &&
-        !catalogOrderTitlesAreAlphabetical(orderedTitles)
-    ) {
-        errors.push(CATALOG_ORDER_ERRORS.categoriesAlphabetical);
-    }
-
-    return errors;
-}
-
-function catalogOrderDiagnosticsForVariants(category) {
-    const errors = [];
-
-    if (!isPlainObject(category) || !Array.isArray(category.plates)) {
-        return errors;
-    }
-
-    const titles = category.plates.map((plate) => plate?.title);
-    if (
-        titles.every(isNonEmptyText) &&
-        !catalogOrderTitlesAreAlphabetical(titles)
-    ) {
-        errors.push(
-            `Catalog Order: Variants in ${category.title} must be alphabetical by title`
-        );
-    }
-
-    return errors;
-}
-
-const catalogOrderPolicy = Object.freeze({
-    compareTitles(left, right) {
-        return CATALOG_ORDER_COLLATOR.compare(left, right);
-    },
-    diagnosticsForCategories: catalogOrderDiagnosticsForCategories,
-    diagnosticsForVariants: catalogOrderDiagnosticsForVariants,
-});
-
 function duplicateValues(values) {
     const seen = new Set();
     const duplicates = new Set();
@@ -99,125 +33,67 @@ function duplicateValues(values) {
     return [...duplicates];
 }
 
-function categoryLabel(category, index) {
-    if (isNonEmptyText(category?.id)) return `Category ${category.id}`;
-    return `Category at index ${index}`;
+function valuesAreInCatalogOrder(values) {
+    return values.every(
+        (value, index) =>
+            index === 0 ||
+            CATALOG_ORDER_COLLATOR.compare(values[index - 1], value) <= 0
+    );
 }
 
-function catalogRef(category, plate) {
+function categoryLabel(category, index) {
+    return isNonEmptyText(category?.id)
+        ? `Category ${category.id}`
+        : `Category at index ${index}`;
+}
+
+function catalogRef(category, variant) {
     const categoryId = isNonEmptyText(category?.id)
         ? category.id
         : "(unknown-category)";
-    const plateId = isNonEmptyText(plate?.id)
-        ? plate.id
+    const variantId = isNonEmptyText(variant?.id)
+        ? variant.id
         : "(unknown-variant)";
 
-    return `${categoryId}/${plateId}`;
+    return `${categoryId}/${variantId}`;
 }
 
-function projectableCatalogCategories(sourceCategories = catalog.categories) {
-    if (!Array.isArray(sourceCategories)) return [];
-
-    const projectableCategories = [];
-    let skippedMalformedEntry = false;
-
-    sourceCategories.forEach((category) => {
+function variantEntries(sourceCategories) {
+    return sourceCategories.flatMap((category, categoryIndex) => {
         if (!isPlainObject(category) || !Array.isArray(category.plates)) {
-            skippedMalformedEntry = true;
-            return;
+            return [];
         }
 
-        const projectablePlates = category.plates.filter(isPlainObject);
-        if (projectablePlates.length !== category.plates.length) {
-            skippedMalformedEntry = true;
-            projectableCategories.push({
-                ...category,
-                plates: projectablePlates,
-            });
-            return;
-        }
-
-        projectableCategories.push(category);
+        return category.plates.map((variant, index) => ({
+            category,
+            categoryIndex,
+            variant,
+            index,
+        }));
     });
-
-    return skippedMalformedEntry ? projectableCategories : sourceCategories;
 }
 
-function selectedAssetEntries(sourceCategories = catalog.categories) {
-    return catalog.selectedAssetProjections(
-        projectableCatalogCategories(sourceCategories)
-    );
-}
+function validateCategoryOrder(errors, sourceCategories) {
+    const categoryTitles = sourceCategories.map((category) => category?.title);
 
-function selectedAssetRequirements(sourceCategories = catalog.categories) {
-    return selectedAssetFileRules.selectedAssetRequirements(
-        selectedAssetEntries(sourceCategories)
-    );
-}
-
-function selectedAssetFilePaths(sourceCategories = catalog.categories) {
-    return selectedAssetFileRules.selectedAssetFilePaths(
-        selectedAssetEntries(sourceCategories)
-    );
-}
-
-function validatePhotoStatusDetails(errors) {
-    if (typeof catalog.photoStatusPolicyErrors !== "function") {
-        errors.push("Photo Status policy validator must be a function");
-        return;
+    if (categoryTitles.at(-1) !== MISCELLANEOUS_CATEGORY_TITLE) {
+        errors.push("Catalog Order: Miscellaneous must be the last Category");
     }
 
-    let policyErrors;
-    try {
-        policyErrors = catalog.photoStatusPolicyErrors();
-    } catch (error) {
-        errors.push(`Photo Status policy validation failed: ${error.message}`);
-        return;
+    const orderedTitles = categoryTitles.slice(0, -1);
+    if (
+        orderedTitles.every(isNonEmptyText) &&
+        !valuesAreInCatalogOrder(orderedTitles)
+    ) {
+        errors.push(
+            "Catalog Order: Categories before Miscellaneous must be alphabetical by title"
+        );
     }
-
-    if (!Array.isArray(policyErrors)) {
-        errors.push("Photo Status policy validator must return an array");
-        return;
-    }
-
-    policyErrors.forEach((error) => errors.push(error));
-}
-
-function validatePhotoStatusPolicy() {
-    const errors = [];
-
-    validatePhotoStatusDetails(errors);
-
-    return errors;
-}
-
-function selectedAssetCompatibilityDiagnosticsFor(photoStatus, facts) {
-    return catalog.photoStatusSelectedAssetCompatibilityDiagnosticsFor(
-        photoStatus,
-        facts
-    );
-}
-
-function selectedAssetCompatibilityFacts(plate) {
-    return {
-        asset: plate.asset,
-        hasSelectedAssetAltText: hasOwn(plate, "selectedAssetAltText"),
-    };
-}
-
-function validateSelectedAssetCompatibility(errors, prefix, plate) {
-    selectedAssetCompatibilityDiagnosticsFor(
-        plate.photoStatus,
-        selectedAssetCompatibilityFacts(plate)
-    )
-        .forEach((diagnostic) => errors.push(`${prefix} ${diagnostic}`));
 }
 
 function validateCategoryFacts(errors, sourceCategories) {
     duplicateValues(sourceCategories.map((category) => category?.id)).forEach(
-        (id) => {
-            errors.push(`duplicate Category id: ${id}`);
-        }
+        (id) => errors.push(`duplicate Category id: ${id}`)
     );
 
     sourceCategories.forEach((category, index) => {
@@ -259,111 +135,127 @@ function validateCategoryFacts(errors, sourceCategories) {
     });
 }
 
-function validateCatalogOrder(errors, sourceCategories) {
-    catalogOrderPolicy
-        .diagnosticsForCategories(sourceCategories)
-        .forEach((error) => errors.push(error));
-}
+function validateVariantOrder(errors, sourceCategories) {
+    sourceCategories.forEach((category) => {
+        if (!isPlainObject(category) || !Array.isArray(category.plates)) return;
 
-function validPlateEntries(sourceCategories) {
-    return sourceCategories.flatMap((category) => {
-        if (!isPlainObject(category) || !Array.isArray(category.plates)) {
-            return [];
+        const titles = category.plates.map((variant) => variant?.title);
+        if (titles.every(isNonEmptyText) && !valuesAreInCatalogOrder(titles)) {
+            errors.push(
+                `Catalog Order: Variants in ${category.title} must be alphabetical by title`
+            );
         }
-
-        return category.plates.map((plate, index) => ({
-            category,
-            plate,
-            index,
-        }));
     });
 }
 
-function validateVariantOrder(errors, category) {
-    catalogOrderPolicy
-        .diagnosticsForVariants(category)
-        .forEach((error) => errors.push(error));
+function validateSelectedAssetFacts(errors, reference, variant) {
+    if (variant.photoStatus === catalog.photoStatuses.MISSING) {
+        if (variant.asset !== null) {
+            errors.push(
+                `${reference} must use asset: null when Photo Status is missing`
+            );
+        }
+        if (hasOwn(variant, "selectedAssetAltText")) {
+            errors.push(
+                `${reference} must not override Selected Asset alt text when Photo Status is missing`
+            );
+        }
+        return;
+    }
+
+    if (!isNonEmptyText(variant.asset)) {
+        errors.push(
+            `${reference} must have a Selected Asset when Photo Status is not missing`
+        );
+    }
 }
 
 function validateVariantFacts(errors, sourceCategories) {
+    const entries = variantEntries(sourceCategories);
     const validPhotoStatuses = new Set(Object.values(catalog.photoStatuses));
     const validVariantKinds = new Set(Object.values(catalog.variantKinds));
-    const entries = validPlateEntries(sourceCategories);
 
-    duplicateValues(entries.map(({ plate }) => plate?.id)).forEach((id) => {
-        errors.push(`duplicate Variant id: ${id}`);
-    });
+    duplicateValues(entries.map(({ variant }) => variant?.id)).forEach((id) =>
+        errors.push(`duplicate Variant id: ${id}`)
+    );
 
-    sourceCategories.forEach((category) => validateVariantOrder(errors, category));
-
-    entries.forEach(({ category, plate, index }) => {
-        if (!isPlainObject(plate)) {
+    entries.forEach(({ category, categoryIndex, variant, index }) => {
+        if (!isPlainObject(variant)) {
             errors.push(
-                `${categoryLabel(category, 0)} Variant at index ${index} must be an object`
+                `${categoryLabel(category, categoryIndex)} Variant at index ${index} must be an object`
             );
             return;
         }
 
-        const prefix = catalogRef(category, plate);
-
-        if (!VARIANT_ID_PATTERN.test(plate.id || "")) {
-            errors.push(`${prefix} has invalid Variant id`);
+        const reference = catalogRef(category, variant);
+        if (!VARIANT_ID_PATTERN.test(variant.id || "")) {
+            errors.push(`${reference} has invalid Variant id`);
         }
-        if (!isNonEmptyText(plate.title)) {
-            errors.push(`${prefix} must have a title`);
+        if (!isNonEmptyText(variant.title)) {
+            errors.push(`${reference} must have a title`);
         }
-        if (!validPhotoStatuses.has(plate.photoStatus)) {
-            errors.push(`${prefix} has invalid Photo Status: ${plate.photoStatus}`);
-        }
-        if (
-            hasOwn(plate, "variantKind") &&
-            !validVariantKinds.has(plate.variantKind)
-        ) {
-            errors.push(`${prefix} has invalid Variant Kind: ${plate.variantKind}`);
-        }
-        if (hasOwn(plate, "alt")) {
+        if (!validPhotoStatuses.has(variant.photoStatus)) {
             errors.push(
-                `${prefix} must use selectedAssetAltText for Selected Asset alt text exceptions`
+                `${reference} has invalid Photo Status: ${variant.photoStatus}`
             );
         }
         if (
-            hasOwn(plate, "selectedAssetAltText") &&
-            !isNonEmptyText(plate.selectedAssetAltText)
+            hasOwn(variant, "variantKind") &&
+            !validVariantKinds.has(variant.variantKind)
         ) {
             errors.push(
-                `${prefix} Selected Asset alt text override must be non-empty text`
+                `${reference} has invalid Variant Kind: ${variant.variantKind}`
+            );
+        }
+        if (hasOwn(variant, "alt")) {
+            errors.push(
+                `${reference} must use selectedAssetAltText for Selected Asset alt text exceptions`
+            );
+        }
+        if (
+            hasOwn(variant, "selectedAssetAltText") &&
+            !isNonEmptyText(variant.selectedAssetAltText)
+        ) {
+            errors.push(
+                `${reference} Selected Asset alt text override must be non-empty text`
             );
         }
 
-        validateSelectedAssetCompatibility(errors, prefix, plate);
+        validateSelectedAssetFacts(errors, reference, variant);
     });
 }
 
-function validateCatalog(sourceCategories = catalog.categories) {
-    const errors = [];
-
+function validateCatalog() {
+    const sourceCategories = catalog.categories;
     if (!Array.isArray(sourceCategories) || sourceCategories.length === 0) {
         return ["Plate Catalog categories must be a non-empty array"];
     }
 
+    const errors = [];
     validateCategoryFacts(errors, sourceCategories);
-    validateCatalogOrder(errors, sourceCategories);
+    validateCategoryOrder(errors, sourceCategories);
+    validateVariantOrder(errors, sourceCategories);
     validateVariantFacts(errors, sourceCategories);
-
-    try {
-        validatePhotoStatusPolicy().forEach((error) => errors.push(error));
-    } catch (error) {
-        errors.push(`Photo Status policy validation failed: ${error.message}`);
-    }
-
     return errors;
 }
 
+function selectedAssetRequirements() {
+    return variantEntries(catalog.categories)
+        .filter(({ variant }) => isNonEmptyText(variant?.asset))
+        .map(({ category, variant }) => {
+            const paths = selectedAssetPathRules.selectedAssetPaths(
+                variant.asset
+            );
+
+            return {
+                catalogRef: catalogRef(category, variant),
+                fullSizePath: paths.fullSizePath,
+                thumbnailPath: paths.thumbnailPath,
+            };
+        });
+}
+
 module.exports = {
-    catalogOrderPolicy,
-    selectedAssetEntries,
     selectedAssetRequirements,
-    selectedAssetFilePaths,
-    validatePhotoStatusPolicy,
     validateCatalog,
 };

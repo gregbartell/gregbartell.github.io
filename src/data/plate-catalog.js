@@ -22,77 +22,18 @@
         NEEDS_UPGRADE: "needs-upgrade",
     });
 
-    function statusDetails(details) {
-        return Object.freeze({
-            ...details,
-            selectedAssetCompatibility: details.selectedAssetCompatibility
-                ? Object.freeze(details.selectedAssetCompatibility)
-                : null,
-            cardBadge: details.cardBadge
-                ? Object.freeze(details.cardBadge)
-                : null,
-            checklist: details.checklist
-                ? Object.freeze(details.checklist)
-                : null,
-            placeholder: details.placeholder
-                ? Object.freeze(details.placeholder)
-                : null,
-        });
-    }
-
-    function isNonEmptyText(value) {
-        return typeof value === "string" && value.trim() !== "";
-    }
-
     function hasOwn(object, key) {
         return Object.prototype.hasOwnProperty.call(object, key);
     }
 
-    function isPlainObject(value) {
-        return value !== null && typeof value === "object" && !Array.isArray(value);
-    }
-
-    function requirePolicyText(errors, value, label) {
-        if (!isNonEmptyText(value)) {
-            errors.push(`${label} must be non-empty text`);
-        }
-    }
-
-    function selectedAssetCompatibility({
-        requiresSelectedAsset,
-        forbidsSelectedAsset,
-        allowsSelectedAssetAltText,
-    }) {
-        return Object.freeze({
-            requiresSelectedAsset,
-            forbidsSelectedAsset,
-            allowsSelectedAssetAltText,
-        });
-    }
-
-    const NON_MISSING_SELECTED_ASSET_COMPATIBILITY =
-        selectedAssetCompatibility({
-            requiresSelectedAsset: true,
-            forbidsSelectedAsset: false,
-            allowsSelectedAssetAltText: true,
-        });
-
     const PHOTO_STATUS_DETAILS = Object.freeze({
-        [PHOTO_STATUSES.SATISFIED]: statusDetails({
-            status: PHOTO_STATUSES.SATISFIED,
-            selectedAssetCompatibility: NON_MISSING_SELECTED_ASSET_COMPATIBILITY,
-            cardBadge: null,
+        [PHOTO_STATUSES.SATISFIED]: {
+            badge: null,
             checklist: null,
             placeholder: null,
-        }),
-        [PHOTO_STATUSES.MISSING]: statusDetails({
-            status: PHOTO_STATUSES.MISSING,
-            selectedAssetCompatibility: selectedAssetCompatibility({
-                requiresSelectedAsset: false,
-                forbidsSelectedAsset: true,
-                allowsSelectedAssetAltText: false,
-            }),
-            cardBadge: null,
+        },
+        [PHOTO_STATUSES.MISSING]: {
+            badge: null,
             checklist: {
                 title: "Left to Find",
                 emptyMessage: "Collection is complete! \u{1F389}",
@@ -100,14 +41,12 @@
             placeholder: {
                 ariaSuffix: "photo pending",
                 stripDetail: "No photo on file",
-                statusValue: "Pending",
+                statusText: "Pending",
                 stampText: "Pending",
             },
-        }),
-        [PHOTO_STATUSES.NEEDS_UPGRADE]: statusDetails({
-            status: PHOTO_STATUSES.NEEDS_UPGRADE,
-            selectedAssetCompatibility: NON_MISSING_SELECTED_ASSET_COMPATIBILITY,
-            cardBadge: {
+        },
+        [PHOTO_STATUSES.NEEDS_UPGRADE]: {
+            badge: {
                 text: "LOW QUALITY",
                 ariaLabel: "Low quality photo",
             },
@@ -116,7 +55,7 @@
                 emptyMessage: "No upgrades needed. \u{1F44D}",
             },
             placeholder: null,
-        }),
+        },
     });
 
     const CHECKLIST_PHOTO_STATUSES = Object.freeze([
@@ -124,300 +63,42 @@
         PHOTO_STATUSES.NEEDS_UPGRADE,
     ]);
 
-    function createPhotoStatusPolicy({
-        statuses,
-        detailsByStatus,
-        checklistStatuses,
-    }) {
-        function detailsForStatus(status) {
-            const details = detailsByStatus[status];
-            if (!details) {
-                throw new Error(`Unknown photoStatus: ${status}`);
-            }
-            return details;
-        }
+    function photoStatusDetails(status) {
+        const details = PHOTO_STATUS_DETAILS[status];
+        if (!details) throw new Error(`Unknown photoStatus: ${status}`);
+        return details;
+    }
 
-        function badgeFor(details) {
-            const { cardBadge } = details;
-            if (!cardBadge) return null;
-
-            return Object.freeze({
-                text: cardBadge.text,
-                ariaLabel: cardBadge.ariaLabel,
-            });
-        }
-
-        function missingPlaceholderFor(details, plate, category) {
-            const { placeholder } = details;
-            if (!placeholder) return null;
-            if (!category || !isNonEmptyText(category.title)) {
-                throw new Error(
-                    `${plate.id} requires a Category for missing-photo placeholder display`
-                );
-            }
-
-            return Object.freeze({
-                ariaLabel: `${imageAlt(plate)} \u2014 ${placeholder.ariaSuffix}`,
-                stripDetail: placeholder.stripDetail,
-                plateTitle: plate.title,
-                categoryTitle: category.title,
-                statusText: placeholder.statusValue,
-                stampText: placeholder.stampText,
-            });
-        }
-
-        function presentationFor(plate, category) {
-            const status = plate.photoStatus;
-            const details = detailsForStatus(status);
-
-            return Object.freeze({
-                status,
-                badge: badgeFor(details),
-                missingPlaceholder: missingPlaceholderFor(
-                    details,
-                    plate,
-                    category
-                ),
-            });
-        }
-
-        function checklistPolicyForStatus(status) {
-            const { checklist } = detailsForStatus(status);
-            if (!checklist) return null;
-
-            return Object.freeze({
-                status,
-                title: checklist.title,
-                emptyMessage: checklist.emptyMessage,
-            });
-        }
-
-        function checklistPolicies() {
-            return checklistStatuses.map(checklistPolicyForStatus);
-        }
-
-        function selectedAssetCompatibilityFor(status) {
-            const details = detailsByStatus[status];
-
-            // Invalid Photo Status values are still "not missing" for Selected
-            // Asset validation, while receiving their own invalid-status error.
-            if (!details) return NON_MISSING_SELECTED_ASSET_COMPATIBILITY;
-
-            return details.selectedAssetCompatibility;
-        }
-
-        function selectedAssetCompatibilityDiagnosticsFor(
-            status,
-            { asset, hasSelectedAssetAltText }
-        ) {
-            const compatibility = selectedAssetCompatibilityFor(status);
-            const diagnostics = [];
-
-            if (compatibility.forbidsSelectedAsset && asset !== null) {
-                diagnostics.push(
-                    "must use asset: null when Photo Status is missing"
-                );
-            }
-            if (
-                !compatibility.allowsSelectedAssetAltText &&
-                hasSelectedAssetAltText
-            ) {
-                diagnostics.push(
-                    "must not override Selected Asset alt text when Photo Status is missing"
-                );
-            }
-            if (
-                compatibility.requiresSelectedAsset &&
-                !isNonEmptyText(asset)
-            ) {
-                diagnostics.push(
-                    "must have a Selected Asset when Photo Status is not missing"
-                );
-            }
-
-            return diagnostics;
-        }
-
-        function categoriesWithStatus(status, sourceCategories) {
-            return sourceCategories
-                .map((category) => ({
-                    category,
-                    plates: category.plates.filter(
-                        (plate) => plate.photoStatus === status
-                    ),
-                }))
-                .filter((group) => group.plates.length > 0);
-        }
-
-        function checklistSections(sourceCategories) {
-            return checklistPolicies().map((checklistPolicy) => ({
-                status: checklistPolicy.status,
-                title: checklistPolicy.title,
-                emptyMessage: checklistPolicy.emptyMessage,
-                groups: categoriesWithStatus(
-                    checklistPolicy.status,
-                    sourceCategories
-                ),
-            }));
-        }
-
-        function validationErrors() {
-            const errors = [];
-            const photoStatuses = Object.values(statuses);
-            const validPhotoStatuses = new Set(photoStatuses);
-
-            if (!isPlainObject(detailsByStatus)) {
-                return ["Photo Status policy details must be an object"];
-            }
-
-            photoStatuses.forEach((status) => {
-                if (!hasOwn(detailsByStatus, status)) {
-                    errors.push(`Photo Status policy missing status: ${status}`);
-                }
-            });
-
-            Object.entries(detailsByStatus).forEach(([status, details]) => {
-                const prefix = `Photo Status policy for ${status}`;
-
-                if (!validPhotoStatuses.has(status)) {
-                    errors.push(
-                        `Photo Status policy has unknown status: ${status}`
-                    );
-                }
-                if (!isPlainObject(details)) {
-                    errors.push(`${prefix} must be an object`);
-                    return;
-                }
-                if (details.status !== status) {
-                    errors.push(`${prefix} must set status to ${status}`);
-                }
-
-                if (!isPlainObject(details.selectedAssetCompatibility)) {
-                    errors.push(
-                        `${prefix} Selected Asset compatibility must be an object`
-                    );
-                } else {
-                    [
-                        "requiresSelectedAsset",
-                        "forbidsSelectedAsset",
-                        "allowsSelectedAssetAltText",
-                    ].forEach((property) => {
-                        if (
-                            typeof details.selectedAssetCompatibility[
-                                property
-                            ] !== "boolean"
-                        ) {
-                            errors.push(
-                                `${prefix} Selected Asset compatibility ${property} must be a boolean`
-                            );
-                        }
-                    });
-
-                    if (
-                        details.selectedAssetCompatibility
-                            .requiresSelectedAsset &&
-                        details.selectedAssetCompatibility.forbidsSelectedAsset
-                    ) {
-                        errors.push(
-                            `${prefix} Selected Asset compatibility cannot require and forbid a Selected Asset`
-                        );
-                    }
-                }
-
-                if (details.cardBadge !== null) {
-                    if (!isPlainObject(details.cardBadge)) {
-                        errors.push(`${prefix} badge must be null or an object`);
-                    } else {
-                        requirePolicyText(
-                            errors,
-                            details.cardBadge.text,
-                            `${prefix} badge text`
-                        );
-                        requirePolicyText(
-                            errors,
-                            details.cardBadge.ariaLabel,
-                            `${prefix} badge aria label`
-                        );
-                    }
-                }
-
-                if (details.checklist !== null) {
-                    if (!isPlainObject(details.checklist)) {
-                        errors.push(
-                            `${prefix} checklist must be null or an object`
-                        );
-                    } else {
-                        requirePolicyText(
-                            errors,
-                            details.checklist.title,
-                            `${prefix} checklist title`
-                        );
-                        requirePolicyText(
-                            errors,
-                            details.checklist.emptyMessage,
-                            `${prefix} checklist empty message`
-                        );
-                    }
-                }
-
-                if (details.placeholder !== null) {
-                    if (!isPlainObject(details.placeholder)) {
-                        errors.push(
-                            `${prefix} missing-photo placeholder must be null or an object`
-                        );
-                    } else {
-                        [
-                            "ariaSuffix",
-                            "stripDetail",
-                            "statusValue",
-                            "stampText",
-                        ].forEach((property) => {
-                            requirePolicyText(
-                                errors,
-                                details.placeholder[property],
-                                `${prefix} missing-photo placeholder ${property}`
-                            );
-                        });
-                    }
-                }
-            });
-
-            const checklistStatusSet = new Set(checklistStatuses);
-            Object.entries(detailsByStatus).forEach(([status, details]) => {
-                if (details?.checklist && !checklistStatusSet.has(status)) {
-                    errors.push(
-                        `Photo Status policy for ${status} has checklist display but is not included in checklist sections`
-                    );
-                }
-            });
-
-            checklistStatuses.forEach((status) => {
-                const details = detailsByStatus[status];
-                if (!details?.checklist) {
-                    errors.push(
-                        `Photo Status checklist includes non-checklist status: ${status}`
-                    );
-                }
-            });
-
-            return errors;
-        }
+    function photoStatusPresentationFor(variant, category) {
+        const details = photoStatusDetails(variant.photoStatus);
+        const placeholder = details.placeholder;
 
         return Object.freeze({
-            presentationFor,
-            checklistPolicies,
-            checklistSections,
-            selectedAssetCompatibilityFor,
-            selectedAssetCompatibilityDiagnosticsFor,
-            validationErrors,
+            status: variant.photoStatus,
+            badge: details.badge,
+            missingPlaceholder: placeholder
+                ? Object.freeze({
+                      ariaLabel: `${imageAlt(variant)} \u2014 ${placeholder.ariaSuffix}`,
+                      stripDetail: placeholder.stripDetail,
+                      plateTitle: variant.title,
+                      categoryTitle: category.title,
+                      statusText: placeholder.statusText,
+                      stampText: placeholder.stampText,
+                  })
+                : null,
         });
     }
 
-    const photoStatusPolicy = createPhotoStatusPolicy({
-        statuses: PHOTO_STATUSES,
-        detailsByStatus: PHOTO_STATUS_DETAILS,
-        checklistStatuses: CHECKLIST_PHOTO_STATUSES,
-    });
+    function checklistGroupsFor(status, sourceCategories) {
+        return sourceCategories
+            .map((category) => ({
+                category,
+                plates: category.plates.filter(
+                    (variant) => variant.photoStatus === status
+                ),
+            }))
+            .filter((group) => group.plates.length > 0);
+    }
 
     const VARIANT_KINDS = Object.freeze({
         PLATE: "plate",
@@ -1008,126 +689,19 @@
         },
     ];
 
-    function photoStatusPolicyErrors() {
-        return photoStatusPolicy.validationErrors();
+    function variantKindFor(variant) {
+        return variant.variantKind || VARIANT_KINDS.PLATE;
     }
 
-    function photoStatusChecklistPolicies() {
-        return photoStatusPolicy.checklistPolicies();
+    function imageAlt(variant) {
+        return `${variant.title} ${variantKindFor(variant)}`;
     }
 
-    function photoStatusSelectedAssetCompatibility(photoStatus) {
-        return photoStatusPolicy.selectedAssetCompatibilityFor(photoStatus);
-    }
-
-    function photoStatusSelectedAssetCompatibilityDiagnosticsFor(
-        photoStatus,
-        facts
-    ) {
-        return photoStatusPolicy.selectedAssetCompatibilityDiagnosticsFor(
-            photoStatus,
-            facts
-        );
-    }
-
-    function variantKindFor(plate) {
-        return plate.variantKind || VARIANT_KINDS.PLATE;
-    }
-
-    function imageAlt(plate) {
-        return `${plate.title} ${variantKindFor(plate)}`;
-    }
-
-    function selectedAssetAltTextFor(plate) {
-        if (hasOwn(plate, "selectedAssetAltText")) {
-            return plate.selectedAssetAltText;
+    function selectedAssetAltTextFor(variant) {
+        if (hasOwn(variant, "selectedAssetAltText")) {
+            return variant.selectedAssetAltText;
         }
-        return imageAlt(plate);
-    }
-
-    function selectedAssetFor(plate) {
-        if (!plate.asset) return null;
-        const paths = selectedAssetPathRules.selectedAssetPaths(plate.asset);
-
-        return Object.freeze({
-            asset: plate.asset,
-            fullSizePath: paths.fullSizePath,
-            thumbnailPath: paths.thumbnailPath,
-            altText: selectedAssetAltTextFor(plate),
-            variantKind: variantKindFor(plate),
-        });
-    }
-
-    function catalogRef(category, plate) {
-        return `${category.id}/${plate.id}`;
-    }
-
-    function categoryReference(category) {
-        return Object.freeze({
-            id: category.id,
-            title: category.title,
-        });
-    }
-
-    function variantReference(plate) {
-        return Object.freeze({
-            id: plate.id,
-            title: plate.title,
-        });
-    }
-
-    function selectedAssetProjections(sourceCategories = categories) {
-        return getPlateEntries(sourceCategories)
-            .map(({ category, plate }) => {
-                const selectedAsset = selectedAssetFor(plate);
-                if (!selectedAsset) return null;
-
-                return Object.freeze({
-                    catalogRef: catalogRef(category, plate),
-                    category: categoryReference(category),
-                    variant: variantReference(plate),
-                    asset: selectedAsset.asset,
-                    fullSizePath: selectedAsset.fullSizePath,
-                    thumbnailPath: selectedAsset.thumbnailPath,
-                    altText: selectedAsset.altText,
-                    variantKind: selectedAsset.variantKind,
-                });
-            })
-            .filter((entry) => entry !== null);
-    }
-
-    function photoStatusPresentationProjections(sourceCategories = categories) {
-        return getPlateEntries(sourceCategories).map(({ category, plate }) => {
-            const presentation = photoStatusPolicy.presentationFor(
-                plate,
-                category
-            );
-
-            return Object.freeze({
-                catalogRef: catalogRef(category, plate),
-                category: categoryReference(category),
-                variant: variantReference(plate),
-                status: presentation.status,
-                badge: presentation.badge,
-                missingPlaceholder: presentation.missingPlaceholder,
-            });
-        });
-    }
-
-    function catalogProjections(sourceCategories = categories) {
-        return {
-            selectedAssets: selectedAssetProjections(sourceCategories),
-            photoStatusPresentations:
-                photoStatusPresentationProjections(sourceCategories),
-            displayCategories: displayCategories(sourceCategories),
-            displayChecklistSections: displayChecklistSections(sourceCategories),
-        };
-    }
-
-    function getPlateEntries(sourceCategories = categories) {
-        return sourceCategories.flatMap((category) =>
-            category.plates.map((plate) => ({ category, plate }))
-        );
+        return imageAlt(variant);
     }
 
     function displayStickerFor(category) {
@@ -1138,28 +712,28 @@
         });
     }
 
-    function displayVariantImageFor(plate) {
-        const selectedAsset = selectedAssetFor(plate);
-        if (!selectedAsset) return null;
+    function displayVariantImageFor(variant) {
+        if (!variant.asset) return null;
+        const paths = selectedAssetPathRules.selectedAssetPaths(variant.asset);
 
         return Object.freeze({
-            thumbnailSrc: selectedAsset.thumbnailPath,
-            fullSizeSrc: selectedAsset.fullSizePath,
-            altText: selectedAsset.altText,
+            thumbnailSrc: paths.thumbnailPath,
+            fullSizeSrc: paths.fullSizePath,
+            altText: selectedAssetAltTextFor(variant),
         });
     }
 
-    function displayVariantFor(plate, category) {
-        const photoStatus = photoStatusPolicy.presentationFor(plate, category);
-        const image = displayVariantImageFor(plate);
+    function displayVariantFor(variant, category) {
+        const photoStatus = photoStatusPresentationFor(variant, category);
+        const image = displayVariantImageFor(variant);
 
         if (!photoStatus.missingPlaceholder && !image) {
-            throw new Error(`${plate.id} requires a Selected Asset`);
+            throw new Error(`${variant.id} requires a Selected Asset`);
         }
 
         return Object.freeze({
-            id: plate.id,
-            title: plate.title,
+            id: variant.id,
+            title: variant.title,
             photoStatus: photoStatus.status,
             image,
             missingPlaceholder: photoStatus.missingPlaceholder,
@@ -1173,8 +747,8 @@
                 id: category.id,
                 title: category.title,
                 sticker: displayStickerFor(category),
-                variants: category.plates.map((plate) =>
-                    displayVariantFor(plate, category)
+                variants: category.plates.map((variant) =>
+                    displayVariantFor(variant, category)
                 ),
             })
         );
@@ -1186,63 +760,35 @@
                 id: group.category.id,
                 title: group.category.title,
             }),
-            variants: group.plates.map((plate) =>
+            variants: group.plates.map((variant) =>
                 Object.freeze({
-                    id: plate.id,
-                    title: plate.title,
+                    id: variant.id,
+                    title: variant.title,
                 })
             ),
         });
     }
 
     function displayChecklistSections(sourceCategories = categories) {
-        return photoStatusPolicy
-            .checklistSections(sourceCategories)
-            .map((section) => {
-                const groups = section.groups.map(displayChecklistGroup);
-                const count = groups.reduce(
-                    (total, group) => total + group.variants.length,
-                    0
-                );
+        return CHECKLIST_PHOTO_STATUSES.map((status) => {
+            const checklist = photoStatusDetails(status).checklist;
+            const groups = checklistGroupsFor(
+                status,
+                sourceCategories
+            ).map(displayChecklistGroup);
+            const count = groups.reduce(
+                (total, group) => total + group.variants.length,
+                0
+            );
 
-                return Object.freeze({
-                    status: section.status,
-                    title: section.title,
-                    emptyMessage: section.emptyMessage,
-                    count,
-                    groups,
-                });
+            return Object.freeze({
+                status,
+                title: checklist.title,
+                emptyMessage: checklist.emptyMessage,
+                count,
+                groups,
             });
-    }
-
-    function nodeApi() {
-        const api = {};
-
-        Object.defineProperties(api, {
-            categories: { value: categories, enumerable: true },
-            photoStatuses: { value: PHOTO_STATUSES, enumerable: true },
-            variantKinds: { value: VARIANT_KINDS, enumerable: true },
-            stickerStyles: { value: STICKER_STYLES, enumerable: true },
-            catalogProjections: {
-                value: catalogProjections,
-                enumerable: true,
-            },
-            selectedAssetProjections: {
-                value: selectedAssetProjections,
-            },
-            photoStatusPolicyErrors: { value: photoStatusPolicyErrors },
-            photoStatusChecklistPolicies: {
-                value: photoStatusChecklistPolicies,
-            },
-            photoStatusSelectedAssetCompatibility: {
-                value: photoStatusSelectedAssetCompatibility,
-            },
-            photoStatusSelectedAssetCompatibilityDiagnosticsFor: {
-                value: photoStatusSelectedAssetCompatibilityDiagnosticsFor,
-            },
         });
-
-        return Object.freeze(api);
     }
 
     return {
@@ -1250,6 +796,11 @@
             displayCategories,
             displayChecklistSections,
         }),
-        node: nodeApi(),
+        node: Object.freeze({
+            categories,
+            photoStatuses: PHOTO_STATUSES,
+            variantKinds: VARIANT_KINDS,
+            stickerStyles: STICKER_STYLES,
+        }),
     };
 });

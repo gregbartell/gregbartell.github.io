@@ -1,122 +1,60 @@
 #!/usr/bin/env node
 const fs = require("fs");
 const path = require("path");
-const { auditCatalog } = require("../src/catalog-checks/plate-catalog-audit.js");
+const catalogValidation = require("../src/catalog-checks/plate-catalog-validation.js");
 const selectedAssetFileRules = require("../src/catalog-checks/selected-asset-file-rules.js");
 
 const repoRoot = path.resolve(__dirname, "..");
-const collator = new Intl.Collator("en", {
-    sensitivity: "base",
-    numeric: true,
-});
 
-function toRepoRelative(absolutePath) {
-    return path.relative(repoRoot, absolutePath).split(path.sep).join("/");
-}
-
-function localJpegFiles(rootRelativePath, shouldInclude = () => true) {
-    const rootPath = path.join(repoRoot, rootRelativePath);
-    const files = [];
+function localJpegPaths(rootRelativePath) {
+    const paths = [];
 
     function walk(directory) {
         fs.readdirSync(directory, { withFileTypes: true }).forEach((entry) => {
             const absolutePath = path.join(directory, entry.name);
             if (entry.isDirectory()) {
                 walk(absolutePath);
-                return;
-            }
-
-            const relativePath = toRepoRelative(absolutePath);
-            if (
-                !entry.isFile() ||
-                !selectedAssetFileRules.isJpegPath(relativePath)
+            } else if (
+                entry.isFile() &&
+                selectedAssetFileRules.isJpegPath(entry.name)
             ) {
-                return;
-            }
-
-            if (shouldInclude(relativePath)) {
-                files.push({ path: relativePath });
+                paths.push(
+                    path.relative(repoRoot, absolutePath).split(path.sep).join("/")
+                );
             }
         });
     }
 
+    const rootPath = path.join(repoRoot, rootRelativePath);
     if (fs.existsSync(rootPath)) walk(rootPath);
-    return files.sort((left, right) => collator.compare(left.path, right.path));
+    return paths;
 }
 
-function localJpegPaths(rootRelativePath, shouldInclude = () => true) {
-    return localJpegFiles(rootRelativePath, shouldInclude).map((file) => file.path);
-}
+const fullSizePaths = new Set(
+    localJpegPaths(selectedAssetFileRules.fullSizeImageRoot)
+);
+const thumbnailPaths = new Set(
+    localJpegPaths(selectedAssetFileRules.thumbnailImageRoot)
+);
+const errors = catalogValidation.validateCatalog();
 
-function repositoryImagePaths() {
-    const fullSizeFiles = localJpegFiles(
-        selectedAssetFileRules.fullSizeImageRoot,
-        selectedAssetFileRules.isRepositoryFullSizeJpegPath
-    );
-    const thumbnailFiles = localJpegFiles(
-        selectedAssetFileRules.thumbnailImageRoot,
-        selectedAssetFileRules.isRepositoryThumbnailJpegPath
-    );
-
-    return {
-        fullSizePaths: fullSizeFiles.map((file) => file.path),
-        thumbnailPaths: thumbnailFiles.map((file) => file.path),
-    };
-}
-
-function auditRepositoryCatalog() {
-    return auditCatalog(repositoryImagePaths());
-}
-
-function formatAuditResult(result) {
-    const stdout = [];
-    const stderr = [];
-
-    if (result.passed) {
-        stdout.push("Catalog audit passed.");
-    } else {
-        stderr.push("Catalog audit failed:");
-        result.errors.forEach((error) => stderr.push(`- ${error}`));
+catalogValidation.selectedAssetRequirements().forEach((requirement) => {
+    if (!fullSizePaths.has(requirement.fullSizePath)) {
+        errors.push(
+            `${requirement.catalogRef} missing Selected Asset full-size file: ${requirement.fullSizePath}`
+        );
     }
-
-    return {
-        exitCode: result.passed ? 0 : 1,
-        stdout,
-        stderr,
-    };
-}
-
-function writeLines(lines, writeLine) {
-    lines.forEach((line) => writeLine(line));
-}
-
-function runAuditCommand({
-    result = auditRepositoryCatalog(),
-    stdout = console.log,
-    stderr = console.error,
-    exit = process.exit,
-} = {}) {
-    const output = formatAuditResult(result);
-
-    writeLines(output.stderr, stderr);
-    writeLines(output.stdout, stdout);
-
-    if (output.exitCode !== 0) {
-        exit(output.exitCode);
+    if (!thumbnailPaths.has(requirement.thumbnailPath)) {
+        errors.push(
+            `${requirement.catalogRef} missing Selected Asset thumbnail file: ${requirement.thumbnailPath}`
+        );
     }
+});
 
-    return output.exitCode;
+if (errors.length === 0) {
+    console.log("Catalog audit passed.");
+} else {
+    console.error("Catalog audit failed:");
+    errors.forEach((error) => console.error(`- ${error}`));
+    process.exitCode = 1;
 }
-
-if (require.main === module) {
-    runAuditCommand();
-}
-
-module.exports = {
-    auditRepositoryCatalog,
-    formatAuditResult,
-    localJpegFiles,
-    localJpegPaths,
-    repositoryImagePaths,
-    runAuditCommand,
-};
