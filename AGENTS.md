@@ -57,8 +57,8 @@ the codebase or changing domain language, behavior, or architecture.
 
 ## Git
 
-Use conventional commit titles: `<type>(<scope>): <subject>`. Keep the subject
-imperative and 50 characters or less. Wrap commit body lines at 72 characters or
-less.
+Format commit titles as Conventional Commits: `<type>: <subject>` or
+`<type>(<scope>): <subject>`. Use imperative subjects under 50 characters with
+no period. Wrap body text at 72 characters.
 
 Keep commits atomic: one logical repo change per commit.
