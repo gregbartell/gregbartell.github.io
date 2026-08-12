@@ -109,7 +109,7 @@ rounded:
 spacing:
   page-max: 1200px
   wordmark-max: 720px
-  grid-min-column: 280px
+  grid-min-column: 328px
   grid-gap: 1.5rem
   section-gap: 3.5rem
   desktop-main-padding: "2.5rem 1.5rem 4rem"
@@ -324,8 +324,11 @@ column headers, count badges, and thin scrollbars.
 
 The masthead is full width with a centered 1200px inner column and a wordmark
 image capped at 720px. The main content also caps at 1200px and uses stacked
-sections. Plate entries use CSS Grid with `repeat(auto-fill, minmax(280px, 1fr))`
-and a 1.5rem gap.
+sections. Plate entries use CSS Grid with `repeat(auto-fill, minmax(328px, 1fr))`
+and a 1.5rem gap. Supported viewports progress from one column through 727px,
+to two columns from 728px through 1079px, and then to the established
+three-column maximum at 1080px. This deliberately gives the 1024px layout two
+larger columns.
 
 ### Whitespace Strategy
 
@@ -346,9 +349,11 @@ with a stable 2:1 media area and compact labels.
 
 At `max-width: 700px`, the status modal collapses from two columns to one,
 masthead and main padding shrink, and the status button becomes smaller but
-keeps generous tap padding. Image previews and the status modal use viewport
-constraints (`90%` image bounds, `92%` modal width, `92vh` max height) to remain
-usable on small screens.
+keeps generous tap padding. The card grid remains one column on both sides of
+that padding breakpoint, then gains columns without regressing as the viewport
+widens. Image previews and the status modal use viewport constraints (`90%`
+image bounds, `92%` modal width, `92vh` max height) to remain usable on small
+screens.
 
 ## 6. Design System Notes for Stitch Generation
 
