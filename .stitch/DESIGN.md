@@ -349,9 +349,10 @@ the modal uses 2rem by 2.5rem padding.
 ### Alignment & Visual Balance
 
 The masthead and footer are centered; catalog content is left-aligned for easy
-scanning. Section headings flex-wrap so stickers and labels can stay together
-on smaller screens without forcing overflow. Cards prioritize image inspection
-with a stable 2:1 media area and compact labels.
+scanning. Category headings keep the registration sticker and Category title
+block in one flex row; long Category titles wrap inside that block so the
+sticker remains beside the first line without forcing overflow. Cards prioritize
+image inspection with a stable 2:1 media area and compact labels.
 
 ### Responsive Behavior & Touch
 
