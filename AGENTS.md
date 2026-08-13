@@ -4,10 +4,10 @@
 
 This is a personal hobby project, not a professional software project. The
 collection and the fun are the point; software ceremony is not. Prefer
-simplicity, YAGNI, the owner's caprice, and vibes over corporatism, bureaucracy,
-rigid process, and overengineering. A clear local solution, even repeated,
-beats a sophisticated abstraction. Optimize for happy paths and handle edge
-cases when they appear. The stakes are low; good enough is good enough.
+simplicity, YAGNI, KISS, the owner's caprice, and vibes over corporatism,
+bureaucracy, rigid process, and overengineering. A clear local solution, even
+repeated, beats a sophisticated abstraction. Optimize for happy paths and handle
+edge cases when they appear. The stakes are low; good enough is good enough.
 
 ## Tooling
 
