@@ -2,6 +2,7 @@
     const SELECTED_ASSET_IMAGE_CLASS = "plate-image";
     const SELECTED_ASSET_PREVIEW_CLASS = "plate-card__preview";
     const SELECTED_ASSET_FULL_SIZE_DATA = "fullSrc";
+    const selectedAssetPreviewContexts = new WeakMap();
 
     function renderCatalog(rootEl, categories) {
         rootEl.replaceChildren(
@@ -25,7 +26,9 @@
         const grid = document.createElement("div");
         grid.className = "plate-grid";
         grid.replaceChildren(
-            ...category.variants.map((variant) => renderPlateCard(variant))
+            ...category.variants.map((variant) =>
+                renderPlateCard(variant, category)
+            )
         );
 
         section.append(heading, grid);
@@ -130,7 +133,7 @@
         return sticker;
     }
 
-    function renderPlateCard(variant) {
+    function renderPlateCard(variant, category) {
         const card = document.createElement("div");
         card.className = "plate-card";
 
@@ -154,19 +157,26 @@
             card.classList.add("plate-card--interactive");
             card.append(
                 selectedAsset,
-                renderSelectedAssetPreviewControl(variant.title)
+                renderSelectedAssetPreviewControl(variant.title, category)
             );
         }
 
         return card;
     }
 
-    function renderSelectedAssetPreviewControl(variantTitle) {
+    function renderSelectedAssetPreviewControl(variantTitle, category) {
         const previewControl = document.createElement("button");
         previewControl.type = "button";
         previewControl.className = SELECTED_ASSET_PREVIEW_CLASS;
         previewControl.setAttribute("aria-label", `Preview ${variantTitle}`);
         previewControl.title = variantTitle;
+        selectedAssetPreviewContexts.set(previewControl, {
+            variantTitle,
+            category: {
+                title: category.title,
+                stickerStyle: category.sticker.style,
+            },
+        });
         return previewControl;
     }
 
@@ -198,13 +208,15 @@
             const selectedAsset = previewControl.parentElement?.querySelector(
                 `.${SELECTED_ASSET_IMAGE_CLASS}`
             );
-            if (!selectedAsset) return null;
+            const context = selectedAssetPreviewContexts.get(previewControl);
+            if (!selectedAsset || !context) return null;
 
             return {
                 thumbnailSrc: selectedAsset.src,
                 fullSizeSrc:
                     selectedAsset.dataset[SELECTED_ASSET_FULL_SIZE_DATA],
                 altText: selectedAsset.alt,
+                ...context,
             };
         }
 
@@ -224,6 +236,24 @@
         return () => {
             rootEl.removeEventListener("click", openSelectedAsset);
         };
+    }
+
+    function renderSelectedAssetPreview(rootEl, previewRequest) {
+        const selectedAsset = rootEl.querySelector(".image-preview__asset");
+        const variantTitle = rootEl.querySelector(".image-preview__title");
+        const category = rootEl.querySelector(".image-preview__category");
+
+        selectedAsset.src = previewRequest.thumbnailSrc;
+        selectedAsset.alt = previewRequest.altText;
+        variantTitle.textContent = previewRequest.variantTitle;
+        category.textContent = previewRequest.category.title;
+        category.className = [
+            "image-preview__category",
+            "cat-sticker",
+            `cat-sticker--${previewRequest.category.stickerStyle}`,
+        ].join(" ");
+
+        return selectedAsset;
     }
 
     function renderPhotoStatusBadge(cardBadge) {
@@ -358,5 +388,6 @@
         renderCategoryNavigation,
         renderChecklist,
         bindSelectedAssetPreview,
+        renderSelectedAssetPreview,
     });
 })(typeof window !== "undefined" ? window : globalThis);

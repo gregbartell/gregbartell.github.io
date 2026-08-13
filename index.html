@@ -70,9 +70,22 @@
         </footer>
 
         <!-- Modal for displaying larger images -->
-        <div id="imageModal" class="modal" role="dialog" aria-modal="true" aria-label="Plate image preview">
+        <div
+            id="imageModal"
+            class="modal image-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="imageModalTitle"
+            aria-describedby="imageModalCategory"
+        >
             <button type="button" class="close" id="imageClose" aria-label="Close">×</button>
-            <img class="modal-content" id="enlargedImg" alt="" />
+            <figure class="image-preview">
+                <img class="image-preview__asset" id="enlargedImg" alt="" />
+                <figcaption class="image-preview__caption">
+                    <h2 class="image-preview__title" id="imageModalTitle"></h2>
+                    <p class="image-preview__category" id="imageModalCategory"></p>
+                </figcaption>
+            </figure>
         </div>
 
         <!-- Status Check Modal -->

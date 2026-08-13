@@ -40,7 +40,7 @@
 
     function wirePageBehavior() {
         const imageModal = document.getElementById("imageModal");
-        const enlargedImg = document.getElementById("enlargedImg");
+        const imagePreview = document.querySelector(".image-preview");
         const imageCloseBtn = document.getElementById("imageClose");
 
         const statusModal = document.getElementById("statusModal");
@@ -66,8 +66,10 @@
             const thumbSrc = previewRequest.thumbnailSrc;
             const fullSrc = previewRequest.fullSizeSrc;
 
-            enlargedImg.src = thumbSrc;
-            enlargedImg.alt = previewRequest.altText;
+            const enlargedImg = renderer.renderSelectedAssetPreview(
+                imagePreview,
+                previewRequest
+            );
             imageDialog.open();
 
             if (fullSrc && fullSrc !== thumbSrc) {

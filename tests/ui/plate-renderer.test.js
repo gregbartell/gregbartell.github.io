@@ -10,6 +10,7 @@ assert.equal(typeof renderer.renderCatalog, "function");
 assert.equal(typeof renderer.renderCategoryNavigation, "function");
 assert.equal(typeof renderer.renderChecklist, "function");
 assert.equal(typeof renderer.bindSelectedAssetPreview, "function");
+assert.equal(typeof renderer.renderSelectedAssetPreview, "function");
 
 function createElement(tagName) {
     const listeners = new Map();
@@ -220,10 +221,56 @@ assert.deepEqual(requests, [
         thumbnailSrc: "assets/plates/thumbs/fixture/selected.jpg",
         fullSizeSrc: "assets/plates/full/fixture/selected.jpg",
         altText: "Selected Plate plate",
+        variantTitle: "Selected Plate",
+        category: {
+            title: "Fixture",
+            stickerStyle: "blue",
+        },
     },
 ]);
 
 root.dispatch("click", { target: missingCard });
 assert.equal(requests.length, 1);
+
+{
+    const preview = fakeDocument.createElement("figure");
+    const selectedAsset = fakeDocument.createElement("img");
+    selectedAsset.className = "image-preview__asset";
+    const variantTitle = fakeDocument.createElement("h2");
+    variantTitle.className = "image-preview__title";
+    const category = fakeDocument.createElement("p");
+    category.className = "image-preview__category cat-sticker--green";
+    preview.append(selectedAsset, variantTitle, category);
+    preview.querySelector = (selector) => {
+        if (selector === ".image-preview__asset") return selectedAsset;
+        if (selector === ".image-preview__title") return variantTitle;
+        if (selector === ".image-preview__category") return category;
+        return null;
+    };
+
+    const renderedAsset = renderer.renderSelectedAssetPreview(preview, {
+        thumbnailSrc: "assets/plates/thumbs/fixture/selected.jpg",
+        fullSizeSrc: "assets/plates/full/fixture/selected.jpg",
+        altText: "Selected Plate plate",
+        variantTitle: "Selected Plate",
+        category: {
+            title: "Fixture",
+            stickerStyle: "blue",
+        },
+    });
+
+    assert.equal(renderedAsset, selectedAsset);
+    assert.equal(
+        selectedAsset.src,
+        "assets/plates/thumbs/fixture/selected.jpg"
+    );
+    assert.equal(selectedAsset.alt, "Selected Plate plate");
+    assert.equal(variantTitle.textContent, "Selected Plate");
+    assert.equal(category.textContent, "Fixture");
+    assert.equal(
+        category.className,
+        "image-preview__category cat-sticker cat-sticker--blue"
+    );
+}
 
 console.log("Plate renderer tests passed.");
