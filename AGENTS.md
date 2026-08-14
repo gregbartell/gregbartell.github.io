@@ -46,6 +46,10 @@ triage state.
 This is a single-context repo. Follow `docs/agents/domain.md` before exploring
 the codebase or changing domain language, behavior, or architecture.
 
+### Coding standards
+
+Follow `CODING_STANDARDS.md` when writing or reviewing code.
+
 ## Project workflows
 
 - **Plate-photo intake:** Follow `docs/agents/plate-photo-intake.md` when the
